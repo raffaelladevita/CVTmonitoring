@@ -8,7 +8,7 @@ Displays CVT tracking information for beam data and MC
   
 ## To run:
 
-      ./bin/cvtMonitoring
+      ./bin/cvtMonitoring  [options] file1 file2 ... fileN 
       
 It requires the following banks to be present:
   - BMTRec::Hits, BSTRec::Hits
@@ -19,7 +19,7 @@ It requires the following banks to be present:
   
 ## Usage:
 
-      Usage : cvtMonitoring 
+      Usage : cvtMonitoring  [options] file1 file2 ... fileN 
 
       Options :
        -histo : read histogram file (0/1) (default = 0)
