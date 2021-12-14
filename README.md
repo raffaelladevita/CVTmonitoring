@@ -9,6 +9,13 @@ Displays CVT tracking information for beam data and MC
 ## To run:
 
       ./bin/cvtMonitoring
+      
+It requires the following banks to be present:
+  - BMTRec::Hits, BSTRec::Hits
+  - BMTRec::Clusters, BSTRec::Clusters
+  - CVTRec::Seeds, CVTRec::Tracks
+  - (for matching with CTOF) REC::Particle, REC::Track
+  - (for MC only) MC::Particle
   
 ## Usage:
 
