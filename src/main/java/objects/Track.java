@@ -122,7 +122,7 @@ public class Track extends Particle {
     }
     
     public double rho() {
-        return this.pt()*1E5/PhysicsConstants.speedOfLight()/B;
+        return PhysicsConstants.speedOfLight()*B/this.pt()/1E5;
     }
    
     public double tandip() {

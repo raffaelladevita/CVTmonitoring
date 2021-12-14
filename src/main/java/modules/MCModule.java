@@ -127,9 +127,9 @@ public class MCModule extends Module {
         H1F hi_chi2   = histo1D("hi_chi2", "#chi^2", "Counts", 100, 0, 5,  icol);
         H1F hi_d0     = histo1D("hi_d0", "d0", "Counts", 100, -5, 5, icol);
         H1F hi_phi0   = histo1D("hi_phi0", "phi0", "Counts", 100, -5, 5, icol);
-        H1F hi_rho    = histo1D("hi_rho", "rho", "Counts", 100, -500, 500, icol);
-        H1F hi_z0     = histo1D("hi_z0", "z0", "Counts", 100, -15, 15, icol);
-        H1F hi_tandip = histo1D("hi_tandip", "tandip", "Counts", 100, -15, 15, icol);
+        H1F hi_rho    = histo1D("hi_rho", "rho", "Counts", 100, -15, 15, icol);
+        H1F hi_z0     = histo1D("hi_z0", "z0", "Counts", 100, -5, 5, icol);
+        H1F hi_tandip = histo1D("hi_tandip", "tandip", "Counts", 100, -5, 5, icol);
 
         DataGroup dg = new DataGroup(3,2);
         dg.addDataSet(hi_chi2,   0);
@@ -277,6 +277,7 @@ public class MCModule extends Module {
         group.getH1F("hi_d0").fill((mc.d0()-track.d0())/track.getD0Err());
         group.getH1F("hi_phi0").fill(mc.deltaPhi(track)/track.getPhi0Err());
         group.getH1F("hi_rho").fill((mc.rho()-track.rho())/track.getRhoErr());
+//        System.out.println(mc.rho() + " " + track.rho() + " " + track.getRhoErr());
         group.getH1F("hi_z0").fill((mc.vz()-track.vz())/track.getZ0Err());
         group.getH1F("hi_tandip").fill((mc.tandip()-track.tandip())/track.getTanDipErr());
     }
