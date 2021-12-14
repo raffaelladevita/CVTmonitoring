@@ -121,15 +121,15 @@ public class CVTMonitoring {
     
         public static void main(String[] args) {
         
-        OptionParser parser = new OptionParser("clas12Validation");
+        OptionParser parser = new OptionParser("cvtMonitoring [options] file1 file2 ... fileN");
         parser.setRequiresInputList(false);
         // valid options for event-base analysis
-        parser.addOption("-o"          ,"",     "output file name prefix");
+        parser.addOption("-o"          ,"",     "histogram file name prefix");
         parser.addOption("-n"          ,"-1",   "maximum number of events to process");
         // histogram based analysis
         parser.addOption("-histo"      ,"0",    "read histogram file (0/1)");
         parser.addOption("-plot"       ,"1",    "display histograms (0/1)");
-        parser.addOption("-stats"      ,"",     "histogram stat option");
+        parser.addOption("-stats"      ,"",     "histogram stat option (e.g. \"10\" will display entries)");
         parser.addOption("-pid"        ,"2212", "MC particle PID");
         
         parser.parse(args);
