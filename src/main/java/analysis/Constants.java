@@ -14,6 +14,7 @@ public class Constants {
     public static final int[] BMTZLAYERS = {2,3,5};
     public static final double[] BMTRADIUS = {147.746, 162.646, 177.646, 192.646, 207.646, 222.646}; // radius at half drift
     
+    public static final double B = 5; //field in Tesla
     
     public static int PID = 2212;
     

@@ -6,6 +6,7 @@ import objects.Track;
 import objects.Event;
 import analysis.Module;
 import org.jlab.groot.data.H1F;
+import org.jlab.groot.data.H2F;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
@@ -65,9 +66,28 @@ public class TrackModule extends Module {
         return dgTrack;
     }
 
+    public DataGroup createGroup2D(int col) {
+        H2F hi_ptheta   = histo2D("hi_ptheta", "#theta (deg)", "p (GeV)", 100, THETAMIN, THETAMAX, 100, PMIN, PMAX);
+        H2F hi_pphi     = histo2D("hi_pphi", "#phi (deg)", "p (GeV)", 100, PHIMIN, PHIMAX, 100, PMIN, PMAX);
+        H2F hi_thetaphi = histo2D("hi_thetaphi", "#phi (deg)", "#theta (deg)", 100, PHIMIN, PHIMAX, 100, THETAMIN, THETAMAX);
+        H2F hi_vxy      = histo2D("hi_vxy", "vx (cm)", "vy (cm)", 100, VXYMIN, VXYMAX, 100, VXYMIN, VXYMAX);
+        H2F hi_d0phi    = histo2D("hi_d0phi", "#phi (deg)", "d0 (cm)", 100, PHIMIN, PHIMAX, 100, VXYMIN, VXYMAX);
+        H2F hi_vzphi    = histo2D("hi_vzphi", "#phi (deg)", "vz (cm)", 100, PHIMIN, PHIMAX, 100, VZMIN, VZMAX);
+
+        DataGroup dgTrack = new DataGroup(3,2);
+        dgTrack.addDataSet(hi_ptheta,   0);
+        dgTrack.addDataSet(hi_pphi,     1);
+        dgTrack.addDataSet(hi_thetaphi, 2);
+        dgTrack.addDataSet(hi_vxy,      3);
+        dgTrack.addDataSet(hi_d0phi,    4);
+        dgTrack.addDataSet(hi_vzphi,   5);
+        return dgTrack;
+    }
+
     @Override
     public void createHistos() {
         this.getHistos().put("Tracks", this.createGroup(46));
+        this.getHistos().put("Tracks2D", this.createGroup2D(46));
         this.getHistos().put("Seeds", this.createGroup(46));
         this.getHistos().put("TrackSeeds", this.createGroup(46));
         this.getHistos().put("TrackChi2pid", this.createGroup(49));
@@ -79,11 +99,14 @@ public class TrackModule extends Module {
         List<Track> trackC2pid = new ArrayList<>();
         for(Track track : event.getTracks()) {
             int sid = track.getSeedId();
-            int si  = event.getSeedMap().get(sid);
-            trackSeeds.add(event.getSeeds().get(si));
+            if(event.getSeedMap().containsKey(sid)) {
+                int si = event.getSeedMap().get(sid);           
+                trackSeeds.add(event.getSeeds().get(si));
+            }
             if(Math.abs(track.getChi2pid())<CHI2PIDCUT) trackC2pid.add(track);
         }
         this.fillGroup(this.getHistos().get("Tracks"),event.getTracks());
+        this.fillGroup2D(this.getHistos().get("Tracks2D"),event.getTracks());
         this.fillGroup(this.getHistos().get("Seeds"),event.getSeeds());
         this.fillGroup(this.getHistos().get("TrackSeeds"),trackSeeds);
         this.fillGroup(this.getHistos().get("TrackChi2pid"),trackC2pid);
@@ -106,10 +129,22 @@ public class TrackModule extends Module {
         }
     }
     
+    public void fillGroup2D(DataGroup group, List<Track> tracks) {
+        for(Track track : tracks) {
+            group.getH2F("hi_ptheta").fill(Math.toDegrees(track.theta()),track.p());
+            group.getH2F("hi_pphi").fill(Math.toDegrees(track.phi()),track.p());
+            group.getH2F("hi_thetaphi").fill(Math.toDegrees(track.phi()),Math.toDegrees(track.theta()));
+            group.getH2F("hi_vxy").fill(track.vx(),track.vy());
+            group.getH2F("hi_d0phi").fill(Math.toDegrees(track.phi()),track.d0());
+            group.getH2F("hi_vzphi").fill(Math.toDegrees(track.phi()),track.vz());
+        }
+    }
+    
     @Override
     public EmbeddedCanvasTabbed plotHistos() {
-        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Tracks", "Seeds", "EBTracks");
+        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Tracks", "Tracks2D", "Seeds", "EBTracks");
         canvas.getCanvas("Tracks").draw(this.getHistos().get("Tracks"));
+        canvas.getCanvas("Tracks2D").draw(this.getHistos().get("Tracks2D"));
         canvas.getCanvas("Seeds").draw(this.getHistos().get("Seeds"));
         canvas.getCanvas("Seeds").draw(this.getHistos().get("TrackSeeds"));
         canvas.getCanvas("EBTracks").draw(this.getHistos().get("Tracks"));

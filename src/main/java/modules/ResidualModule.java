@@ -109,7 +109,10 @@ public class ResidualModule extends Module {
                 int layer  = cluster.getLayer();
                 int sector = cluster.getSector();
                 String name = "L"+layer+"S"+sector;
-                
+                if(!event.getTrackMap().containsKey(cluster.getTrackId())) {
+                    System.out.println(cluster.getName() + " " + cluster.getTrackId());
+                    for(Track t : event.getTracks()) System.out.println(t.getId());
+                }
                 Track track = event.getTracks().get(event.getTrackMap().get(cluster.getTrackId()));
                 if(detector.equals("SVT"))
                     this.getHistos().get(detector + "L" + layer).getH1F("hi_res_"+name).fill(cluster.getCentroidResidual());

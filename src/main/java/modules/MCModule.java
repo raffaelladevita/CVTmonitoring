@@ -1,5 +1,6 @@
 package modules;
 
+import analysis.Constants;
 import objects.Track;
 import objects.Event;
 import analysis.Module;
@@ -100,25 +101,41 @@ public class MCModule extends Module {
     }
 
     private DataGroup helixResolution2DGroup() {
-        DataGroup dg = new DataGroup(5,2);
-        for(int i=0; i<2; i++) {
+        DataGroup dg = new DataGroup(5,3);
+        for(int i=0; i<3; i++) {
             String type = "";
             String titl = "#Delta";
-            if(i==1) {
-                type = "cov";
-                titl = "cov";
+            if(i<2) {
+                if(i==1) {
+                    type = "cov2D";
+                    titl = "cov";
+                }
+                H2F hi_d0     = histo2D("hi_"+type+"d0", titl+"d0 (cm)", "d0 (cm)", 100, -DVXY, DVXY,100, 0, DVXY);
+                H2F hi_phi0   = histo2D("hi_"+type+"phi0", titl+"#phi (deg)", "#phi0", 100, -DPHI, DPHI, 100, PHIMIN, PHIMAX);
+                H2F hi_rho    = histo2D("hi_"+type+"rho",  titl+"#rho/#rho", "#rho", 100, -DP, DP,100, PhysicsConstants.speedOfLight()*Constants.B/PMAX/1E4, 
+                                                                                                       PhysicsConstants.speedOfLight()*Constants.B/0.2/1E4);
+                H2F hi_z0     = histo2D("hi_"+type+"z0", titl+"z0 (cm)", "z0 (cm)", 100, -DVZ, DVZ, 100, VZMIN, VZMAX);
+                H2F hi_tandip = histo2D("hi_"+type+"tandip", titl+"tandip", "tandip", 100, -DVXY, DVXY, 100, -PMAX, PMAX);
+                dg.addDataSet(hi_d0,     0 + i*5);
+                dg.addDataSet(hi_phi0,   1 + i*5);
+                dg.addDataSet(hi_rho,    2 + i*5);
+                dg.addDataSet(hi_z0,     3 + i*5);
+                dg.addDataSet(hi_tandip, 4 + i*5);
             }
-            H2F hi_d0     = histo2D("hi_"+type+"d0", titl+"d0 (mm)", "d0 (mm)", 100, -DVXY, DVXY,100, 0, DVXY);
-            H2F hi_phi0   = histo2D("hi_"+type+"phi0", titl+"#phi (deg)", "#phi0", 100, -DPHI, DPHI, 100, PHIMIN, PHIMAX);
-            H2F hi_rho    = histo2D("hi_"+type+"rho",  titl+"#rho/#rho", "#rho", 100, -DP, DP,100, 0, PMAX*1E5/PhysicsConstants.speedOfLight()/5);
-            H2F hi_z0     = histo2D("hi_"+type+"z0", titl+"z0 (mm)", "z0 (mm)", 100, -DVZ, DVZ, 100, VZMIN, VZMAX);
-            H2F hi_tandip = histo2D("hi_"+type+"tandip", titl+"tandip", "tandip", 100, -DVXY, DVXY, 100, -PMAX, PMAX);
-
-            dg.addDataSet(hi_d0,     0 + i*5);
-            dg.addDataSet(hi_phi0,   1 + i*5);
-            dg.addDataSet(hi_rho,    2 + i*5);
-            dg.addDataSet(hi_z0,     3 + i*5);
-            dg.addDataSet(hi_tandip, 4 + i*5);
+            else {
+                type = "cov1D";
+                titl = "cov";
+                H1F hi_d0     = histo1D("hi_"+type+"d0", titl+"d0 (cm)", "Counts", 100, -DVXY, DVXY, 46);
+                H1F hi_phi0   = histo1D("hi_"+type+"phi0", titl+"#phi (deg)", "Counts", 100, -DPHI, DPHI, 46);
+                H1F hi_rho    = histo1D("hi_"+type+"rho", titl+"#rho/#rho", "Counts", 100, -DP, DP, 46);
+                H1F hi_z0     = histo1D("hi_"+type+"z0", titl+"z0 (cm)", "Counts", 100, -DVZ, DVZ, 46);
+                H1F hi_tandip = histo1D("hi_"+type+"tandip", titl+"tandip", "Counts", 100, -DVXY, DVXY, 46);
+                dg.addDataSet(hi_d0,     0 + i*5);
+                dg.addDataSet(hi_phi0,   1 + i*5);
+                dg.addDataSet(hi_rho,    2 + i*5);
+                dg.addDataSet(hi_z0,     3 + i*5);
+                dg.addDataSet(hi_tandip, 4 + i*5);                
+            }
         }
         return dg;
     }
@@ -127,7 +144,7 @@ public class MCModule extends Module {
         H1F hi_chi2   = histo1D("hi_chi2", "#chi^2", "Counts", 100, 0, 5,  icol);
         H1F hi_d0     = histo1D("hi_d0", "d0", "Counts", 100, -5, 5, icol);
         H1F hi_phi0   = histo1D("hi_phi0", "phi0", "Counts", 100, -5, 5, icol);
-        H1F hi_rho    = histo1D("hi_rho", "rho", "Counts", 100, -15, 15, icol);
+        H1F hi_rho    = histo1D("hi_rho", "rho", "Counts", 100, -5, 5, icol);
         H1F hi_z0     = histo1D("hi_z0", "z0", "Counts", 100, -5, 5, icol);
         H1F hi_tandip = histo1D("hi_tandip", "tandip", "Counts", 100, -5, 5, icol);
 
@@ -168,11 +185,13 @@ public class MCModule extends Module {
     @Override
     public void createHistos() {
         this.getHistos().put("MC", this.trackGroup(45));
+        this.getHistos().put("AllSeeds", this.trackGroup(44));
         this.getHistos().put("Seed", this.trackGroup(44));
         this.getHistos().put("SeedResolution1", this.trackResolutionGroup(44));
         this.getHistos().put("SeedResolution2", this.helixResolutionGroup(44));
         this.getHistos().put("SeedResolution3", this.helixResolution2DGroup());
         this.getHistos().put("SeedPulls", this.pullsGroup(44));
+        this.getHistos().put("AllTracks", this.trackGroup(46));
         this.getHistos().put("Track", this.trackGroup(46));
         this.getHistos().put("Resolution1", this.trackResolutionGroup(46));
         this.getHistos().put("Resolution2", this.helixResolutionGroup(46));
@@ -195,6 +214,8 @@ public class MCModule extends Module {
                 }
             }            
             this.fillTrackGroup(this.getHistos().get("MC"),mcTrack);
+            for(Track seed : event.getSeeds()) this.fillTrackGroup(this.getHistos().get("AllSeeds"),seed);
+            for(Track track : event.getTracks()) this.fillTrackGroup(this.getHistos().get("AllTracks"),track);
             this.fillEfficiencyGroup(this.getHistos().get("Efficiency"), mcTrack, "MC");
             if(matchedTrack!=null) {
                 int sid = matchedTrack.getSeedId();
@@ -265,11 +286,16 @@ public class MCModule extends Module {
         group.getH2F("hi_rho").fill((mc.rho()-track.rho())/mc.rho(), mc.rho());
         group.getH2F("hi_z0").fill(mc.vz()-track.vz(), mc.vz());
         group.getH2F("hi_tandip").fill(mc.tandip()-track.tandip(), mc.tandip());
-        group.getH2F("hi_covd0").fill(track.getD0Err(), mc.d0());
-        group.getH2F("hi_covphi0").fill(Math.toDegrees(track.getPhi0Err()), Math.toDegrees(mc.phi()));
-        group.getH2F("hi_covrho").fill(track.getRhoErr()/track.rho(), mc.rho());
-        group.getH2F("hi_covz0").fill(track.getZ0Err(), mc.vz());
-        group.getH2F("hi_covtandip").fill(track.getTanDipErr(), mc.tandip());
+        group.getH2F("hi_cov2Dd0").fill(track.getD0Err(), mc.d0());
+        group.getH2F("hi_cov2Dphi0").fill(Math.toDegrees(track.getPhi0Err()), Math.toDegrees(mc.phi()));
+        group.getH2F("hi_cov2Drho").fill(track.getRhoErr()/track.rho(), mc.rho());
+        group.getH2F("hi_cov2Dz0").fill(track.getZ0Err(), mc.vz());
+        group.getH2F("hi_cov2Dtandip").fill(track.getTanDipErr(), mc.tandip());
+        group.getH1F("hi_cov1Dd0").fill(track.getD0Err());
+        group.getH1F("hi_cov1Dphi0").fill(Math.toDegrees(track.getPhi0Err()));
+        group.getH1F("hi_cov1Drho").fill(track.getRhoErr()/track.rho());
+        group.getH1F("hi_cov1Dz0").fill(track.getZ0Err());
+        group.getH1F("hi_cov1Dtandip").fill(track.getTanDipErr());
     }
     
     private void fillPullsGroup(DataGroup group, Track mc, Track track) {
@@ -286,10 +312,14 @@ public class MCModule extends Module {
     public void analyzeHistos() {
         this.fitDataGroup(this.getHistos().get("SeedResolution1"));
         this.fitDataGroup(this.getHistos().get("SeedResolution2"));
+        this.fitDataGroup(this.getHistos().get("SeedPulls"));
         this.fitDataGroup(this.getHistos().get("Resolution1"));
         this.fitDataGroup(this.getHistos().get("Resolution2"));
+        this.fitDataGroup(this.getHistos().get("Pulls"));
         this.getHistos().get("SeedResolution2").getH1F("hi_chi2").setFunction(null);
+        this.getHistos().get("SeedPulls").getH1F("hi_chi2").setFunction(null);
         this.getHistos().get("Resolution2").getH1F("hi_chi2").setFunction(null);
+        this.getHistos().get("Pulls").getH1F("hi_chi2").setFunction(null);
         
         DataGroup efficiency  = this.getHistos().get("Efficiency");
         DataGroup efficiencyG = this.getHistos().get("EfficiencyG");
@@ -315,11 +345,13 @@ public class MCModule extends Module {
         EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("MC", "Seed", "SeedResolution1", "SeedResolution2", "SeedResolution3", "SeedPulls", 
                                                                      "Track", "Resolution1", "Resolution2", "Resolution3", "Pulls", "Efficiency");
         canvas.getCanvas("MC").draw(this.getHistos().get("MC"));
+        canvas.getCanvas("Seed").draw(this.getHistos().get("AllSeeds"));
         canvas.getCanvas("Seed").draw(this.getHistos().get("Seed"));
         canvas.getCanvas("SeedResolution1").draw(this.getHistos().get("SeedResolution1"));
         canvas.getCanvas("SeedResolution2").draw(this.getHistos().get("SeedResolution2"));
         canvas.getCanvas("SeedResolution3").draw(this.getHistos().get("SeedResolution3"));
         canvas.getCanvas("SeedPulls").draw(this.getHistos().get("SeedPulls"));
+        canvas.getCanvas("Track").draw(this.getHistos().get("AllTracks"));
         canvas.getCanvas("Track").draw(this.getHistos().get("Track"));
         canvas.getCanvas("Resolution1").draw(this.getHistos().get("Resolution1"));
         canvas.getCanvas("Resolution2").draw(this.getHistos().get("Resolution2"));

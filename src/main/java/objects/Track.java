@@ -21,9 +21,9 @@ public class Track extends Particle {
     private double chi2;
     private int index = -1;
     private int pindex = -1;
+    private double solenoid = -1;
     private double chi2pid = Double.POSITIVE_INFINITY;
     private final double[][] covMatrix = new double[5][5];
-    private final double B = 5; //field in Tesla
     
     Track(int pid, double px, double py, double pz, double vx, double vy, double vz) {
         super(pid, px, py, pz, vx, vy, vz);
@@ -34,6 +34,18 @@ public class Track extends Particle {
         super(pid, px, py, pz, vx, vy, vz);
         this.id = id;
         this.seedType = type;
+        this.NDF  = NDF;
+        this.chi2 = chi2;
+    }
+
+    Track(int id, double theta, double phi, int NDF, double chi2) {
+        super(13, 
+              Math.cos(phi)*Math.sin(theta),
+              Math.sin(phi)*Math.sin(theta),
+              Math.cos(theta),
+              0,0,0);
+        this.id = id;
+        this.seedType = 1;
         this.NDF  = NDF;
         this.chi2 = chi2;
     }
@@ -118,11 +130,11 @@ public class Track extends Particle {
     }
 
     public double pt() {
-        return this.p()*Math.cos(this.theta());
+        return this.p()*Math.sin(this.theta());
     }
     
     public double rho() {
-        return PhysicsConstants.speedOfLight()*B/this.pt()/1E5;
+        return PhysicsConstants.speedOfLight()*Constants.B/this.pt()/1E5*10;
     }
    
     public double tandip() {
@@ -181,8 +193,8 @@ public class Track extends Particle {
         double dph = Math.toDegrees(this.phi()-p.phi());
         if(Math.abs(dph)>2*Math.PI) dph -= Math.signum(dph)*2*Math.PI;
         
-        if(this.charge()!=p.charge()) return false;
-        else if(Math.abs(dp)>Constants.NSIGMA*Constants.SIGMA_P) return false;
+        if(this.solenoid!=0 && this.charge()!=p.charge()) return false;
+        else if(this.solenoid!=0 && Math.abs(dp)>Constants.NSIGMA*Constants.SIGMA_P) return false;
         else if(Math.abs(dth)>Constants.NSIGMA*Constants.SIGMA_THETA) return false;
         else if(Math.abs(dph)>Constants.NSIGMA*Constants.SIGMA_PHI) return false;
         else return true;
@@ -214,6 +226,20 @@ public class Track extends Particle {
         return t;
     }
     
+    public static Track readRay(DataBank bank, int row) {
+        Track t = new Track(bank.getShort("ID", row),
+                            bank.getFloat("theta", row),
+                            bank.getFloat("phi", row),
+                            bank.getInt("ndf", row),
+                            bank.getFloat("chi2", row));
+        t.setIndex(row);
+        return t;
+    }
+    
+    public void addScale(DataBank config) {
+        this.solenoid = config.getFloat("solenoid", id);
+    }
+    
     public void addEBinfo(DataBank part, DataBank track) {
         for(int i=0; i<track.rows(); i++) {
             if(this.getIndex() == track.getShort("index", i) && 
@@ -238,6 +264,7 @@ public class Track extends Particle {
     }
 
     public static Track readSeed(DataBank bank, int row) {
+        if(bank.getByte("q", row)==0) bank.show();
         Track t = new Track(bank.getShort("ID", row),
                             bank.getByte("q", row),
                             bank.getFloat("pt", row),

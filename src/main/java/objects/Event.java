@@ -72,15 +72,27 @@ public class Event {
     }
     
     private void readTracks(DataEvent event) {
-        DataBank cvtBank  = this.getBank(event, "CVTRec::Tracks");
-        DataBank recPart  = this.getBank(event, "REC::Particle");
-        DataBank recTrack = this.getBank(event, "REC::Track");
-        if(cvtBank==null) return;
-        for(int i=0; i<cvtBank.rows(); i++) {
-            Track track = Track.readTrack(cvtBank, i);
-            if(recPart!=null && recTrack!=null) track.addEBinfo(recPart, recTrack);
-            tracks.add(track);
-            trackMap.put(track.getId(), i);
+        DataBank cvtBank   = this.getBank(event, "CVTRec::Tracks");
+        DataBank cosBank   = this.getBank(event, "CVTRec::Cosmics");
+        DataBank recPart   = this.getBank(event, "REC::Particle");
+        DataBank recTrack  = this.getBank(event, "REC::Track");
+        DataBank runConfig = this.getBank(event, "RUN::config");
+        if(cvtBank!=null) {
+            for(int i=0; i<cvtBank.rows(); i++) {
+                Track track = Track.readTrack(cvtBank, i);
+                if(runConfig!=null) track.addScale(runConfig);
+                if(recPart!=null && recTrack!=null) track.addEBinfo(recPart, recTrack);
+                tracks.add(track);
+                trackMap.put(track.getId(), i);
+            }
+        }
+        else if(cosBank!=null) {
+            for(int i=0; i<cosBank.rows(); i++) {
+                Track track = Track.readRay(cosBank, i);
+                if(runConfig!=null) track.addScale(runConfig);
+                tracks.add(track);
+                trackMap.put(track.getId(), i);
+            }                
         }
     }
         
