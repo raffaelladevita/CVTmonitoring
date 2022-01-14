@@ -130,7 +130,7 @@ public class CVTMonitoring {
         parser.addOption("-histo"      ,"0",    "read histogram file (0/1)");
         parser.addOption("-plot"       ,"1",    "display histograms (0/1)");
         parser.addOption("-stats"      ,"",     "histogram stat option (e.g. \"10\" will display entries)");
-        parser.addOption("-pid"        ,"2212", "MC particle PID");
+        parser.addOption("-pid"        ,"0",    "MC particle PID (default: use first particle in the bank");
         
         parser.parse(args);
         

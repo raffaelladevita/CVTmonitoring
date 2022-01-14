@@ -24,7 +24,7 @@ public class MCModule extends Module {
     private final double DP   = 0.2;
     private final double PHIMIN = -180.0;
     private final double PHIMAX = 180.0;
-    private final double DPHI   = 1.0;
+    private final double DPHI   = 2.0;
     private final double THETAMIN = 20.0;
     private final double THETAMAX = 140.0;
     private final double DTHETA   = 2.0;
@@ -84,10 +84,10 @@ public class MCModule extends Module {
 
     private DataGroup helixResolutionGroup(int icol) {
         H1F hi_chi2   = histo1D("hi_chi2", "#chi^2", "Counts", 100, 0, 5,  icol);
-        H1F hi_d0     = histo1D("hi_d0", "#Deltad0 (mm)", "Counts", 100, -DVXY, DVXY, icol);
+        H1F hi_d0     = histo1D("hi_d0", "#Deltad0 (cm)", "Counts", 100, -DVXY, DVXY, icol);
         H1F hi_phi0   = histo1D("hi_phi0", "#Delta#phi (deg)", "Counts", 100, -DPHI, DPHI, icol);
         H1F hi_rho    = histo1D("hi_rho", "#Delta#rho/#rho", "Counts", 100, -DP, DP, icol);
-        H1F hi_z0     = histo1D("hi_z0", "#Deltav0 (mm)", "Counts", 100, -DVZ, DVZ, icol);
+        H1F hi_z0     = histo1D("hi_z0", "#Deltav0 (cm)", "Counts", 100, -DVZ, DVZ, icol);
         H1F hi_tandip = histo1D("hi_tandip", "#DeltaTanDip", "Counts", 100, -DVXY, DVXY, icol);
 
         DataGroup dg = new DataGroup(3,2);
@@ -219,8 +219,11 @@ public class MCModule extends Module {
             this.fillEfficiencyGroup(this.getHistos().get("Efficiency"), mcTrack, "MC");
             if(matchedTrack!=null) {
                 int sid = matchedTrack.getSeedId();
-                int si  = event.getSeedMap().get(sid);
-                Track seedTrack = event.getSeeds().get(si);
+                Track seedTrack = matchedTrack;
+                if(event.getSeedMap().containsKey(sid)) {
+                    int si  = event.getSeedMap().get(sid);
+                    seedTrack = event.getSeeds().get(si);
+               }
                 this.fillTrackGroup(this.getHistos().get("Seed"),seedTrack);
                 this.fillTrackGroup(this.getHistos().get("Track"),matchedTrack);
                 this.fillEfficiencyGroup(this.getHistos().get("Efficiency"), seedTrack, "Seed");

@@ -23,8 +23,8 @@ public class TrackModule extends Module {
     private final double PHIMAX = 180.0;
     private final double THETAMIN = 20.0;
     private final double THETAMAX = 140.0;
-    private final double VXYMIN = -2;//-10;
-    private final double VXYMAX = 2;//10;
+    private final double VXYMIN = -0.5;//-10;
+    private final double VXYMAX = 0.5;//10;
     private final double VZMIN = -10; //-26;
     private final double VZMAX = 4;//26;
     

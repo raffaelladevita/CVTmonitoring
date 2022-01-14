@@ -49,18 +49,25 @@ public class Event {
     private void readMCParticle(DataEvent event) {
         DataBank mc  = this.getBank(event, "MC::Particle");
         if(mc!=null) {
-            for (int loop = 0; loop < mc.rows(); loop++) {
-                if(mc.getInt("pid", loop)==Constants.PID) {
-                    mcParticle = new Track(Constants.PID,
-                                    mc.getFloat("px", loop),
-                                    mc.getFloat("py", loop),
-                                    mc.getFloat("pz", loop),
-                                    mc.getFloat("vx", loop),
-                                    mc.getFloat("vy", loop),
-                                    mc.getFloat("vz", loop));
-                    break;
+            int index = 0;
+            if(Constants.PID!=0) {
+                for (int loop = 0; loop < mc.rows(); loop++) {
+                    if(mc.getInt("pid", loop)==Constants.PID) {
+                        index = loop;
+                        break;
+                    }
                 }
             }
+            else {
+                Constants.PID = mc.getInt("pid", 0);
+            }
+            mcParticle = new Track(Constants.PID,
+                            mc.getFloat("px", index),
+                            mc.getFloat("py", index),
+                            mc.getFloat("pz", index),
+                            mc.getFloat("vx", index),
+                            mc.getFloat("vy", index),
+                            mc.getFloat("vz", index));
         }
     }
             

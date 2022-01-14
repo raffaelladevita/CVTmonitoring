@@ -20,8 +20,8 @@ public class Constants {
     
     public static final int NSIGMA = 3;
     public static final double SIGMA_P = 5; // 3;
-    public static final double SIGMA_PHI = 0.29;//0.57; //0.3; //0.12;
-    public static final double SIGMA_THETA = 1.146;//0.57; //0.3; //0.2;
+    public static final double SIGMA_PHI = 0.3;//0.57; //0.3; //0.12;
+    public static final double SIGMA_THETA = 0.5;//0.57; //0.3; //0.2;
 
     
     public static void setPID(int PID) {

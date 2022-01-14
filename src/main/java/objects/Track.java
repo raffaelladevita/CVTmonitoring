@@ -23,22 +23,24 @@ public class Track extends Particle {
     private int pindex = -1;
     private double solenoid = -1;
     private double chi2pid = Double.POSITIVE_INFINITY;
+    private int status;
     private final double[][] covMatrix = new double[5][5];
     
     Track(int pid, double px, double py, double pz, double vx, double vy, double vz) {
         super(pid, px, py, pz, vx, vy, vz);
     }
 
-    Track(int id, int pid, double px, double py, double pz, 
-          double vx, double vy, double vz, int type, int NDF, double chi2) {
+    Track(int id, int pid, double px, double py, double pz,  double vx, double vy, double vz, 
+          int type, int NDF, double chi2, int status) {
         super(pid, px, py, pz, vx, vy, vz);
         this.id = id;
         this.seedType = type;
         this.NDF  = NDF;
         this.chi2 = chi2;
+        this.status = status;
     }
 
-    Track(int id, double theta, double phi, int NDF, double chi2) {
+    Track(int id, double theta, double phi, int NDF, double chi2, int status) {
         super(13, 
               Math.cos(phi)*Math.sin(theta),
               Math.sin(phi)*Math.sin(theta),
@@ -48,10 +50,11 @@ public class Track extends Particle {
         this.seedType = 1;
         this.NDF  = NDF;
         this.chi2 = chi2;
+        this.status = status;
     }
 
     Track(int id, int charge, double pt, double tandip, double phi0, double d0, 
-          double x0, double y0, double z0, int type, int NDF, double chi2) {
+          double x0, double y0, double z0, int type, int NDF, double chi2, int status) {
         super(211*charge, 
               pt*Math.cos(phi0),
               pt*Math.sin(phi0),
@@ -63,6 +66,7 @@ public class Track extends Particle {
         this.seedType = type;
         this.NDF  = NDF;
         this.chi2 = chi2;
+        this.status = status;
     }
 
     public int getId() {
@@ -119,6 +123,14 @@ public class Track extends Particle {
 
     public void setChi2(double chi2) {
         this.chi2 = chi2;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     public double getChi2pid() {
@@ -191,7 +203,7 @@ public class Track extends Particle {
         double dp = (this.p()-p.p())/p.p();
         double dth = Math.toDegrees(this.theta()-p.theta());
         double dph = Math.toDegrees(this.phi()-p.phi());
-        if(Math.abs(dph)>2*Math.PI) dph -= Math.signum(dph)*2*Math.PI;
+        if(Math.abs(dph)>Math.PI) dph -= Math.signum(dph)*2*Math.PI;
         
         if(this.solenoid!=0 && this.charge()!=p.charge()) return false;
         else if(this.solenoid!=0 && Math.abs(dp)>Constants.NSIGMA*Constants.SIGMA_P) return false;
@@ -212,7 +224,8 @@ public class Track extends Particle {
                             bank.getFloat("z0", row),
                             bank.getByte("fittingMethod", row),
                             bank.getInt("ndf", row),
-                            bank.getFloat("chi2", row));
+                            bank.getFloat("chi2", row),
+                            bank.getInt("status", row));
         t.setCovMatrix(bank.getFloat("cov_d02", row),
                        bank.getFloat("cov_d0phi0", row),
                        bank.getFloat("cov_d0rho", row),
@@ -228,10 +241,11 @@ public class Track extends Particle {
     
     public static Track readRay(DataBank bank, int row) {
         Track t = new Track(bank.getShort("ID", row),
-                            bank.getFloat("theta", row),
-                            bank.getFloat("phi", row),
+                            Math.toRadians(bank.getFloat("theta", row))-Math.PI,
+                            Math.toRadians(bank.getFloat("phi", row)),
                             bank.getInt("ndf", row),
-                            bank.getFloat("chi2", row));
+                            bank.getFloat("chi2", row),
+                            0);
         t.setIndex(row);
         return t;
     }
@@ -276,7 +290,8 @@ public class Track extends Particle {
                             bank.getFloat("z0", row),
                             bank.getByte("fittingMethod", row),
                             bank.getInt("ndf", row),
-                            bank.getFloat("chi2", row));
+                            bank.getFloat("chi2", row), 
+                            0);
         t.setCovMatrix(bank.getFloat("cov_d02", row),
                        bank.getFloat("cov_d0phi0", row),
                        bank.getFloat("cov_d0rho", row),
