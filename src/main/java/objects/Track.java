@@ -6,6 +6,9 @@ import java.util.List;
 import org.jlab.clas.pdg.PhysicsConstants;
 import org.jlab.clas.physics.Particle;
 import org.jlab.detector.base.DetectorType;
+import org.jlab.geom.prim.Line3D;
+import org.jlab.geom.prim.Point3D;
+import org.jlab.geom.prim.Vector3D;
 import org.jlab.io.base.DataBank;
 
 /**
@@ -24,6 +27,7 @@ public class Track extends Particle {
     private double solenoid = -1;
     private double chi2pid = Double.POSITIVE_INFINITY;
     private int status;
+    private int type;
     private final double[][] covMatrix = new double[5][5];
     
     Track(int pid, double px, double py, double pz, double vx, double vy, double vz) {
@@ -51,6 +55,21 @@ public class Track extends Particle {
         this.NDF  = NDF;
         this.chi2 = chi2;
         this.status = status;
+        this.type = 1;
+    }
+
+    Track(int id, double x0, double z0, double tx, double tz, int NDF, double chi2, int status) {
+        super(13, 
+             -tx/Math.sqrt(1+tx*tx+tz*tz),
+              -1/Math.sqrt(1+tx*tx+tz*tz),
+             -tz/Math.sqrt(1+tx*tx+tz*tz),
+              x0, 0, z0);
+        this.id = id;
+        this.seedType = 1;
+        this.NDF  = NDF;
+        this.chi2 = chi2;
+        this.status = status;
+        this.type = 1;
     }
 
     Track(int id, int charge, double pt, double tandip, double phi0, double d0, 
@@ -133,6 +152,14 @@ public class Track extends Particle {
         this.status = status;
     }
 
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
     public double getChi2pid() {
         return chi2pid;
     }
@@ -157,16 +184,34 @@ public class Track extends Particle {
         return Math.sqrt(this.vx()*this.vx()+this.vy()*this.vy());
     }
     
-    public void setCovMatrix(double d02, double d0phi0, double d0rho, double phi02,
-                             double phi0rho, double rho2, double z02, double tandip2) {
-        this.covMatrix[0][0] = d02;
-        this.covMatrix[1][1] = phi02;
-        this.covMatrix[2][2] = rho2;
-        this.covMatrix[3][3] = z02;
-        this.covMatrix[4][4] = tandip2;
-        this.covMatrix[0][1] = d0phi0;
-        this.covMatrix[0][2] = d0rho;
-        this.covMatrix[1][2] = phi0rho;
+    public double tx() {
+        return this.px()/this.py();
+    }
+    
+    public double tz() {
+        return this.pz()/this.py();
+    }
+    
+    public void setCovMatrix(double c00, double c01, double c02, double c03, double c04, 
+                             double c11, double c12, double c13, double c14, 
+                             double c22, double c23, double c24,
+                             double c33, double c34, 
+                             double c44) {
+        this.covMatrix[0][0] = c00;
+        this.covMatrix[0][1] = c01;
+        this.covMatrix[0][2] = c02;
+        this.covMatrix[0][3] = c03;
+        this.covMatrix[0][4] = c04;
+        this.covMatrix[1][1] = c11;
+        this.covMatrix[1][2] = c12;
+        this.covMatrix[1][3] = c13;
+        this.covMatrix[1][4] = c14;
+        this.covMatrix[2][2] = c22;
+        this.covMatrix[2][3] = c23;
+        this.covMatrix[2][4] = c24;
+        this.covMatrix[3][3] = c33;
+        this.covMatrix[3][4] = c34;
+        this.covMatrix[4][4] = c44;
     }
 
     public double[][] getCovMatrix() {
@@ -193,6 +238,22 @@ public class Track extends Particle {
         return Math.sqrt(this.covMatrix[4][4]);
     }
     
+    public double getVxErr() {
+        return Math.sqrt(this.covMatrix[0][0]);
+    }
+    
+    public double getVzErr() {
+        return Math.sqrt(this.covMatrix[1][1]);
+    }
+    
+    public double getTxErr() {
+        return Math.sqrt(this.covMatrix[2][2]);
+    }
+    
+    public double getTzErr() {
+        return Math.sqrt(this.covMatrix[3][3]);
+    }
+    
     public double deltaPhi(Track o) {
         double dphi = this.phi()-o.phi();
         if(Math.abs(this.phi()-o.phi())>2*Math.PI) dphi -= Math.signum(this.phi()-o.phi())*2*Math.PI;
@@ -212,6 +273,15 @@ public class Track extends Particle {
         else return true;
     }
     
+    public void toCosmic() {
+        Vector3D dir = new Vector3D(this.px(), this.py(), this.pz()).asUnit();
+        Point3D  vtx = new Point3D(this.vx(), this.vy(), this.vz());
+        Line3D  line = new Line3D(vtx, dir);
+        Point3D vtxn = line.lerpPoint(-vtx.y()/dir.y());
+        this.setVector(this.pid(), this.px(), this.py(), this.pz(), vtxn.x(), vtxn.y(), vtxn.z()); 
+        this.setType(1);
+    }
+    
     public static Track readTrack(DataBank bank, int row) {
         Track t = new Track(bank.getShort("ID", row),
                             bank.getByte("q", row),
@@ -229,10 +299,14 @@ public class Track extends Particle {
         t.setCovMatrix(bank.getFloat("cov_d02", row),
                        bank.getFloat("cov_d0phi0", row),
                        bank.getFloat("cov_d0rho", row),
+                       0, 0,
                        bank.getFloat("cov_phi02", row),
                        bank.getFloat("cov_phi0rho", row),
+                       0, 0,
                        bank.getFloat("cov_rho2", row),
+                       0, 0,
                        bank.getFloat("cov_z02", row),
+                       0,
                        bank.getFloat("cov_tandip2", row));
         t.setIndex(row);
         t.setSeedId(bank.getShort("seedID", row));
@@ -241,12 +315,29 @@ public class Track extends Particle {
     
     public static Track readRay(DataBank bank, int row) {
         Track t = new Track(bank.getShort("ID", row),
-                            Math.toRadians(bank.getFloat("theta", row))-Math.PI,
-                            Math.toRadians(bank.getFloat("phi", row)),
+                            bank.getFloat("trkline_yx_interc", row),
+                            bank.getFloat("trkline_yz_interc", row),
+                            bank.getFloat("trkline_yx_slope", row),
+                            bank.getFloat("trkline_yz_slope", row),
                             bank.getInt("ndf", row),
                             bank.getFloat("chi2", row),
                             0);
+        t.setCovMatrix(bank.getFloat("cov_x02",  row),
+                       bank.getFloat("cov_x0z0", row),
+                       bank.getFloat("cov_x0tx", row),
+                       bank.getFloat("cov_x0tz", row),
+                       0,
+                       bank.getFloat("cov_z02",  row),
+                       bank.getFloat("cov_z0tx", row),
+                       bank.getFloat("cov_z0tz", row),
+                       0,
+                       bank.getFloat("cov_tx2",  row),
+                       bank.getFloat("cov_txtz", row),
+                       0,
+                       bank.getFloat("cov_tz2",  row),
+                       0, 0);
         t.setIndex(row);
+        t.setSeedId(t.getId());
         return t;
     }
     
@@ -295,19 +386,15 @@ public class Track extends Particle {
         t.setCovMatrix(bank.getFloat("cov_d02", row),
                        bank.getFloat("cov_d0phi0", row),
                        bank.getFloat("cov_d0rho", row),
+                       0, 0,
                        bank.getFloat("cov_phi02", row),
                        bank.getFloat("cov_phi0rho", row),
+                       0, 0,
                        bank.getFloat("cov_rho2", row),
+                       0, 0,
                        bank.getFloat("cov_z02", row),
+                       0,
                        bank.getFloat("cov_tandip2", row));
         return t;
-    }
-    
-    public static List<Track> readSeeds(DataBank bank) {
-        List<Track> tracks = new ArrayList<>();
-        for(int i=0; i<bank.rows(); i++) {
-            tracks.add(Track.readSeed(bank, i));
-        }
-        return tracks;
     }
 }

@@ -24,9 +24,11 @@ public class Module {
     private Map<String,DataGroup> moduleGroup = new LinkedHashMap<>();
     
     private int nevents;
+    private boolean cosmics;
 
-    public Module(String name){                               
+    public Module(String name, boolean cosmics){                               
         this.moduleName = name;
+        this.cosmics    = cosmics;
         this.init();
     }
 
@@ -53,6 +55,10 @@ public class Module {
 
     public final int getNevents() {
         return nevents;
+    }
+
+    public boolean isCosmics() {
+        return cosmics;
     }
     
     public Map<String,DataGroup> getHistos() {

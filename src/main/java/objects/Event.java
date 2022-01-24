@@ -70,7 +70,7 @@ public class Event {
                             mc.getFloat("vz", index));
         }
     }
-            
+    
     private void readStartTime(DataEvent event) {
         DataBank recEvent = this.getBank(event, "REC::Event");
         if(recEvent!=null) {
@@ -104,12 +104,21 @@ public class Event {
     }
         
     private void readSeeds(DataEvent event) {
-        DataBank bank = this.getBank(event, "CVTRec::Seeds");
-        if(bank==null) return;
-        for(int i=0; i<bank.rows(); i++) {
-            Track track = Track.readSeed(bank, i);
-            seeds.add(track);
-            seedMap.put(track.getId(), i);
+        DataBank trackBank = this.getBank(event, "CVTRec::Seeds");
+        DataBank cosmiBank = this.getBank(event, "CVTRec::CosmicSeeds");
+        if(trackBank!=null) {
+            for(int i=0; i<trackBank.rows(); i++) {
+                Track track = Track.readSeed(trackBank, i);
+                seeds.add(track);
+                seedMap.put(track.getId(), i);
+            }
+        }
+        else if(cosmiBank!=null) {
+            for(int i=0; i<cosmiBank.rows(); i++) {
+                Track track = Track.readRay(cosmiBank, i);
+                seeds.add(track);
+                seedMap.put(track.getId(), i);
+            }                
         }
     }
         
@@ -211,7 +220,8 @@ public class Event {
         return hitMap;
     }      
     
-    public Track getMCTrack() {
+    public Track getMCTrack(boolean cosmics) {
+        if(cosmics && mcParticle!=null) mcParticle.toCosmic();
         return mcParticle;
     }
 

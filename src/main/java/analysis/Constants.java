@@ -12,7 +12,7 @@ public class Constants {
     public static final int[] SVTSECTORS = {10, 10, 14, 14, 18, 18};
     public static final int[] BMTCLAYERS = {1,4,6};
     public static final int[] BMTZLAYERS = {2,3,5};
-    public static final double[] BMTRADIUS = {147.746, 162.646, 177.646, 192.646, 207.646, 222.646}; // radius at half drift
+    public static final double[] BMTRADIUS = {14.7746, 16.2646, 17.7646, 19.2646, 20.7646, 22.2646}; // radius at half drift
     
     public static final double B = 5; //field in Tesla
     

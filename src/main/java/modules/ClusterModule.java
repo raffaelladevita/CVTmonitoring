@@ -17,7 +17,7 @@ import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 public class ClusterModule extends Module {
     
     public ClusterModule() {
-        super("Clusters");
+        super("Clusters", false);
     }
     
     public DataGroup clusterGroup(int col) {

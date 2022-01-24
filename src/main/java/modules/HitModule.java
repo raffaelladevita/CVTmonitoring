@@ -20,7 +20,7 @@ public class HitModule extends Module {
     
     
     public HitModule() {
-        super("Hits");
+        super("Hits", false);
     }
     
     public DataGroup hitGroup(int col) {

@@ -32,12 +32,14 @@ public class MCModule extends Module {
     private final double VXYMAX = 0.2;//10;
     private final double DVXY   = 0.1;//10;
     private final double VZMIN = -10; //-26;
-    private final double VZMAX = 4;//26;
+    private final double VZMAX =  10;//26;
     private final double DVZ   = 0.5;//26;
+    private final double DTX   = 0.03;;
+    private final double DTZ   = 0.03;;
 
 
-    public MCModule() {
-        super("MC");
+    public MCModule(boolean cosmics) {
+        super("MC", cosmics);
     }
     
     private DataGroup trackGroup(int col) {
@@ -70,6 +72,9 @@ public class MCModule extends Module {
         H1F hi_phi   = histo1D("hi_phi", "#Delta#phi (deg)", "Counts", 100, -DPHI, DPHI, icol);
         H1F hi_vx    = histo1D("hi_vx", "#Deltavx (cm)", "Counts", 100, -DVXY, DVXY, icol);
         H1F hi_vy    = histo1D("hi_vy", "#Deltavy (cm)", "Counts", 100, -DVXY, DVXY, icol);
+        if(this.isCosmics()) {
+            hi_vx.set(100, -DVZ, DVZ);
+        }
         H1F hi_vz    = histo1D("hi_vz", "#Deltavz (cm)", "Counts", 100, -DVZ,  DVZ,  icol);
 
         DataGroup dg = new DataGroup(3,2);
@@ -140,7 +145,72 @@ public class MCModule extends Module {
         return dg;
     }
 
-    private DataGroup pullsGroup(int icol) {
+    private DataGroup rayResolutionGroup(int icol) {
+        H1F hi_chi2   = histo1D("hi_chi2", "#chi^2", "Counts", 100, 0, 5,  icol);
+        H1F hi_vx     = histo1D("hi_vx", "#Deltavx (cm)", "Counts", 100, -DVZ, DVZ, icol);
+        H1F hi_vz     = histo1D("hi_vz", "#Deltavz (cm)", "Counts", 100, -DVZ, DVZ, icol);
+        H1F hi_tx     = histo1D("hi_tx", "#Deltatx", "Counts", 100, -DTX, DTX, icol);
+        H1F hi_tz     = histo1D("hi_tz", "#Deltatz", "Counts", 100, -DTZ, DTZ, icol);
+        DataGroup dg = new DataGroup(3,2);
+        dg.addDataSet(hi_chi2,   0);
+        dg.addDataSet(hi_vx,     1);
+        dg.addDataSet(hi_vz,     2);
+        dg.addDataSet(hi_tx,     4);
+        dg.addDataSet(hi_tz,     5);
+        return dg;
+    }
+
+    private DataGroup rayResolution2DGroup() {
+        DataGroup dg = new DataGroup(5,3);
+        for(int i=0; i<3; i++) {
+            String type = "";
+            String titl = "#Delta";
+            if(i<2) {
+                if(i==1) {
+                    type = "cov2D";
+                    titl = "cov";
+                }
+                H2F hi_vx     = histo2D("hi_"+type+"vx", titl+"vx (cm)", "vx (cm)", 100, -DVZ, DVZ,100, VZMIN, VZMAX);
+                H2F hi_vz     = histo2D("hi_"+type+"vz", titl+"vz (cm)", "vz (cm)", 100, -DVZ, DVZ,100, VZMIN, VZMAX);
+                H2F hi_tx     = histo2D("hi_"+type+"tx", titl+"tx", "tx", 100, -DTX, DTX, 100, VZMIN, VZMAX);
+                H2F hi_tz     = histo2D("hi_"+type+"tz", titl+"tz", "tz", 100, -DTZ, DTZ, 100, VZMIN, VZMAX);
+                dg.addDataSet(hi_vx,     0 + i*5);
+                dg.addDataSet(hi_vz,     1 + i*5);
+                dg.addDataSet(hi_tx,     2 + i*5);
+                dg.addDataSet(hi_tz,     3 + i*5);
+            }
+            else {
+                type = "cov1D";
+                titl = "cov";
+                H1F hi_vx     = histo1D("hi_"+type+"vx", titl+"vx (cm)", "Counts", 100, -DVZ, DVZ, 46);
+                H1F hi_vz     = histo1D("hi_"+type+"vz", titl+"vz (cm)", "Counts", 100, -DVZ, DVZ, 46);
+                H1F hi_tx     = histo1D("hi_"+type+"tx", titl+"tx", "Counts", 100, -DTX, DTX, 46);
+                H1F hi_tz     = histo1D("hi_"+type+"tz", titl+"tz", "Counts", 100, -DTZ, DTZ, 46);
+                dg.addDataSet(hi_vx,     0 + i*5);
+                dg.addDataSet(hi_vz,     1 + i*5);
+                dg.addDataSet(hi_tx,     2 + i*5);
+                dg.addDataSet(hi_tz,     3 + i*5);
+            }
+        }
+        return dg;
+    }
+    
+    private DataGroup repResolutionGroup(int icol) {
+        System.out.println(this.isCosmics());
+        if(!this.isCosmics())
+            return this.helixResolutionGroup(icol);
+        else 
+            return this.rayResolutionGroup(icol);
+    }
+
+    private DataGroup repResolution2DGroup() {
+        if(!this.isCosmics())
+            return this.helixResolution2DGroup();
+        else 
+            return this.rayResolution2DGroup();
+    }
+
+    private DataGroup helixPullsGroup(int icol) {
         H1F hi_chi2   = histo1D("hi_chi2", "#chi^2", "Counts", 100, 0, 5,  icol);
         H1F hi_d0     = histo1D("hi_d0", "d0", "Counts", 100, -5, 5, icol);
         H1F hi_phi0   = histo1D("hi_phi0", "phi0", "Counts", 100, -5, 5, icol);
@@ -156,6 +226,29 @@ public class MCModule extends Module {
         dg.addDataSet(hi_z0,     4);
         dg.addDataSet(hi_tandip, 5);
         return dg;
+    }
+
+    private DataGroup rayPullsGroup(int icol) {
+        H1F hi_chi2   = histo1D("hi_chi2", "#chi^2", "Counts", 100, 0, 5,  icol);
+        H1F hi_vx     = histo1D("hi_vx", "vx", "Counts", 100, -5, 5, icol);
+        H1F hi_vz     = histo1D("hi_vz", "vz", "Counts", 100, -5, 5, icol);
+        H1F hi_tx     = histo1D("hi_tx", "tx", "Counts", 100, -5, 5, icol);
+        H1F hi_tz     = histo1D("hi_tz", "tz", "Counts", 100, -5, 5, icol);
+
+        DataGroup dg = new DataGroup(3,2);
+        dg.addDataSet(hi_chi2,   0);
+        dg.addDataSet(hi_vx,     1);
+        dg.addDataSet(hi_vz,     2);
+        dg.addDataSet(hi_tx,     4);
+        dg.addDataSet(hi_tz,     5);
+        return dg;
+    }
+
+    private DataGroup pullsGroup(int icol) {
+        if(!this.isCosmics())
+            return this.helixPullsGroup(icol);
+        else
+            return this.rayPullsGroup(icol);
     }
 
     private DataGroup efficiencyGroup() {
@@ -188,14 +281,14 @@ public class MCModule extends Module {
         this.getHistos().put("AllSeeds", this.trackGroup(44));
         this.getHistos().put("Seed", this.trackGroup(44));
         this.getHistos().put("SeedResolution1", this.trackResolutionGroup(44));
-        this.getHistos().put("SeedResolution2", this.helixResolutionGroup(44));
-        this.getHistos().put("SeedResolution3", this.helixResolution2DGroup());
+        this.getHistos().put("SeedResolution2", this.repResolutionGroup(44));
+        this.getHistos().put("SeedResolution3", this.repResolution2DGroup());
         this.getHistos().put("SeedPulls", this.pullsGroup(44));
         this.getHistos().put("AllTracks", this.trackGroup(46));
         this.getHistos().put("Track", this.trackGroup(46));
         this.getHistos().put("Resolution1", this.trackResolutionGroup(46));
-        this.getHistos().put("Resolution2", this.helixResolutionGroup(46));
-        this.getHistos().put("Resolution3", this.helixResolution2DGroup());
+        this.getHistos().put("Resolution2", this.repResolutionGroup(46));
+        this.getHistos().put("Resolution3", this.repResolution2DGroup());
         this.getHistos().put("Pulls", this.pullsGroup(46));
         this.getHistos().put("Efficiency", this.efficiencyGroup());
         this.getHistos().put("Efficiency2", this.efficiencyGroup());
@@ -204,7 +297,7 @@ public class MCModule extends Module {
     
     @Override
     public void fillHistos(Event event) {
-        Track mcTrack = event.getMCTrack();
+        Track mcTrack = event.getMCTrack(this.isCosmics());
         if(mcTrack!=null) {
             Track matchedTrack = null;
             for(Track track : event.getTracks()) {
@@ -234,12 +327,12 @@ public class MCModule extends Module {
                     this.fillEfficiencyGroup(this.getHistos().get("Efficiency2"), matchedTrack, "Rec");
                 }
                 this.fillTrackResolutionGroup(this.getHistos().get("SeedResolution1"), mcTrack, seedTrack);
-                this.fillHelixResolutionGroup(this.getHistos().get("SeedResolution2"), mcTrack, seedTrack);
-                this.fillHelixResolution2DGroup(this.getHistos().get("SeedResolution3"), mcTrack, seedTrack);
+                this.fillRepResolutionGroup(this.getHistos().get("SeedResolution2"), mcTrack, seedTrack);
+                this.fillRepResolution2DGroup(this.getHistos().get("SeedResolution3"), mcTrack, seedTrack);
                 this.fillPullsGroup(this.getHistos().get("SeedPulls"), mcTrack, seedTrack);
                 this.fillTrackResolutionGroup(this.getHistos().get("Resolution1"), mcTrack, matchedTrack);
-                this.fillHelixResolutionGroup(this.getHistos().get("Resolution2"), mcTrack, matchedTrack);
-                this.fillHelixResolution2DGroup(this.getHistos().get("Resolution3"), mcTrack, matchedTrack);
+                this.fillRepResolutionGroup(this.getHistos().get("Resolution2"), mcTrack, matchedTrack);
+                this.fillRepResolution2DGroup(this.getHistos().get("Resolution3"), mcTrack, matchedTrack);
                 this.fillPullsGroup(this.getHistos().get("Pulls"), mcTrack, matchedTrack);
             }
         }
@@ -301,14 +394,60 @@ public class MCModule extends Module {
         group.getH1F("hi_cov1Dtandip").fill(track.getTanDipErr());
     }
     
-    private void fillPullsGroup(DataGroup group, Track mc, Track track) {
+    private void fillRayResolutionGroup(DataGroup group, Track mc, Track track) {
         group.getH1F("hi_chi2").fill(track.getChi2()/track.getNDF());
-        group.getH1F("hi_d0").fill((mc.d0()-track.d0())/track.getD0Err());
-        group.getH1F("hi_phi0").fill(mc.deltaPhi(track)/track.getPhi0Err());
-        group.getH1F("hi_rho").fill((mc.rho()-track.rho())/track.getRhoErr());
-//        System.out.println(mc.rho() + " " + track.rho() + " " + track.getRhoErr());
-        group.getH1F("hi_z0").fill((mc.vz()-track.vz())/track.getZ0Err());
-        group.getH1F("hi_tandip").fill((mc.tandip()-track.tandip())/track.getTanDipErr());
+        group.getH1F("hi_vx").fill(mc.vx()-track.vx());
+        group.getH1F("hi_vz").fill(mc.vz()-track.vz());
+        group.getH1F("hi_tx").fill(mc.tx()-track.tx());
+        group.getH1F("hi_tz").fill(mc.tz()-track.tz());
+    }
+    
+    private void fillRayResolution2DGroup(DataGroup group, Track mc, Track track) {
+        group.getH2F("hi_vx").fill(mc.vx()-track.vx(), mc.vx());
+        group.getH2F("hi_vz").fill(mc.vz()-track.vz(), mc.vz());
+        group.getH2F("hi_tx").fill(mc.tx()-track.tx(), mc.tx());
+        group.getH2F("hi_tz").fill(mc.tz()-track.tz(), mc.tz());
+        group.getH2F("hi_cov2Dvx").fill(track.getVxErr(), mc.vx());
+        group.getH2F("hi_cov2Dvz").fill(track.getVzErr(), mc.vz());
+        group.getH2F("hi_cov2Dtx").fill(track.getTxErr(), mc.tx());
+        group.getH2F("hi_cov2Dtz").fill(track.getTzErr(), mc.tz());
+        group.getH1F("hi_cov1Dvx").fill(track.getVxErr());
+        group.getH1F("hi_cov1Dvz").fill(track.getVzErr());
+        group.getH1F("hi_cov1Dtx").fill(track.getTxErr());
+        group.getH1F("hi_cov1Dtz").fill(track.getTzErr());
+    }
+    
+    private void fillRepResolutionGroup(DataGroup group, Track mc, Track track) {
+        if(!this.isCosmics())
+            this.fillHelixResolutionGroup(group, mc, track);
+        else
+            this.fillRayResolutionGroup(group, mc, track);
+    }
+
+    
+    private void fillRepResolution2DGroup(DataGroup group, Track mc, Track track) {
+        if(!this.isCosmics())
+            this.fillHelixResolution2DGroup(group, mc, track);
+        else
+            this.fillRayResolution2DGroup(group, mc, track);
+    }
+
+    private void fillPullsGroup(DataGroup group, Track mc, Track track) {
+        if(!this.isCosmics()) {
+            group.getH1F("hi_chi2").fill(track.getChi2()/track.getNDF());
+            group.getH1F("hi_d0").fill((mc.d0()-track.d0())/track.getD0Err());
+            group.getH1F("hi_phi0").fill(mc.deltaPhi(track)/track.getPhi0Err());
+            group.getH1F("hi_rho").fill((mc.rho()-track.rho())/track.getRhoErr());
+            group.getH1F("hi_z0").fill((mc.vz()-track.vz())/track.getZ0Err());
+            group.getH1F("hi_tandip").fill((mc.tandip()-track.tandip())/track.getTanDipErr());
+        }
+        else {
+            group.getH1F("hi_chi2").fill(track.getChi2()/track.getNDF());
+            group.getH1F("hi_vx").fill((mc.vx()-track.vx())/track.getVxErr());
+            group.getH1F("hi_vz").fill((mc.vz()-track.vz())/track.getVzErr());
+            group.getH1F("hi_tx").fill((mc.tx()-track.tx())/track.getTxErr());
+            group.getH1F("hi_tz").fill((mc.tz()-track.tz())/track.getTzErr());
+        }
     }
     
     @Override

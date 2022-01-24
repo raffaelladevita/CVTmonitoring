@@ -25,15 +25,15 @@ public class TrackModule extends Module {
     private final double THETAMAX = 140.0;
     private final double VXYMIN = -0.5;//-10;
     private final double VXYMAX = 0.5;//10;
-    private final double VZMIN = -10; //-26;
-    private final double VZMAX = 4;//26;
+    private final double VZMIN = -8; //-26;
+    private final double VZMAX =  8;//26;
     
     private final double CHI2PIDCUT = 10;
     
     
     
-    public TrackModule() {
-        super("Tracks");
+    public TrackModule(boolean cosmics) {
+        super("Tracks",cosmics);
     }
     
     public DataGroup createGroup(int col) {
@@ -46,6 +46,8 @@ public class TrackModule extends Module {
         H1F hi_theta = histo1D("hi_theta", "#theta (deg)", "Counts", 100, THETAMIN, THETAMAX, col);
         H1F hi_phi   = histo1D("hi_phi", "#phi (deg)", "Counts", 100, PHIMIN, PHIMAX, col);
         H1F hi_vx    = histo1D("hi_vx", "vx (cm)", "Counts", 100, VXYMIN, VXYMAX, col);
+        if(this.isCosmics())
+            hi_vx.set(100, VZMIN, VZMAX);
         H1F hi_vy    = histo1D("hi_vy", "vy (cm)", "Counts", 100, VXYMIN, VXYMAX, col);
         H1F hi_vz    = histo1D("hi_vz", "vz (cm)", "Counts", 100, VZMIN, VZMAX, col);
         H1F hi_type  = histo1D("hi_type", "Seed type", "Counts", 4, -0.5, 3.5, col);

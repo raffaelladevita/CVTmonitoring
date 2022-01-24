@@ -37,13 +37,13 @@ public class CVTMonitoring {
         
     ArrayList<Module>    modules = new ArrayList<>();
 
-    public CVTMonitoring(int pid, String opts) {
-        this.init(pid, opts);
+    public CVTMonitoring(int pid, boolean cosmics, String opts) {
+        this.init(pid, cosmics, opts);
     }
     
     
 
-    private void init(int pid, String opts) {
+    private void init(int pid, boolean cosmics, String opts) {
         
         GStyle.getH1FAttributes().setOptStat(opts);
         GStyle.getAxisAttributesX().setTitleFontSize(24);
@@ -61,12 +61,12 @@ public class CVTMonitoring {
         GStyle.getH1FAttributes().setLineWidth(1);
 
         Constants.setPID(pid);
-        this.modules.add(new TrackModule());
+        this.modules.add(new TrackModule(cosmics));
         this.modules.add(new ClusterModule());
         this.modules.add(new HitModule());
         this.modules.add(new ResidualModule());
         this.modules.add(new PullsModule());
-        this.modules.add(new MCModule());
+        this.modules.add(new MCModule(cosmics));
     }
 
     private void processEvent(DataEvent de) {
@@ -130,7 +130,8 @@ public class CVTMonitoring {
         parser.addOption("-histo"      ,"0",    "read histogram file (0/1)");
         parser.addOption("-plot"       ,"1",    "display histograms (0/1)");
         parser.addOption("-stats"      ,"",     "histogram stat option (e.g. \"10\" will display entries)");
-        parser.addOption("-pid"        ,"0",    "MC particle PID (default: use first particle in the bank");
+        parser.addOption("-pid"        ,"0",    "MC particle PID (default: use first particle in the bank)");
+        parser.addOption("-cosmics"    ,"0",    "analyze as cosmics (0=false, 1=true)");
         
         parser.parse(args);
         
@@ -143,11 +144,12 @@ public class CVTMonitoring {
         boolean readHistos   = (parser.getOption("-histo").intValue()!=0);            
         boolean openWindow   = (parser.getOption("-plot").intValue()!=0);
         String  optStats     = parser.getOption("-stats").stringValue(); 
-        int     pid          = parser.getOption("-pid").intValue();        
+        int     pid          = parser.getOption("-pid").intValue();  
+        boolean cosmics      = parser.getOption("-cosmics").intValue()!=0;
 
         if(!openWindow) System.setProperty("java.awt.headless", "true");
 
-        CVTMonitoring cvtMon = new CVTMonitoring(pid, optStats);
+        CVTMonitoring cvtMon = new CVTMonitoring(pid, cosmics, optStats);
         
         List<String> inputList = parser.getInputList();
         if(inputList.isEmpty()==true){
