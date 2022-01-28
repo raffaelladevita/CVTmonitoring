@@ -140,30 +140,30 @@ public class HitModule extends Module {
     
     @Override
     public EmbeddedCanvasTabbed plotHistos() {
-        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Hits", "SVT", "BMTC", "BMTZ");
-        canvas.getCanvas("Hits").draw(this.getHistos().get("Hits"));
-        canvas.getCanvas("Hits").draw(this.getHistos().get("HitsNotOnTrack"));
-        canvas.getCanvas("Hits").draw(this.getHistos().get("HitsOnTrack"));
-        canvas.getCanvas("SVT").draw(this.getHistos().get("SVT"));
-        canvas.getCanvas("SVT").draw(this.getHistos().get("SVTOnTrack"));
-        canvas.getCanvas("BMTC").draw(this.getHistos().get("BMTC"));
-        canvas.getCanvas("BMTC").draw(this.getHistos().get("BMTCOnTrack"));
-        canvas.getCanvas("BMTZ").draw(this.getHistos().get("BMTZ"));
-        canvas.getCanvas("BMTZ").draw(this.getHistos().get("BMTZOnTrack"));
-        this.setPlottingOptions(canvas.getCanvas("Hits"));
-        super.setPlottingOptions(canvas.getCanvas("SVT"));
-        super.setPlottingOptions(canvas.getCanvas("BMTC"));
-        super.setPlottingOptions(canvas.getCanvas("BMTZ"));
-        return canvas;
+        this.setCanvas(new EmbeddedCanvasTabbed("Hits", "SVT", "BMTC", "BMTZ"));
+        this.getCanvas().getCanvas("Hits").draw(this.getHistos().get("Hits"));
+        this.getCanvas().getCanvas("Hits").draw(this.getHistos().get("HitsNotOnTrack"));
+        this.getCanvas().getCanvas("Hits").draw(this.getHistos().get("HitsOnTrack"));
+        this.getCanvas().getCanvas("SVT").draw(this.getHistos().get("SVT"));
+        this.getCanvas().getCanvas("SVT").draw(this.getHistos().get("SVTOnTrack"));
+        this.getCanvas().getCanvas("BMTC").draw(this.getHistos().get("BMTC"));
+        this.getCanvas().getCanvas("BMTC").draw(this.getHistos().get("BMTCOnTrack"));
+        this.getCanvas().getCanvas("BMTZ").draw(this.getHistos().get("BMTZ"));
+        this.getCanvas().getCanvas("BMTZ").draw(this.getHistos().get("BMTZOnTrack"));
+        this.setPlottingOptions("Hits");
+        super.setPlottingOptions("SVT");
+        super.setPlottingOptions("BMTC");
+        super.setPlottingOptions("BMTZ");
+        return this.getCanvas();
     }
        
     @Override
-    public void setPlottingOptions(EmbeddedCanvas canvas) {
-        canvas.setGridX(false);
-        canvas.setGridY(false);
+    public void setPlottingOptions(String name) {
+        this.getCanvas().getCanvas(name).setGridX(false);
+        this.getCanvas().getCanvas(name).setGridY(false);
         for(int i=0; i<3; i++) {
-            canvas.getPad(i*3+0).getAxisY().setLog(true);
-            canvas.getPad(i*3+1).getAxisY().setLog(true);
+            this.getCanvas().getCanvas(name).getPad(i*3+0).getAxisY().setLog(true);
+            this.getCanvas().getCanvas(name).getPad(i*3+1).getAxisY().setLog(true);
         }
     }
 

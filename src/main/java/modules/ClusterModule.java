@@ -162,32 +162,30 @@ public class ClusterModule extends Module {
     
     @Override
     public EmbeddedCanvasTabbed plotHistos() {
-        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Clusters", "SVT", "BMTC", "BMTZ", "BMTCsize", "BMTZsize");
-        canvas.getCanvas("Clusters").draw(this.getHistos().get("Clusters"));
-        canvas.getCanvas("Clusters").draw(this.getHistos().get("ClustersNotOnTrack"));
-        canvas.getCanvas("Clusters").draw(this.getHistos().get("ClustersOnTrack"));
-        canvas.getCanvas("SVT").draw(this.getHistos().get("SVT"));
-        canvas.getCanvas("SVT").draw(this.getHistos().get("SVTOnTrack"));
-        canvas.getCanvas("BMTC").draw(this.getHistos().get("BMTC"));
-        canvas.getCanvas("BMTC").draw(this.getHistos().get("BMTCOnTrack"));
-        canvas.getCanvas("BMTZ").draw(this.getHistos().get("BMTZ"));
-        canvas.getCanvas("BMTZ").draw(this.getHistos().get("BMTZOnTrack"));
-        canvas.getCanvas("BMTCsize").draw(this.getHistos().get("BMTCsize"));
-        canvas.getCanvas("BMTZsize").draw(this.getHistos().get("BMTZsize"));
-        this.setPlottingOptions(canvas.getCanvas("Clusters"));
-        this.setPlottingOptions(canvas.getCanvas("SVT"));
-        this.setPlottingOptions(canvas.getCanvas("BMTC"));
-        this.setPlottingOptions(canvas.getCanvas("BMTZ"));
-        super.setPlottingOptions(canvas.getCanvas("BMTCsize"));
-        super.setPlottingOptions(canvas.getCanvas("BMTZsize"));
-        return canvas;
+        this.setCanvas(new EmbeddedCanvasTabbed("Clusters", "SVT", "BMTC", "BMTZ", "BMTCsize", "BMTZsize"));
+        this.getCanvas("Clusters").draw(this.getHistos().get("Clusters"));
+        this.getCanvas("Clusters").draw(this.getHistos().get("ClustersNotOnTrack"));
+        this.getCanvas("Clusters").draw(this.getHistos().get("ClustersOnTrack"));
+        this.getCanvas("SVT").draw(this.getHistos().get("SVT"));
+        this.getCanvas("SVT").draw(this.getHistos().get("SVTOnTrack"));
+        this.getCanvas("BMTC").draw(this.getHistos().get("BMTC"));
+        this.getCanvas("BMTC").draw(this.getHistos().get("BMTCOnTrack"));
+        this.getCanvas("BMTZ").draw(this.getHistos().get("BMTZ"));
+        this.getCanvas("BMTZ").draw(this.getHistos().get("BMTZOnTrack"));
+        this.getCanvas("BMTCsize").draw(this.getHistos().get("BMTCsize"));
+        this.getCanvas("BMTZsize").draw(this.getHistos().get("BMTZsize"));
+        this.setPlottingOptions("Clusters");
+        this.setPlottingOptions("SVT");
+        this.setPlottingOptions("BMTC");
+        this.setPlottingOptions("BMTZ");
+        super.setPlottingOptions("BMTCsize");
+        super.setPlottingOptions("BMTZsize");
+        return this.getCanvas();
     }
        
     @Override
-    public void setPlottingOptions(EmbeddedCanvas canvas) {
-        canvas.setGridX(false);
-        canvas.setGridY(false);
-        for(EmbeddedPad pad : canvas.getCanvasPads())
+    public void setPlottingOptions(String name) {
+        for(EmbeddedPad pad : this.getCanvas(name).getCanvasPads())
             pad.getAxisY().setLog(true);
     }
 

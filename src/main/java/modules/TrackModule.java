@@ -144,26 +144,26 @@ public class TrackModule extends Module {
     
     @Override
     public EmbeddedCanvasTabbed plotHistos() {
-        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Tracks", "Tracks2D", "Seeds", "EBTracks");
-        canvas.getCanvas("Tracks").draw(this.getHistos().get("Tracks"));
-        canvas.getCanvas("Tracks2D").draw(this.getHistos().get("Tracks2D"));
-        canvas.getCanvas("Seeds").draw(this.getHistos().get("Seeds"));
-        canvas.getCanvas("Seeds").draw(this.getHistos().get("TrackSeeds"));
-        canvas.getCanvas("EBTracks").draw(this.getHistos().get("Tracks"));
-        canvas.getCanvas("EBTracks").draw(this.getHistos().get("TrackChi2pid"));
-        this.setPlottingOptions(canvas.getCanvas("Tracks"));
-        this.setPlottingOptions(canvas.getCanvas("Seeds"));
-        this.setPlottingOptions(canvas.getCanvas("EBTracks"));
-        return canvas;
+        this.setCanvas(new EmbeddedCanvasTabbed("Tracks", "Tracks2D", "Seeds", "EBTracks"));
+        this.getCanvas("Tracks").draw(this.getHistos().get("Tracks"));
+        this.getCanvas("Tracks2D").draw(this.getHistos().get("Tracks2D"));
+        this.getCanvas("Seeds").draw(this.getHistos().get("Seeds"));
+        this.getCanvas("Seeds").draw(this.getHistos().get("TrackSeeds"));
+        this.getCanvas("EBTracks").draw(this.getHistos().get("Tracks"));
+        this.getCanvas("EBTracks").draw(this.getHistos().get("TrackChi2pid"));
+        this.setPlottingOptions("Tracks");
+        this.setPlottingOptions("Seeds");
+        this.setPlottingOptions("EBTracks");
+        return this.getCanvas();
     }
        
     @Override
-    public void setPlottingOptions(EmbeddedCanvas canvas) {
-        canvas.setGridX(false);
-        canvas.setGridY(false);
-        canvas.getPad(1).getAxisY().setLog(true);
-        canvas.getPad(8).getAxisY().setLog(true);
-        canvas.getPad(9).getAxisY().setLog(true);
+    public void setPlottingOptions(String name) {
+        this.getCanvas(name).setGridX(false);
+        this.getCanvas(name).setGridY(false);
+        this.getCanvas(name).getPad(1).getAxisY().setLog(true);
+        this.getCanvas(name).getPad(8).getAxisY().setLog(true);
+        this.getCanvas(name).getPad(9).getAxisY().setLog(true);
     }
 
 }

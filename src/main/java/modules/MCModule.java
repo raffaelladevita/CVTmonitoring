@@ -483,45 +483,36 @@ public class MCModule extends Module {
     
     @Override
     public EmbeddedCanvasTabbed plotHistos() {
-        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("MC", "Seed", "SeedResolution1", "SeedResolution2", "SeedResolution3", "SeedPulls", 
-                                                                     "Track", "Resolution1", "Resolution2", "Resolution3", "Pulls", "Efficiency");
-        canvas.getCanvas("MC").draw(this.getHistos().get("MC"));
-        canvas.getCanvas("Seed").draw(this.getHistos().get("AllSeeds"));
-        canvas.getCanvas("Seed").draw(this.getHistos().get("Seed"));
-        canvas.getCanvas("SeedResolution1").draw(this.getHistos().get("SeedResolution1"));
-        canvas.getCanvas("SeedResolution2").draw(this.getHistos().get("SeedResolution2"));
-        canvas.getCanvas("SeedResolution3").draw(this.getHistos().get("SeedResolution3"));
-        canvas.getCanvas("SeedPulls").draw(this.getHistos().get("SeedPulls"));
-        canvas.getCanvas("Track").draw(this.getHistos().get("AllTracks"));
-        canvas.getCanvas("Track").draw(this.getHistos().get("Track"));
-        canvas.getCanvas("Resolution1").draw(this.getHistos().get("Resolution1"));
-        canvas.getCanvas("Resolution2").draw(this.getHistos().get("Resolution2"));
-        canvas.getCanvas("Resolution3").draw(this.getHistos().get("Resolution3"));
-        canvas.getCanvas("Pulls").draw(this.getHistos().get("Pulls"));
-        canvas.getCanvas("Efficiency").draw(this.getHistos().get("Efficiency"));
-        canvas.getCanvas("Efficiency").draw(this.getHistos().get("Efficiency2"));
-        this.setPlottingOptions(canvas.getCanvas("MC"));
-        this.setPlottingOptions(canvas.getCanvas("Seed"));
-        this.setPlottingOptions(canvas.getCanvas("SeedResolution1"));
-        this.setPlottingOptions(canvas.getCanvas("SeedResolution2"));
-        this.setPlottingOptions(canvas.getCanvas("SeedResolution3"));
-        this.setPlottingOptions(canvas.getCanvas("SeedPulls"));
-        this.setPlottingOptions(canvas.getCanvas("Track"));
-        this.setPlottingOptions(canvas.getCanvas("Resolution1"));
-        this.setPlottingOptions(canvas.getCanvas("Resolution2"));
-        this.setPlottingOptions(canvas.getCanvas("Resolution3"));
-        this.setPlottingOptions(canvas.getCanvas("Pulls"));
-        this.setPlottingOptions(canvas.getCanvas("Efficiency"));
-        return canvas;
-    }
-       
-    @Override
-    public void setPlottingOptions(EmbeddedCanvas canvas) {
-        canvas.setGridX(false);
-        canvas.setGridY(false);
-//        canvas.getPad(1).getAxisY().setLog(true);
-//        canvas.getPad(8).getAxisY().setLog(true);
-//        canvas.getPad(9).getAxisY().setLog(true);
+        this.setCanvas(new EmbeddedCanvasTabbed("MC", "Seed", "SeedResolution1", "SeedResolution2", "SeedResolution3", "SeedPulls", 
+                                                "Track", "Resolution1", "Resolution2", "Resolution3", "Pulls", "Efficiency"));
+        this.getCanvas("MC").draw(this.getHistos().get("MC"));
+        this.getCanvas("Seed").draw(this.getHistos().get("AllSeeds"));
+        this.getCanvas("Seed").draw(this.getHistos().get("Seed"));
+        this.getCanvas("SeedResolution1").draw(this.getHistos().get("SeedResolution1"));
+        this.getCanvas("SeedResolution2").draw(this.getHistos().get("SeedResolution2"));
+        this.getCanvas("SeedResolution3").draw(this.getHistos().get("SeedResolution3"));
+        this.getCanvas("SeedPulls").draw(this.getHistos().get("SeedPulls"));
+        this.getCanvas("Track").draw(this.getHistos().get("AllTracks"));
+        this.getCanvas("Track").draw(this.getHistos().get("Track"));
+        this.getCanvas("Resolution1").draw(this.getHistos().get("Resolution1"));
+        this.getCanvas("Resolution2").draw(this.getHistos().get("Resolution2"));
+        this.getCanvas("Resolution3").draw(this.getHistos().get("Resolution3"));
+        this.getCanvas("Pulls").draw(this.getHistos().get("Pulls"));
+        this.getCanvas("Efficiency").draw(this.getHistos().get("Efficiency"));
+        this.getCanvas("Efficiency").draw(this.getHistos().get("Efficiency2"));
+        this.setPlottingOptions("MC");
+        this.setPlottingOptions("Seed");
+        this.setPlottingOptions("SeedResolution1");
+        this.setPlottingOptions("SeedResolution2");
+        this.setPlottingOptions("SeedResolution3");
+        this.setPlottingOptions("SeedPulls");
+        this.setPlottingOptions("Track");
+        this.setPlottingOptions("Resolution1");
+        this.setPlottingOptions("Resolution2");
+        this.setPlottingOptions("Resolution3");
+        this.setPlottingOptions("Pulls");
+        this.setPlottingOptions("Efficiency");
+        return this.getCanvas();
     }
 
     @Override

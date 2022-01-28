@@ -9,9 +9,12 @@ import analysis.Module;
 import objects.Track;
 import objects.Trajectory;
 import org.jlab.detector.base.DetectorType;
+import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.fitter.DataFitter;
+import org.jlab.groot.graphics.EmbeddedCanvas;
+import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.groot.math.F1D;
 
@@ -57,12 +60,14 @@ public class LorentzModule extends Module {
 
     public DataGroup langleGroup(int col) {
         DataGroup dg = new DataGroup(2,2);
-        H1F hi_langle     = histo1D("hi_langle", "Local Angle (deg)", "Counts", 200, -60, 60, col);
-        H2F hi_langle_neg = histo2D("hi_langleneg", "Local Angle (deg)", "Cluster Size", 200, -60,  0, 15, 1, 16);
-        H2F hi_langle_phi = histo2D("hi_langlephi", "Local Angle (deg)", "Cluster Size", 200, -60, 60, 15, 1, 16);
+        H1F hi_langle     = histo1D("hi_langle", "Local Angle (deg)", "Counts",           200, -60, 60, col);
+        H2F hi_langlesize = histo2D("hi_langlesize", "Local Angle (deg)", "Cluster Size", 200, -60, 60, 15, 1, 16);
+        H2F hi_langlenev  = histo2D("hi_langlenev",  "#phi (deg)", "Local Angle (deg)",   100, -50, 50, 100, -50, 50);
+        H2F hi_langlephi  = histo2D("hi_langlephi",  "#phi (deg)", "Local Angle (deg)",   100, -50, 50, 100, -50, 50);
         dg.addDataSet(hi_langle,     0);
-        dg.addDataSet(hi_langle_neg, 1);
-        dg.addDataSet(hi_langle_phi, 2);
+        dg.addDataSet(hi_langlenev,  1);
+        dg.addDataSet(hi_langlephi,  1);
+        dg.addDataSet(hi_langlesize, 2);
         return dg;
     }
 
@@ -163,9 +168,13 @@ public class LorentzModule extends Module {
     }
         
     public void fillLangleGroup(DataGroup group, Cluster cluster, Trajectory traj) {
+        int il = cluster.getLayer()-1;
+        int ir = il/2;
+        double phi = Math.toDegrees((cluster.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
         group.getH1F("hi_langle").fill(Math.toDegrees(traj.phi())); 
-        group.getH2F("hi_langleneg").fill(Math.toDegrees(traj.phi()), cluster.getSize());
-        group.getH2F("hi_langlephi").fill(Math.toDegrees(traj.phi()), cluster.getSize());
+        group.getH2F("hi_langlesize").fill(Math.toDegrees(traj.phi()), cluster.getSize());
+        group.getH2F("hi_langlenev").fill(phi, Math.toDegrees(traj.phi()));
+        group.getH2F("hi_langlephi").fill(phi, Math.toDegrees(traj.phi()), cluster.getSize());
     }
             
     public void fillLanglePhiGroup(DataGroup group, Cluster cluster, Trajectory traj) {
@@ -182,41 +191,17 @@ public class LorentzModule extends Module {
             int il = layer-1;
             int ir = il/2;
             double phi = Math.toDegrees((cluster.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
-            group.getH2F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(phi, -Math.toDegrees(traj.phi())); 
-            group.getH2F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(phi, -Math.toDegrees(traj.phi()), cluster.getSize());
+            group.getH2F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(phi, Math.toDegrees(traj.phi())); 
+            group.getH2F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(phi, Math.toDegrees(traj.phi()), cluster.getSize());
+    }
+
+    @Override
+    public void setPlottingOptions(String name) {
+        if(name.equals("Langle")) {
+            this.getCanvas(name).getPad(1).getAxisZ().setLog(true);
+        }
     }
     
-//    @Override
-//    public EmbeddedCanvasTabbed plotHistos() {
-//        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Size2D", "SizePos", "SizeNeg", "BMTZ", "BMTCsize", "BMTZsize");
-//        canvas.getCanvas("Clusters").draw(this.getHistos().get("Clusters"));
-//        canvas.getCanvas("Clusters").draw(this.getHistos().get("ClustersNotOnTrack"));
-//        canvas.getCanvas("Clusters").draw(this.getHistos().get("ClustersOnTrack"));
-//        canvas.getCanvas("SVT").draw(this.getHistos().get("SVT"));
-//        canvas.getCanvas("SVT").draw(this.getHistos().get("SVTOnTrack"));
-//        canvas.getCanvas("BMTC").draw(this.getHistos().get("BMTC"));
-//        canvas.getCanvas("BMTC").draw(this.getHistos().get("BMTCOnTrack"));
-//        canvas.getCanvas("BMTZ").draw(this.getHistos().get("BMTZ"));
-//        canvas.getCanvas("BMTZ").draw(this.getHistos().get("BMTZOnTrack"));
-//        canvas.getCanvas("BMTCsize").draw(this.getHistos().get("BMTCsize"));
-//        canvas.getCanvas("BMTZsize").draw(this.getHistos().get("BMTZsize"));
-//        this.setPlottingOptions(canvas.getCanvas("Clusters"));
-//        this.setPlottingOptions(canvas.getCanvas("SVT"));
-//        this.setPlottingOptions(canvas.getCanvas("BMTC"));
-//        this.setPlottingOptions(canvas.getCanvas("BMTZ"));
-//        super.setPlottingOptions(canvas.getCanvas("BMTCsize"));
-//        super.setPlottingOptions(canvas.getCanvas("BMTZsize"));
-//        return canvas;
-//    }
-//       
-//    @Override
-//    public void setPlottingOptions(EmbeddedCanvas canvas) {
-//        canvas.setGridX(false);
-//        canvas.setGridY(false);
-//        for(EmbeddedPad pad : canvas.getCanvasPads())
-//            pad.getAxisY().setLog(true);
-//    }
-
     @Override
     public void analyzeHistos() {
         this.analyzeGroup("Size", true);        
@@ -225,8 +210,32 @@ public class LorentzModule extends Module {
         this.analyzeGroup("Size2D", false);  
         this.analyzeGroup("LanglePhi", false);
         this.analyzeGroup("Langle2D", false);
+        this.analyzeLangle("Langle");
     }
-       
+     
+    public void analyzeLangle(String name) {
+        DataGroup dg = this.getHistos().get(name);
+        H2F h1 = dg.getH2F("hi_langlenev");
+        H2F h2 = dg.getH2F("hi_langlephi");  
+        if(h1.getEntries()>0) {
+            h2.divide(h1); 
+            h1.reset();
+        }
+        GraphErrors gr_langle = new GraphErrors();
+        gr_langle.setTitleX("Local Angle (deg)");
+        gr_langle.setTitleY("Average cluster size");
+        gr_langle.setMarkerColor(2);
+        gr_langle.setMarkerSize(5);
+        dg.addDataSet(gr_langle, 3);
+        H2F hsize = dg.getH2F("hi_langlesize");  
+        for(int i=0; i<hsize.getSlicesX().size(); i++) {
+            double x = hsize.getDataX(i);
+            double y = hsize.getSlicesX().get(i).getMean();
+            if(hsize.getSlicesX().get(i).integral()>50)
+                gr_langle.addPoint(x, y, 0, 0);
+        }
+    } 
+    
     public void analyzeGroup(String name, boolean doFit){
         DataGroup dg = this.getHistos().get(name);
         for(int ir=0; ir<Constants.BMTREGIONS; ir++) {
@@ -247,7 +256,6 @@ public class LorentzModule extends Module {
                         continue;
                     H2F h1 = dg.getH2F("hi_clust_"+layer+sector);
                     H2F h2 = dg.getH2F("hi_value_"+layer+sector);  
-                    h2.add(h1);
                     h2.divide(h1); 
                     h1.reset();
                 }

@@ -21,7 +21,8 @@ import org.jlab.groot.math.F1D;
 public class Module {    
     
     private final String          moduleName;
-    private Map<String,DataGroup> moduleGroup = new LinkedHashMap<>();
+    private Map<String,DataGroup> moduleGroup  = new LinkedHashMap<>();
+    private EmbeddedCanvasTabbed  moduleCanvas = null;
     
     private int nevents;
     private boolean cosmics;
@@ -60,6 +61,14 @@ public class Module {
     public boolean isCosmics() {
         return cosmics;
     }
+
+    public EmbeddedCanvasTabbed getCanvas() {
+        return moduleCanvas;
+    }
+    
+    public EmbeddedCanvas getCanvas(String name) {
+        return moduleCanvas.getCanvas(name);
+    }
     
     public Map<String,DataGroup> getHistos() {
         return moduleGroup;
@@ -94,16 +103,19 @@ public class Module {
     
     public EmbeddedCanvasTabbed plotHistos() {
         this.analyzeHistos();
-        EmbeddedCanvasTabbed canvas  = null;
         for(String key : moduleGroup.keySet()) {            
-            if(canvas==null) canvas = new EmbeddedCanvasTabbed(key);
-            else             canvas.addCanvas(key);
-            canvas.getCanvas(key).draw(moduleGroup.get(key));
-            this.setPlottingOptions(canvas.getCanvas(key));
-            canvas.getCanvas(key).setGridX(false);
-            canvas.getCanvas(key).setGridY(false);
+            if(this.moduleCanvas==null) this.moduleCanvas = new EmbeddedCanvasTabbed(key);
+            else                        this.moduleCanvas.addCanvas(key);
+            this.moduleCanvas.getCanvas(key).draw(moduleGroup.get(key));
+            this.setPlottingOptions(key);
+            this.moduleCanvas.getCanvas(key).setGridX(false);
+            this.moduleCanvas.getCanvas(key).setGridY(false);
         }
-        return canvas;
+        return this.moduleCanvas;
+    }
+
+    public void setCanvas(EmbeddedCanvasTabbed moduleCanvas) {
+        this.moduleCanvas = moduleCanvas;
     }
     
 
@@ -111,9 +123,9 @@ public class Module {
         this.moduleGroup = group;
     }
     
-    public void setPlottingOptions(EmbeddedCanvas canvas) {
-        canvas.setGridX(false);
-        canvas.setGridY(false);        
+    public void setPlottingOptions(String name) {
+        this.getCanvas().getCanvas(name).setGridX(false);
+        this.getCanvas().getCanvas(name).setGridY(false);        
     }
 
     public final void readDataGroup(TDirectory dir) {
