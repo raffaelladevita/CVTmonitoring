@@ -112,7 +112,8 @@ public class Module {
     }
     
     public void setPlottingOptions(EmbeddedCanvas canvas) {
-        
+        canvas.setGridX(false);
+        canvas.setGridY(false);        
     }
 
     public final void readDataGroup(TDirectory dir) {

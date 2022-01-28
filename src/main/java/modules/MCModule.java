@@ -196,7 +196,6 @@ public class MCModule extends Module {
     }
     
     private DataGroup repResolutionGroup(int icol) {
-        System.out.println(this.isCosmics());
         if(!this.isCosmics())
             return this.helixResolutionGroup(icol);
         else 

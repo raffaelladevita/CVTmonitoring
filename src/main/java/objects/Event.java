@@ -17,17 +17,21 @@ import org.jlab.io.base.DataEvent;
 public class Event {
     private final boolean debug = false;
     
-    private Track mcParticle;
+    private int run;
+    private int event;
     private double startTime;
-    private final List<Track> tracks   = new ArrayList<>();
-    private final List<Track> seeds    = new ArrayList<>();
-    private final List<Track> mcTracks = new ArrayList<>();
+    private Track mcParticle;
+    private final List<Track> tracks     = new ArrayList<>();
+    private final List<Track> seeds      = new ArrayList<>();
+    private final List<Track> mcTracks   = new ArrayList<>();
     private final List<Cluster> clusters = new ArrayList<>();
-    private final List<Hit> hits = new ArrayList<>();
+    private final List<Hit> hits         = new ArrayList<>();
+    private final List<Trajectory> trajs = new ArrayList<>();
     private final Map<Integer, Integer> trackMap = new HashMap<>();
     private final Map<Integer, Integer> seedMap = new HashMap<>();
     private final Map<Integer, List<Integer>> clusterMap = new HashMap<>();
     private final Map<Integer, List<Integer>> hitMap = new HashMap<>();
+    private final Map<Integer, List<Integer>> trajMap = new HashMap<>();
 
 
     public Event(DataEvent event) {
@@ -45,7 +49,14 @@ public class Event {
         return bank;
     }
 
-
+    private void readHeader(DataEvent event) {
+        DataBank head = this.getBank(event, "RUN::config");
+        if(head!=null) {
+            this.run   = head.getInt("run", 0);
+            this.event = head.getInt("event", 0);
+        }
+    }
+    
     private void readMCParticle(DataEvent event) {
         DataBank mc  = this.getBank(event, "MC::Particle");
         if(mc!=null) {
@@ -122,6 +133,19 @@ public class Event {
         }
     }
         
+    private void readTrajectory(DataEvent event) {
+        DataBank trajBank = this.getBank(event, "CVTRec::Trajectory");
+        if(trajBank!=null) {
+            for(int i=0; i<trajBank.rows(); i++) {
+                Trajectory traj = Trajectory.readTrajectory(trajBank, i);
+                trajs.add(traj);
+                if(!this.trajMap.containsKey(traj.getTrackId()))
+                    this.trajMap.put(traj.getTrackId(), new ArrayList<>());
+                this.trajMap.get(traj.getTrackId()).add(i);
+            }
+        }
+    }
+        
     private void readClusters(DataEvent event) {
         DataBank bank = this.getBank(event, "BSTRec::Clusters");
         if(bank==null) return;
@@ -180,9 +204,11 @@ public class Event {
     }
 
     private void readEvent(DataEvent de) {
+        this.readHeader(de);
         this.readMCParticle(de);
         this.readStartTime(de);
         this.readTracks(de);
+        this.readTrajectory(de);
         this.readSeeds(de);
         this.readClusters(de);
         this.readHits(de);
@@ -219,12 +245,32 @@ public class Event {
     public Map<Integer, List<Integer>> getHitMap() {
         return hitMap;
     }      
+
+    public List<Trajectory> getTrajectories(int trackId) {
+        List<Trajectory> trackTrajs = new ArrayList<>();
+        for(int i : this.getTrajectoryMap().get(trackId))
+            trackTrajs.add(this.trajs.get(i));
+        return trackTrajs;
+    }
+
+    public Map<Integer, List<Integer>> getTrajectoryMap() {
+        return trajMap;
+    }
     
     public Track getMCTrack(boolean cosmics) {
         if(cosmics && mcParticle!=null) mcParticle.toCosmic();
         return mcParticle;
     }
 
+    public int getRun() {
+        return run;
+    }
+
+    public int getEvent() {
+        return event;
+    }
+
+    
     public double getStartTime() {
         return startTime;
     }

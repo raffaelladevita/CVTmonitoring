@@ -12,6 +12,7 @@ public class Hit {
     private final int id;
     private final int sector;
     private final int layer;
+    private final int strip;
     private final DetectorType type;
     
     private double energy;
@@ -21,11 +22,28 @@ public class Hit {
     private int clusterId;
     private int trackId;
     
-    public Hit(int id, int sector, int layer, DetectorType type) {
+    public Hit(int id, int sector, int layer, int strip, DetectorType type) {
         this.id = id;
         this.sector = sector;
         this.layer = layer;
+        this.strip = strip;
         this.type = type;
+    }
+
+    public int getSector() {
+        return sector;
+    }
+
+    public int getLayer() {
+        return layer;
+    }
+
+    public int getStrip() {
+        return strip;
+    }
+
+    public DetectorType getType() {
+        return type;
     }
 
     public double getEnergy() {
@@ -82,6 +100,7 @@ public class Hit {
         Hit hit = new Hit(bank.getShort("ID", row),
                           bank.getByte("sector", row),
                           bank.getByte("layer", row),
+                          bank.getInt("strip", row),
                           type);
         hit.setEnergy(bank.getFloat("energy", row));
         hit.setTime(bank.getFloat("time", row));

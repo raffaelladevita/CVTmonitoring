@@ -1,0 +1,278 @@
+package modules;
+
+import analysis.Constants;
+import java.util.ArrayList;
+import java.util.List;
+import objects.Cluster;
+import objects.Event;
+import analysis.Module;
+import objects.Track;
+import objects.Trajectory;
+import org.jlab.detector.base.DetectorType;
+import org.jlab.groot.data.H1F;
+import org.jlab.groot.data.H2F;
+import org.jlab.groot.fitter.DataFitter;
+import org.jlab.groot.group.DataGroup;
+import org.jlab.groot.math.F1D;
+
+/**
+ *
+ * @author devita
+ */
+public class LorentzModule extends Module {
+    
+    public LorentzModule() {
+        super("Lorentz", false);
+    }
+    
+    public DataGroup sizeGroup(int col) {
+        DataGroup dg = new DataGroup(3,3);
+        for(int ir=0; ir<Constants.BMTREGIONS; ir++) {
+            for(int is=0; is<Constants.BMTSECTORS; is++) {
+                int sector  = is+1;
+                int layer   = Constants.BMTZLAYERS[ir];
+                H1F hi_clus  = histo1D("hi_clust_" +layer + sector, "L" + layer + "S" + sector + " #phi (deg)", "Size", 200, -60, 60, col);
+                H1F hi_size  = histo1D("hi_value_" +layer + sector, "L" + layer + "S" + sector + " #phi (deg)", "Size", 200, -60, 60, col);
+                dg.addDataSet(hi_size, is + ir*Constants.BMTSECTORS);
+                dg.addDataSet(hi_clus, is + ir*Constants.BMTSECTORS);
+            }
+        }
+        return dg;
+    }
+
+    public DataGroup size2DGroup() {
+        DataGroup dg = new DataGroup(3,3);
+        for(int ir=0; ir<Constants.BMTREGIONS; ir++) {
+            for(int is=0; is<Constants.BMTSECTORS; is++) {
+                int sector  = is+1;
+                int layer   = Constants.BMTZLAYERS[ir];
+                H2F hi_clus  = histo2D("hi_clust_" +layer + sector, "L" + layer + "S" + sector + " #phi (deg)", "z (cm)", 200, -60, 60, 50, -25, 25);
+                H2F hi_size  = histo2D("hi_value_" +layer + sector, "L" + layer + "S" + sector + " #phi (deg)", "z (cm)", 200, -60, 60, 50, -25, 25);
+                dg.addDataSet(hi_clus, is + ir*Constants.BMTSECTORS);
+                dg.addDataSet(hi_size, is + ir*Constants.BMTSECTORS);
+            }
+        }
+        return dg;
+    }
+
+    public DataGroup langleGroup(int col) {
+        DataGroup dg = new DataGroup(2,2);
+        H1F hi_langle     = histo1D("hi_langle", "Local Angle (deg)", "Counts", 200, -60, 60, col);
+        H2F hi_langle_neg = histo2D("hi_langleneg", "Local Angle (deg)", "Cluster Size", 200, -60,  0, 15, 1, 16);
+        H2F hi_langle_phi = histo2D("hi_langlephi", "Local Angle (deg)", "Cluster Size", 200, -60, 60, 15, 1, 16);
+        dg.addDataSet(hi_langle,     0);
+        dg.addDataSet(hi_langle_neg, 1);
+        dg.addDataSet(hi_langle_phi, 2);
+        return dg;
+    }
+
+    public DataGroup langlePhiGroup(int col) {
+        DataGroup dg = new DataGroup(3,3);
+        for(int ir=0; ir<Constants.BMTREGIONS; ir++) {
+            for(int is=0; is<Constants.BMTSECTORS; is++) {
+                int sector  = is+1;
+                int layer   = Constants.BMTZLAYERS[ir];
+                H1F hi_clus  = histo1D("hi_clust_" +layer + sector, "L" + layer + "S" + sector + " #phi (deg)", "Local Angle (deg)", 200, -60, 60, col);
+                H1F hi_angl  = histo1D("hi_value_" +layer + sector, "L" + layer + "S" + sector + " #phi (deg)", "Local Angle (deg)", 200, -60, 60, col);
+                dg.addDataSet(hi_angl, is + ir*Constants.BMTSECTORS);
+                dg.addDataSet(hi_clus, is + ir*Constants.BMTSECTORS);
+            }
+        }
+        return dg;
+    }
+
+    public DataGroup langle2DGroup() {
+        DataGroup dg = new DataGroup(3,3);
+        for(int ir=0; ir<Constants.BMTREGIONS; ir++) {
+            for(int is=0; is<Constants.BMTSECTORS; is++) {
+                int sector  = is+1;
+                int layer   = Constants.BMTZLAYERS[ir];
+                H2F hi_clus  = histo2D("hi_clust_" +layer + sector, "L" + layer + "S" + sector + " #phi (deg)", "Local Angle (deg)", 100, -60, 60, 50, -50, 50);
+                H2F hi_angl  = histo2D("hi_value_" +layer + sector, "L" + layer + "S" + sector + " #phi (deg)", "Local Angle (deg)", 100, -60, 60, 50, -50, 50);
+                dg.addDataSet(hi_clus, is + ir*Constants.BMTSECTORS);
+                dg.addDataSet(hi_angl, is + ir*Constants.BMTSECTORS);
+            }
+        }
+        return dg;
+    }
+
+    @Override
+    public void createHistos() {
+       this.getHistos().put("SizeNeg",   this.sizeGroup(44));
+       this.getHistos().put("SizePos",   this.sizeGroup(42));
+       this.getHistos().put("Size",      this.sizeGroup(43));
+       this.getHistos().put("Size2D",    this.size2DGroup());
+       this.getHistos().put("Langle",    this.langleGroup(3));
+       this.getHistos().put("LanglePhi", this.langlePhiGroup(3));
+       this.getHistos().put("Langle2D",  this.langle2DGroup());       
+    }
+    
+    @Override
+    public void fillHistos(Event event) {
+        for(Cluster cluster : event.getClusters()) {
+            if(cluster.getTrackId()>0) {
+                String detector = cluster.getName();                               
+                Track track = event.getTracks().get(event.getTrackMap().get(cluster.getTrackId()));
+                if(detector.equals("BMTZ")) {
+                    Trajectory traj = null;
+                    for(Trajectory t : event.getTrajectories(cluster.getTrackId())) {
+                        if(t.getDetector()==DetectorType.CVT && 
+                           t.getLayer()==cluster.getLayer()+Constants.SVTLAYERS && 
+                           t.getSector()==cluster.getSector()) {
+                            traj = t;
+                        }
+                    }
+                    if(traj==null) {
+//                        System.out.println("Event " + event.getEvent());
+//                        System.out.println(" cluster" + cluster.getName() + " " + cluster.getLayer() + " " + cluster.getSector());
+//                        for(Trajectory t : event.getTrajectories(cluster.getTrackId())) 
+//                            System.out.println(" traj " + t.getDetector().getName() + " " + t.getLayer() + " " + t.getSector());
+                        return;
+                    }
+                    this.fillSizeGroup(this.getHistos().get("Size"), cluster);
+                    this.fillSize2DGroup(this.getHistos().get("Size2D"), cluster, traj);
+                    this.fillLangleGroup(this.getHistos().get("Langle"), cluster, traj);
+                    this.fillLangle2DGroup(this.getHistos().get("Langle2D"), cluster, traj);
+                    if(track.charge()>0) {
+                        this.fillSizeGroup(this.getHistos().get("SizePos"), cluster);
+                    }
+                    else {
+                        this.fillSizeGroup(this.getHistos().get("SizeNeg"), cluster);
+                        this.fillLanglePhiGroup(this.getHistos().get("LanglePhi"), cluster, traj);
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    public void fillSizeGroup(DataGroup group, Cluster cluster) {
+        int il = cluster.getLayer()-1;
+        int ir = il/2;
+        double phi = Math.toDegrees((cluster.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
+        group.getH1F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(phi); 
+        group.getH1F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(phi,cluster.getSize()); 
+    }
+        
+    public void fillSize2DGroup(DataGroup group, Cluster cluster, Trajectory traj) {
+        int il = cluster.getLayer()-1;
+        int ir = il/2;
+        double phi = Math.toDegrees((cluster.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
+        group.getH2F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(phi, traj.z()); 
+        group.getH2F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(phi, traj.z(), cluster.getSize()); 
+    }
+        
+    public void fillLangleGroup(DataGroup group, Cluster cluster, Trajectory traj) {
+        group.getH1F("hi_langle").fill(Math.toDegrees(traj.phi())); 
+        group.getH2F("hi_langleneg").fill(Math.toDegrees(traj.phi()), cluster.getSize());
+        group.getH2F("hi_langlephi").fill(Math.toDegrees(traj.phi()), cluster.getSize());
+    }
+            
+    public void fillLanglePhiGroup(DataGroup group, Cluster cluster, Trajectory traj) {
+        int layer  = cluster.getLayer();
+        int il = layer-1;
+        int ir = il/2;
+        double phi = Math.toDegrees((cluster.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
+        group.getH1F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(phi); 
+        group.getH1F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(phi, -Math.toDegrees(traj.phi()));
+    }
+
+    public void fillLangle2DGroup(DataGroup group, Cluster cluster, Trajectory traj) {
+            int layer  = cluster.getLayer();
+            int il = layer-1;
+            int ir = il/2;
+            double phi = Math.toDegrees((cluster.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
+            group.getH2F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(phi, -Math.toDegrees(traj.phi())); 
+            group.getH2F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(phi, -Math.toDegrees(traj.phi()), cluster.getSize());
+    }
+    
+//    @Override
+//    public EmbeddedCanvasTabbed plotHistos() {
+//        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Size2D", "SizePos", "SizeNeg", "BMTZ", "BMTCsize", "BMTZsize");
+//        canvas.getCanvas("Clusters").draw(this.getHistos().get("Clusters"));
+//        canvas.getCanvas("Clusters").draw(this.getHistos().get("ClustersNotOnTrack"));
+//        canvas.getCanvas("Clusters").draw(this.getHistos().get("ClustersOnTrack"));
+//        canvas.getCanvas("SVT").draw(this.getHistos().get("SVT"));
+//        canvas.getCanvas("SVT").draw(this.getHistos().get("SVTOnTrack"));
+//        canvas.getCanvas("BMTC").draw(this.getHistos().get("BMTC"));
+//        canvas.getCanvas("BMTC").draw(this.getHistos().get("BMTCOnTrack"));
+//        canvas.getCanvas("BMTZ").draw(this.getHistos().get("BMTZ"));
+//        canvas.getCanvas("BMTZ").draw(this.getHistos().get("BMTZOnTrack"));
+//        canvas.getCanvas("BMTCsize").draw(this.getHistos().get("BMTCsize"));
+//        canvas.getCanvas("BMTZsize").draw(this.getHistos().get("BMTZsize"));
+//        this.setPlottingOptions(canvas.getCanvas("Clusters"));
+//        this.setPlottingOptions(canvas.getCanvas("SVT"));
+//        this.setPlottingOptions(canvas.getCanvas("BMTC"));
+//        this.setPlottingOptions(canvas.getCanvas("BMTZ"));
+//        super.setPlottingOptions(canvas.getCanvas("BMTCsize"));
+//        super.setPlottingOptions(canvas.getCanvas("BMTZsize"));
+//        return canvas;
+//    }
+//       
+//    @Override
+//    public void setPlottingOptions(EmbeddedCanvas canvas) {
+//        canvas.setGridX(false);
+//        canvas.setGridY(false);
+//        for(EmbeddedPad pad : canvas.getCanvasPads())
+//            pad.getAxisY().setLog(true);
+//    }
+
+    @Override
+    public void analyzeHistos() {
+        this.analyzeGroup("Size", true);        
+        this.analyzeGroup("SizePos", true);        
+        this.analyzeGroup("SizeNeg", true);        
+        this.analyzeGroup("Size2D", false);  
+        this.analyzeGroup("LanglePhi", false);
+        this.analyzeGroup("Langle2D", false);
+    }
+       
+    public void analyzeGroup(String name, boolean doFit){
+        DataGroup dg = this.getHistos().get(name);
+        for(int ir=0; ir<Constants.BMTREGIONS; ir++) {
+            for(int is=0; is<Constants.BMTSECTORS; is++) {
+                int sector  = is+1;
+                int layer   = Constants.BMTZLAYERS[ir];
+                if(dg.getData("hi_value_"+layer+sector) instanceof H1F) {
+                    if(dg.getH1F("hi_clust_"+layer+sector).getEntries()==0)
+                        continue;
+                    H1F h1 = dg.getH1F("hi_clust_"+layer+sector);
+                    H1F h2 = dg.getH1F("hi_value_"+layer+sector);  
+                    h2.divide(h1);
+                    if(doFit) this.fitSize(h2);
+                    h1.reset();
+                }
+                else {
+                    if(dg.getH2F("hi_clust_"+layer+sector).getEntries()==0)
+                        continue;
+                    H2F h1 = dg.getH2F("hi_clust_"+layer+sector);
+                    H2F h2 = dg.getH2F("hi_value_"+layer+sector);  
+                    h2.add(h1);
+                    h2.divide(h1); 
+                    h1.reset();
+                }
+            }
+        }
+    }
+    
+    private void fitSize(H1F hi) {
+        double min = hi.getXaxis().min();
+        double max = hi.getXaxis().max();
+        double range = max - min;
+        F1D fsize = new F1D("fsize", "[p0]+[p1]*cos(x*[f1])+[p2]*cos(x*[f2])+[p3]*cos(x*[f3])+[p4]*cos(x*[f4])",min+range*0.1, max-range*0.05);
+        double ave   = (double) hi.getIntegral()/hi.getDataSize(0);
+        fsize.setParameter(0, ave);
+        fsize.setParameter(1, 0);
+        fsize.setParameter(2, 3*Math.PI/180);
+        fsize.setParameter(3, 0);
+        fsize.setParameter(4, 6*Math.PI/180);
+        fsize.setParameter(5, 0);
+        fsize.setParameter(6, 9*Math.PI/180);
+        fsize.setParameter(7, 0);
+        fsize.setParameter(8, 12*Math.PI/180);
+        fsize.setOptStat("1111111111");
+        fsize.setLineColor(2);
+        fsize.setLineWidth(2);
+        DataFitter.fit(fsize, hi, "Q");
+    }
+}
