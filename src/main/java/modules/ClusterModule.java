@@ -161,7 +161,7 @@ public class ClusterModule extends Module {
     }
     
     @Override
-    public EmbeddedCanvasTabbed plotHistos() {
+    public void drawHistos() {
         this.setCanvas(new EmbeddedCanvasTabbed("Clusters", "SVT", "BMTC", "BMTZ", "BMTCsize", "BMTZsize"));
         this.getCanvas("Clusters").draw(this.getHistos().get("Clusters"));
         this.getCanvas("Clusters").draw(this.getHistos().get("ClustersNotOnTrack"));
@@ -180,7 +180,6 @@ public class ClusterModule extends Module {
         this.setPlottingOptions("BMTZ");
         super.setPlottingOptions("BMTCsize");
         super.setPlottingOptions("BMTZsize");
-        return this.getCanvas();
     }
        
     @Override
@@ -205,7 +204,8 @@ public class ClusterModule extends Module {
                 }
                 H1F h1 = this.getHistos().get(name+"OnTrack").getH1F("hi_occ_"+layer+sector);
                 H1F h2 = this.getHistos().get(name+"size").getH1F("hi_size_"+layer+sector);
-                h2.divide(h1);
+                if(h1.integral()<h2.integral())
+                    h2.divide(h1);
                 if(doFit) this.fitSize(h2);
             }
         }

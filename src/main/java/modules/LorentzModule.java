@@ -15,6 +15,7 @@ import org.jlab.groot.data.H2F;
 import org.jlab.groot.fitter.DataFitter;
 import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
+import org.jlab.groot.graphics.EmbeddedPad;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.groot.math.F1D;
 
@@ -200,6 +201,10 @@ public class LorentzModule extends Module {
         if(name.equals("Langle")) {
             this.getCanvas(name).getPad(1).getAxisZ().setLog(true);
         }
+        else if(name.equals("Langle2D")) {
+            for(EmbeddedPad pad : this.getCanvas(name).getCanvasPads())
+                pad.getAxisZ().setLog(true);
+        }
     }
     
     @Override
@@ -224,15 +229,42 @@ public class LorentzModule extends Module {
         GraphErrors gr_langle = new GraphErrors();
         gr_langle.setTitleX("Local Angle (deg)");
         gr_langle.setTitleY("Average cluster size");
-        gr_langle.setMarkerColor(2);
+        gr_langle.setMarkerColor(1);
         gr_langle.setMarkerSize(5);
         dg.addDataSet(gr_langle, 3);
-        H2F hsize = dg.getH2F("hi_langlesize");  
+        H2F hsize = dg.getH2F("hi_langlesize"); 
         for(int i=0; i<hsize.getSlicesX().size(); i++) {
             double x = hsize.getDataX(i);
             double y = hsize.getSlicesX().get(i).getMean();
             if(hsize.getSlicesX().get(i).integral()>50)
-                gr_langle.addPoint(x, y, 0, 0);
+                gr_langle.addPoint(x, y, 0, 0);          
+        }
+        H1F[] hbins = new H1F[10];
+        H2F   hphi  = dg.getH2F("hi_langlephi");
+        for(int i=0; i<hphi.getSlicesX().size(); i++) {
+            int j  = i/hbins.length;
+            H1F hi = hphi.getSlicesX().get(i);
+            if(hbins[j]==null) {
+                hbins[j] = new H1F("hbins"+j, "","",hi.getDataSize(0), hi.getXaxis().min(), hi.getXaxis().max());
+            }
+            hbins[j].add(hphi.getSlicesX().get(i));
+        }
+        for(int i=0; i<hbins.length; i++) {
+            switch (i) {
+                case 0:
+                case 9:
+                    hbins[i].setLineColor(2);
+                    break;
+                case 4:
+                case 5:
+                    hbins[i].setLineColor(3);
+                    break;
+                default:
+                    hbins[i].setLineColor(4);
+                    break;
+            }
+            hbins[i].divide(hphi.getSlicesX().size()/hbins.length);
+            dg.addDataSet(hbins[i], 3);
         }
     } 
     
@@ -243,21 +275,21 @@ public class LorentzModule extends Module {
                 int sector  = is+1;
                 int layer   = Constants.BMTZLAYERS[ir];
                 if(dg.getData("hi_value_"+layer+sector) instanceof H1F) {
-                    if(dg.getH1F("hi_clust_"+layer+sector).getEntries()==0)
-                        continue;
                     H1F h1 = dg.getH1F("hi_clust_"+layer+sector);
                     H1F h2 = dg.getH1F("hi_value_"+layer+sector);  
-                    h2.divide(h1);
+                    if(h1.getEntries()!=0) {
+                        h2.divide(h1);
+                        h1.reset();
+                    }
                     if(doFit) this.fitSize(h2);
-                    h1.reset();
                 }
                 else {
-                    if(dg.getH2F("hi_clust_"+layer+sector).getEntries()==0)
-                        continue;
                     H2F h1 = dg.getH2F("hi_clust_"+layer+sector);
                     H2F h2 = dg.getH2F("hi_value_"+layer+sector);  
-                    h2.divide(h1); 
-                    h1.reset();
+                    if(h1.getEntries()!=0) {
+                        h2.divide(h1);
+                        h1.reset();
+                    }
                 }
             }
         }

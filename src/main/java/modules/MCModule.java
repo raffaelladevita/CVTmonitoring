@@ -482,7 +482,7 @@ public class MCModule extends Module {
     }
     
     @Override
-    public EmbeddedCanvasTabbed plotHistos() {
+    public void drawHistos() {
         this.setCanvas(new EmbeddedCanvasTabbed("MC", "Seed", "SeedResolution1", "SeedResolution2", "SeedResolution3", "SeedPulls", 
                                                 "Track", "Resolution1", "Resolution2", "Resolution3", "Pulls", "Efficiency"));
         this.getCanvas("MC").draw(this.getHistos().get("MC"));
@@ -512,7 +512,6 @@ public class MCModule extends Module {
         this.setPlottingOptions("Resolution3");
         this.setPlottingOptions("Pulls");
         this.setPlottingOptions("Efficiency");
-        return this.getCanvas();
     }
 
     @Override

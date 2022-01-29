@@ -143,7 +143,7 @@ public class TrackModule extends Module {
     }
     
     @Override
-    public EmbeddedCanvasTabbed plotHistos() {
+    public void drawHistos() {
         this.setCanvas(new EmbeddedCanvasTabbed("Tracks", "Tracks2D", "Seeds", "EBTracks"));
         this.getCanvas("Tracks").draw(this.getHistos().get("Tracks"));
         this.getCanvas("Tracks2D").draw(this.getHistos().get("Tracks2D"));
@@ -154,7 +154,6 @@ public class TrackModule extends Module {
         this.setPlottingOptions("Tracks");
         this.setPlottingOptions("Seeds");
         this.setPlottingOptions("EBTracks");
-        return this.getCanvas();
     }
        
     @Override

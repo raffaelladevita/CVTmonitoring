@@ -101,8 +101,13 @@ public class Module {
     }
 
     
-    public EmbeddedCanvasTabbed plotHistos() {
+    public final EmbeddedCanvasTabbed plotHistos() {
         this.analyzeHistos();
+        this.drawHistos();
+        return this.moduleCanvas;
+    }
+
+    public void drawHistos() {
         for(String key : moduleGroup.keySet()) {            
             if(this.moduleCanvas==null) this.moduleCanvas = new EmbeddedCanvasTabbed(key);
             else                        this.moduleCanvas.addCanvas(key);
@@ -111,7 +116,6 @@ public class Module {
             this.moduleCanvas.getCanvas(key).setGridX(false);
             this.moduleCanvas.getCanvas(key).setGridY(false);
         }
-        return this.moduleCanvas;
     }
 
     public void setCanvas(EmbeddedCanvasTabbed moduleCanvas) {
