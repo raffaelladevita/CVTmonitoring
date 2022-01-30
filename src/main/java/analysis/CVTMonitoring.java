@@ -91,6 +91,9 @@ public class CVTMonitoring {
     
     public void readHistos(String fileName) {
         System.out.println("Opening file: " + fileName);
+        PrintStream pipeStream = new PrintStream(pipeOut);
+        System.setOut(pipeStream);
+        System.setErr(pipeStream);
         TDirectory dir = new TDirectory();
         dir.readFile(fileName);
         System.out.println(dir.getDirectoryList());
@@ -99,6 +102,8 @@ public class CVTMonitoring {
         for(Module m : modules) {
             m.readDataGroup(dir);
         }
+        System.setOut(outStream);
+        System.setErr(errStream);
     }
 
     public void saveHistos(String fileName) {

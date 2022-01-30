@@ -6,11 +6,10 @@ import java.util.List;
 import objects.Cluster;
 import objects.Event;
 import analysis.Module;
-import objects.Hit;
+import objects.Cluster.CVTType;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.fitter.DataFitter;
 import org.jlab.groot.group.DataGroup;
-import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.graphics.EmbeddedPad;
 import org.jlab.groot.math.F1D;
@@ -26,11 +25,11 @@ public class ClusterModule extends Module {
     }
     
     public DataGroup clusterGroup(int col) {
-        String[] names = new String[]{"SVT", "BMTC", "BMTZ"};
+        CVTType[] types = new CVTType[]{CVTType.SVT, CVTType.BMTC, CVTType.BMTZ};
         double[] EMAX = {2000, 10000, 10000};
         DataGroup dg = new DataGroup(3,3);
-        for(int i=0; i<names.length; i++) {
-            String name = names[i];
+        for(int i=0; i<types.length; i++) {
+            String name = types[i].getName();
             H1F hi_size    = histo1D("hi_size_" + name,   name + " Cluster Size",   "Counts",  20, 0, 20, col);
             H1F hi_energy  = histo1D("hi_energy_" + name, name + " Cluster Energy", "Counts", 100, 0, EMAX[i], col);
             H1F hi_time    = histo1D("hi_time_" + name,   name + " Cluster Time",   "Counts", 440, 0, 440, col);
@@ -54,14 +53,14 @@ public class ClusterModule extends Module {
         return dg;
     }
 
-    public DataGroup occBMTGroup(String name, int col) {
+    public DataGroup occBMTGroup(CVTType type, int col) {
         DataGroup dg = new DataGroup(3,3);
         for(int ir=0; ir<Constants.BMTREGIONS; ir++) {
             for(int is=0; is<Constants.BMTSECTORS; is++) {
                 int sector  = is+1;
                 int layer   = Constants.BMTCLAYERS[ir];
                 int nstrips = Constants.BMTCSTRIPS[ir];
-                if(name.equals("BMTZ")) {
+                if(type==CVTType.BMTZ) {
                     layer = Constants.BMTZLAYERS[ir];
                     nstrips = Constants.BMTZSTRIPS[ir];
                 }
@@ -72,14 +71,14 @@ public class ClusterModule extends Module {
         return dg;
     }   
     
-    public DataGroup sizeBMTGroup(String name, int col) {
+    public DataGroup sizeBMTGroup(CVTType type, int col) {
         DataGroup dg = new DataGroup(3,3);
         for(int ir=0; ir<Constants.BMTREGIONS; ir++) {
             for(int is=0; is<Constants.BMTSECTORS; is++) {
                 int sector  = is+1;
                 int layer   = Constants.BMTCLAYERS[ir];
                 int nstrips = Constants.BMTCSTRIPS[ir];
-                if(name.equals("BMTZ")) {
+                if(type==CVTType.BMTZ) {
                     layer = Constants.BMTZLAYERS[ir];
                     nstrips = Constants.BMTZSTRIPS[ir];
                 }
@@ -98,12 +97,12 @@ public class ClusterModule extends Module {
         this.getHistos().put("ClustersNotOnTrack", this.clusterGroup(44));
         this.getHistos().put("SVT",            this.occSVTGroup(44));
         this.getHistos().put("SVTOnTrack",     this.occSVTGroup(3));
-        this.getHistos().put("BMTC",           this.occBMTGroup("BMTC", 44));
-        this.getHistos().put("BMTCOnTrack",    this.occBMTGroup("BMTC", 3));
-        this.getHistos().put("BMTCsize",       this.sizeBMTGroup("BMTC", 3));
-        this.getHistos().put("BMTZ",           this.occBMTGroup("BMTZ", 44));
-        this.getHistos().put("BMTZOnTrack",    this.occBMTGroup("BMTZ", 3));
-        this.getHistos().put("BMTZsize",       this.sizeBMTGroup("BMTZ", 3));
+        this.getHistos().put("BMTC",           this.occBMTGroup(CVTType.BMTC, 44));
+        this.getHistos().put("BMTCOnTrack",    this.occBMTGroup(CVTType.BMTC, 3));
+        this.getHistos().put("BMTCsize",       this.sizeBMTGroup(CVTType.BMTC, 3));
+        this.getHistos().put("BMTZ",           this.occBMTGroup(CVTType.BMTZ, 44));
+        this.getHistos().put("BMTZOnTrack",    this.occBMTGroup(CVTType.BMTZ, 3));
+        this.getHistos().put("BMTZsize",       this.sizeBMTGroup(CVTType.BMTZ, 3));
     }
     
     @Override
@@ -121,40 +120,40 @@ public class ClusterModule extends Module {
         this.fillGroup(this.getHistos().get("ClustersNotOnTrack"),clustersNotOnTrack);
         this.fillOccSVTGroup(this.getHistos().get("SVT"),event.getClusters());
         this.fillOccSVTGroup(this.getHistos().get("SVTOnTrack"),clustersOnTrack);
-        this.fillOccBMTGroup(this.getHistos().get("BMTC"), "BMTC", event.getClusters());
-        this.fillOccBMTGroup(this.getHistos().get("BMTCOnTrack"), "BMTC", clustersOnTrack);
-        this.fillOccBMTGroup(this.getHistos().get("BMTZ"), "BMTZ", event.getClusters());
-        this.fillOccBMTGroup(this.getHistos().get("BMTZOnTrack"), "BMTZ", clustersOnTrack);
-        this.fillSizeBMTGroup(this.getHistos().get("BMTCsize"), "BMTC", clustersOnTrack);
-        this.fillSizeBMTGroup(this.getHistos().get("BMTZsize"), "BMTZ", clustersOnTrack);
+        this.fillOccBMTGroup(this.getHistos().get("BMTC"), CVTType.BMTC, event.getClusters());
+        this.fillOccBMTGroup(this.getHistos().get("BMTCOnTrack"), CVTType.BMTC, clustersOnTrack);
+        this.fillOccBMTGroup(this.getHistos().get("BMTZ"), CVTType.BMTZ, event.getClusters());
+        this.fillOccBMTGroup(this.getHistos().get("BMTZOnTrack"), CVTType.BMTZ, clustersOnTrack);
+        this.fillSizeBMTGroup(this.getHistos().get("BMTCsize"), CVTType.BMTC, clustersOnTrack);
+        this.fillSizeBMTGroup(this.getHistos().get("BMTZsize"), CVTType.BMTZ, clustersOnTrack);
     }
     
     public void fillGroup(DataGroup group, List<Cluster> clusters) {
         for(Cluster cluster : clusters) {
-            group.getH1F("hi_size_" + cluster.getName()).fill(cluster.getSize());
-            group.getH1F("hi_energy_" + cluster.getName()).fill(cluster.getEnergy());
-            group.getH1F("hi_time_" + cluster.getName()).fill(cluster.getTime());            
+            group.getH1F("hi_size_" + cluster.getType().getName()).fill(cluster.getSize());
+            group.getH1F("hi_energy_" + cluster.getType().getName()).fill(cluster.getEnergy());
+            group.getH1F("hi_time_" + cluster.getType().getName()).fill(cluster.getTime());            
         }
     }
     
     public void fillOccSVTGroup(DataGroup group, List<Cluster> clusters) {
         for(Cluster cluster : clusters) {
-            if(cluster.getName().equals("SVT")) 
+            if(cluster.getType()==CVTType.SVT) 
                 group.getH1F("hi_occ_layer"+cluster.getLayer()).fill(cluster.getSeedStrip()+Constants.SVTSTRIPS*(cluster.getSector()-1));  
         }
     }
     
-    public void fillOccBMTGroup(DataGroup group, String name, List<Cluster> clusters) {
+    public void fillOccBMTGroup(DataGroup group, CVTType type, List<Cluster> clusters) {
         for(Cluster cluster : clusters) {
-            if(cluster.getName().equals(name)) {
+            if(cluster.getType()==type) {
                 group.getH1F("hi_occ_"+cluster.getLayer()+cluster.getSector()).fill(cluster.getSeedStrip()); 
             }
         }
     }
     
-    public void fillSizeBMTGroup(DataGroup group, String name, List<Cluster> clusters) {
+    public void fillSizeBMTGroup(DataGroup group, CVTType type, List<Cluster> clusters) {
         for(Cluster cluster : clusters) {
-            if(cluster.getName().equals(name)) {
+            if(cluster.getType()==type) {
                  group.getH1F("hi_size_"+cluster.getLayer()+cluster.getSector()).fill(cluster.getSeedStrip(),cluster.getSize()); 
             }
         }
@@ -184,26 +183,27 @@ public class ClusterModule extends Module {
        
     @Override
     public void setPlottingOptions(String name) {
+        super.setPlottingOptions(name);
         for(EmbeddedPad pad : this.getCanvas(name).getCanvasPads())
             pad.getAxisY().setLog(true);
     }
 
     @Override
     public void analyzeHistos() {
-        this.analyzeSizeGroup("BMTC", false);        
-        this.analyzeSizeGroup("BMTZ", true);        
+        this.analyzeSizeGroup(CVTType.BMTC, false);        
+        this.analyzeSizeGroup(CVTType.BMTZ, true);        
     }
        
-    public void analyzeSizeGroup(String name, boolean doFit){
+    public void analyzeSizeGroup(CVTType type, boolean doFit){
         for(int ir=0; ir<Constants.BMTREGIONS; ir++) {
             for(int is=0; is<Constants.BMTSECTORS; is++) {
                 int sector  = is+1;
                 int layer   = Constants.BMTCLAYERS[ir];
-                if(name.equals("BMTZ")) {
+                if(type==CVTType.BMTZ) {
                     layer = Constants.BMTZLAYERS[ir];
                 }
-                H1F h1 = this.getHistos().get(name+"OnTrack").getH1F("hi_occ_"+layer+sector);
-                H1F h2 = this.getHistos().get(name+"size").getH1F("hi_size_"+layer+sector);
+                H1F h1 = this.getHistos().get(type.getName()+"OnTrack").getH1F("hi_occ_"+layer+sector);
+                H1F h2 = this.getHistos().get(type.getName()+"size").getH1F("hi_size_"+layer+sector);
                 if(h1.integral()<h2.integral())
                     h2.divide(h1);
                 if(doFit) this.fitSize(h2);

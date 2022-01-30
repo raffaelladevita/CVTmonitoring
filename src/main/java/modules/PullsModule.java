@@ -4,6 +4,7 @@ import analysis.Constants;
 import objects.Cluster;
 import objects.Event;
 import analysis.Module;
+import objects.Cluster.CVTType;
 import objects.Track;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
@@ -104,17 +105,17 @@ public class PullsModule extends Module {
     public void fillHistos(Event event) {
         for(Cluster cluster : event.getClusters()) {
             if(cluster.getTrackId()>0) {
-                String detector = cluster.getName();
+                String detector = cluster.getType().getName();
                 
                 int layer  = cluster.getLayer();
                 int sector = cluster.getSector();
                 String name = "L"+layer+"S"+sector;
                 
                 double pull = cluster.getCentroidResidual()/cluster.getCentroidError();
-                if(detector.equals("BMTZ")) pull = pull/Constants.BMTRADIUS[layer-1];
+                if(cluster.getType()==CVTType.BMTZ) pull = pull/Constants.BMTRADIUS[layer-1];
                 
                 Track track = event.getTracks().get(event.getTrackMap().get(cluster.getTrackId()));
-                if(detector.equals("SVT"))
+                if(cluster.getType()==CVTType.SVT)
                     this.getHistos().get(detector + "L" + layer).getH1F("hi_res_"+name).fill(pull);
                 else
                     this.getHistos().get(detector).getH1F("hi_res_"+name).fill(pull);

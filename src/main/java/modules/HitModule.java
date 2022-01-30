@@ -113,7 +113,7 @@ public class HitModule extends Module {
             group.getH1F("hi_energy_" + hit.getName()).fill(hit.getEnergy());
             group.getH1F("hi_time_" + hit.getName()).fill(hit.getTime());    
             if(hit.getTrackId()>0)
-                group.getH1F("hi_resi_" + hit.getName()).fill(hit.getResidual());    
+                group.getH1F("hi_resi_" + hit.getName()).fill(hit.getResidual()*1e4);    
         }
     }
 

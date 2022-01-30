@@ -1,5 +1,6 @@
 package objects;
 
+import analysis.Constants;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.io.base.DataBank;
 
@@ -99,6 +100,18 @@ public class Cluster {
         this.centroidResidual = centroidResidual;
     }
 
+    public double getCentroidPhi(boolean twoPI) {
+        double phi = 0;
+        if(this.getType()==CVTType.BMTZ) {
+            int il = this.getLayer()-1;
+            int ir = il/2;
+            int is = this.getSector();
+            phi = Math.toDegrees((this.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
+            if(twoPI) phi += Constants.BMTMEANPHI[is];
+        }
+        return Math.toRadians(phi);
+    }
+    
     public int getSeedStrip() {
         return seedStrip;
     }
@@ -131,14 +144,14 @@ public class Cluster {
         this.trackId = trackId;
     }
     
-    public String getName() {
+    public CVTType getType() {
         if(this.type==DetectorType.BST)
-            return "SVT";
+            return CVTType.SVT;
         else {
             if(layer==1 || layer==4 || layer==6)
-                return "BMTC";
+                return CVTType.BMTC;
             else
-                return "BMTZ";
+                return CVTType.BMTZ;
         }
     }
     public static Cluster readCluster(DataBank bank, int row, DetectorType type) {
@@ -163,4 +176,32 @@ public class Cluster {
         return cluster;
     }
     
+    
+    public enum CVTType {
+        UDF(0, "UDF"),
+        SVT(1, "SVT"),
+        BMTC(2, "BMTC"),
+        BMTZ(3, "BMTZ");
+
+        private final int id;
+        private final String name;
+
+        CVTType() {
+            id = 0;
+            name = "UDF";
+        }
+
+        CVTType(int id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getId() {
+            return id;
+        }
+    }
 }

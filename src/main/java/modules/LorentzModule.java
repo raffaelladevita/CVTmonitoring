@@ -6,6 +6,7 @@ import java.util.List;
 import objects.Cluster;
 import objects.Event;
 import analysis.Module;
+import objects.Cluster.CVTType;
 import objects.Track;
 import objects.Trajectory;
 import org.jlab.detector.base.DetectorType;
@@ -104,9 +105,9 @@ public class LorentzModule extends Module {
 
     @Override
     public void createHistos() {
-       this.getHistos().put("SizeNeg",   this.sizeGroup(44));
-       this.getHistos().put("SizePos",   this.sizeGroup(42));
-       this.getHistos().put("Size",      this.sizeGroup(43));
+       this.getHistos().put("SizeNeg",   this.sizeGroup(4));
+       this.getHistos().put("SizePos",   this.sizeGroup(2));
+       this.getHistos().put("Size",      this.sizeGroup(3));
        this.getHistos().put("Size2D",    this.size2DGroup());
        this.getHistos().put("Langle",    this.langleGroup(3));
        this.getHistos().put("LanglePhi", this.langlePhiGroup(3));
@@ -117,9 +118,9 @@ public class LorentzModule extends Module {
     public void fillHistos(Event event) {
         for(Cluster cluster : event.getClusters()) {
             if(cluster.getTrackId()>0) {
-                String detector = cluster.getName();                               
+                CVTType detector = cluster.getType();                               
                 Track track = event.getTracks().get(event.getTrackMap().get(cluster.getTrackId()));
-                if(detector.equals("BMTZ")) {
+                if(detector==CVTType.BMTZ) {
                     Trajectory traj = null;
                     for(Trajectory t : event.getTrajectories(cluster.getTrackId())) {
                         if(t.getDetector()==DetectorType.CVT && 
@@ -130,9 +131,9 @@ public class LorentzModule extends Module {
                     }
                     if(traj==null) {
 //                        System.out.println("Event " + event.getEvent());
-//                        System.out.println(" cluster" + cluster.getName() + " " + cluster.getLayer() + " " + cluster.getSector());
+//                        System.out.println(" cluster" + cluster.getType() + " " + cluster.getLayer() + " " + cluster.getSector());
 //                        for(Trajectory t : event.getTrajectories(cluster.getTrackId())) 
-//                            System.out.println(" traj " + t.getDetector().getName() + " " + t.getLayer() + " " + t.getSector());
+//                            System.out.println(" traj " + t.getDetector().getType() + " " + t.getLayer() + " " + t.getSector());
                         return;
                     }
                     this.fillSizeGroup(this.getHistos().get("Size"), cluster);
@@ -153,51 +154,51 @@ public class LorentzModule extends Module {
     
     
     public void fillSizeGroup(DataGroup group, Cluster cluster) {
-        int il = cluster.getLayer()-1;
-        int ir = il/2;
-        double phi = Math.toDegrees((cluster.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
-        group.getH1F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(phi); 
-        group.getH1F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(phi,cluster.getSize()); 
+        group.getH1F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false))); 
+        group.getH1F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)),cluster.getSize()); 
     }
         
     public void fillSize2DGroup(DataGroup group, Cluster cluster, Trajectory traj) {
-        int il = cluster.getLayer()-1;
-        int ir = il/2;
-        double phi = Math.toDegrees((cluster.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
-        group.getH2F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(phi, traj.z()); 
-        group.getH2F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(phi, traj.z(), cluster.getSize()); 
+        group.getH2F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)), traj.z()); 
+        group.getH2F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)), traj.z(), cluster.getSize()); 
     }
         
     public void fillLangleGroup(DataGroup group, Cluster cluster, Trajectory traj) {
-        int il = cluster.getLayer()-1;
-        int ir = il/2;
-        double phi = Math.toDegrees((cluster.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
         group.getH1F("hi_langle").fill(Math.toDegrees(traj.phi())); 
         group.getH2F("hi_langlesize").fill(Math.toDegrees(traj.phi()), cluster.getSize());
-        group.getH2F("hi_langlenev").fill(phi, Math.toDegrees(traj.phi()));
-        group.getH2F("hi_langlephi").fill(phi, Math.toDegrees(traj.phi()), cluster.getSize());
+        group.getH2F("hi_langlenev").fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.phi()));
+        group.getH2F("hi_langlephi").fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.phi()), cluster.getSize());
     }
             
     public void fillLanglePhiGroup(DataGroup group, Cluster cluster, Trajectory traj) {
-        int layer  = cluster.getLayer();
-        int il = layer-1;
-        int ir = il/2;
-        double phi = Math.toDegrees((cluster.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
-        group.getH1F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(phi); 
-        group.getH1F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(phi, -Math.toDegrees(traj.phi()));
+        group.getH1F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false))); 
+        group.getH1F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)), -Math.toDegrees(traj.phi()));
     }
 
     public void fillLangle2DGroup(DataGroup group, Cluster cluster, Trajectory traj) {
-            int layer  = cluster.getLayer();
-            int il = layer-1;
-            int ir = il/2;
-            double phi = Math.toDegrees((cluster.getCentroid()-Constants.BMTZSTRIPS[ir]/2)*Constants.BMTZPITCH[ir]*1E-4/Constants.BMTRADIUS[il]);
-            group.getH2F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(phi, Math.toDegrees(traj.phi())); 
-            group.getH2F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(phi, Math.toDegrees(traj.phi()), cluster.getSize());
+        group.getH2F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.phi())); 
+        group.getH2F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.phi()), cluster.getSize());
+    }
+
+    public void drawHistos() {
+        this.setCanvas(new EmbeddedCanvasTabbed("Size", "Size2D", "LanglePhi", "Langle2D", "Langle"));
+        this.getCanvas("Size").draw(this.getHistos().get("SizePos"));
+        this.getCanvas("Size").draw(this.getHistos().get("Size"));
+        this.getCanvas("Size").draw(this.getHistos().get("SizeNeg"));
+        this.getCanvas("Size2D").draw(this.getHistos().get("Size2D"));
+        this.getCanvas("Langle").draw(this.getHistos().get("Langle"));
+        this.getCanvas("LanglePhi").draw(this.getHistos().get("LanglePhi"));
+        this.getCanvas("Langle2D").draw(this.getHistos().get("Langle2D"));
+        this.setPlottingOptions("Size");
+        this.setPlottingOptions("Size2D");
+        this.setPlottingOptions("Langle");
+        this.setPlottingOptions("LanglePhi");
+        super.setPlottingOptions("Langle2D");
     }
 
     @Override
     public void setPlottingOptions(String name) {
+        super.setPlottingOptions(name);
         if(name.equals("Langle")) {
             this.getCanvas(name).getPad(1).getAxisZ().setLog(true);
         }

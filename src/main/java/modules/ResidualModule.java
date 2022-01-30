@@ -4,6 +4,7 @@ import analysis.Constants;
 import objects.Cluster;
 import objects.Event;
 import analysis.Module;
+import objects.Cluster.CVTType;
 import objects.Track;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
@@ -20,7 +21,7 @@ public class ResidualModule extends Module {
     
     private static final double BMAX = 1500;
     private static final double SMAX =  500;
-    private static final String[] names = new String[]{"SVT", "BMTC", "BMTZ"};
+    private static final CVTType[] types = new CVTType[]{CVTType.SVT, CVTType.BMTC, CVTType.BMTZ};
 
     
     public ResidualModule() {
@@ -55,12 +56,12 @@ public class ResidualModule extends Module {
         }
         return dg;
     }
-    public DataGroup bmtLayerGroup(String detector) {
+    public DataGroup bmtLayerGroup(CVTType detector) {
         DataGroup dg = new DataGroup(Constants.BMTREGIONS, Constants.BMTSECTORS);
         for (int ir = 0; ir < Constants.BMTREGIONS; ir++) {
             for (int is = 0; is < Constants.BMTSECTORS; is++) {
                 String name = "L" + Constants.BMTCLAYERS[ir] + "S" + (is + 1);
-                if(detector.equals("BMTZ"))
+                if(detector==CVTType.BMTZ)
                     name = "L" + Constants.BMTZLAYERS[ir] + "S" + (is + 1);
                 H1F hi_res = histo1D("hi_res_" + name, name + " Centroid Residual (um)", "Counts", 100, -BMAX, BMAX, 3);
                 dg.addDataSet(hi_res, ir * Constants.BMTSECTORS + is);
@@ -69,16 +70,20 @@ public class ResidualModule extends Module {
         return dg;
     }
 
-    public DataGroup bmt2DLayerGroup(String detector, String parameter, double min, double max) {
+    public DataGroup bmt2DLayerGroup(CVTType detector, String parameter, double min, double max) {
         DataGroup dg = new DataGroup(Constants.BMTREGIONS, Constants.BMTSECTORS);
         for (int ir = 0; ir < Constants.BMTREGIONS; ir++) {
             for (int is = 0; is < Constants.BMTSECTORS; is++) {
                 String name = "L" + Constants.BMTCLAYERS[ir] + "S" + (is + 1);
-                if(detector.equals("BMTZ"))
+                if(detector==CVTType.BMTZ)
                     name = "L" + Constants.BMTZLAYERS[ir] + "S" + (is + 1);
                 if(parameter.contains("phi")) {
                     min = Constants.BMTMEANPHI[is]-80;
                     max = Constants.BMTMEANPHI[is]+80;                    
+                }
+                else if(parameter.equals("strip")) {
+                    if(detector==CVTType.BMTZ) max = Constants.BMTZSTRIPS[ir];
+                    else if(detector==CVTType.BMTC) max = Constants.BMTCSTRIPS[ir];
                 }
                 H2F hi_res = histo2D("hi_res_" + name, parameter, name + " Residual (um)", 100, min, max, 100, -BMAX, BMAX);
                 dg.addDataSet(hi_res, ir * Constants.BMTSECTORS + is);
@@ -102,21 +107,22 @@ public class ResidualModule extends Module {
 
     @Override
     public void createHistos() {
-        for(int i=0; i<names.length; i++) {
+        for(int i=0; i<types.length; i++) {
             if(i==0) {
                 for(int il=0; il<Constants.SVTLAYERS; il++) {
                     int layer = il+1;
-                    this.getHistos().put(names[i] + "L" + layer, this.svtLayerGroup(layer));
+                    this.getHistos().put(types[i] + "L" + layer, this.svtLayerGroup(layer));
                 }
-                this.getHistos().put(names[i], this.svtGraphGroup());                                
-                this.getHistos().put(names[i]+"sum", this.sumGroup(SMAX));                                
+                this.getHistos().put(types[i].getName(), this.svtGraphGroup());                                
+                this.getHistos().put(types[i].getName()+"sum", this.sumGroup(SMAX));                                
             }
             else {
-                this.getHistos().put(names[i]+"phi",   this.bmt2DLayerGroup(names[i], "#phi (deg)", -180, 180));                
-                this.getHistos().put(names[i]+"theta", this.bmt2DLayerGroup(names[i], "#theta (deg)", 20, 140));                
-                this.getHistos().put(names[i]+"p",     this.bmt2DLayerGroup(names[i], "p (GeV)", 0.0, 2.0));                
-                this.getHistos().put(names[i], this.bmtLayerGroup(names[i]));                
-                this.getHistos().put(names[i]+"sum", this.sumGroup(BMAX));                
+                this.getHistos().put(types[i].getName()+"strip", this.bmt2DLayerGroup(types[i], "strip", 0, 800));                
+                this.getHistos().put(types[i].getName()+"phi",   this.bmt2DLayerGroup(types[i], "#phi (deg)", -180, 180));                
+                this.getHistos().put(types[i].getName()+"theta", this.bmt2DLayerGroup(types[i], "#theta (deg)", 20, 140));                
+                this.getHistos().put(types[i].getName()+"p",     this.bmt2DLayerGroup(types[i], "p (GeV)", 0.0, 2.0));                
+                this.getHistos().put(types[i].getName(), this.bmtLayerGroup(types[i]));                
+                this.getHistos().put(types[i].getName()+"sum", this.sumGroup(BMAX));                
             }
         }
     }
@@ -125,31 +131,32 @@ public class ResidualModule extends Module {
     public void fillHistos(Event event) {
         for(Cluster cluster : event.getClusters()) {
             if(cluster.getTrackId()>0) {
-                String detector = cluster.getName();
+                CVTType detector = cluster.getType();
                 
                 int layer  = cluster.getLayer();
                 int sector = cluster.getSector();
                 String name = "L"+layer+"S"+sector;
                 if(!event.getTrackMap().containsKey(cluster.getTrackId())) {
-                    System.out.println(cluster.getName() + " " + cluster.getTrackId());
+                    System.out.println(cluster.getType() + " " + cluster.getTrackId());
                     for(Track t : event.getTracks()) System.out.println(t.getId());
                 }
                 Track track = event.getTracks().get(event.getTrackMap().get(cluster.getTrackId()));
-                if(detector.equals("SVT"))
-                    this.getHistos().get(detector + "L" + layer).getH1F("hi_res_"+name).fill(cluster.getCentroidResidual()*1E4);
+                if(detector==CVTType.SVT)
+                    this.getHistos().get(detector.getName() + "L" + layer).getH1F("hi_res_"+name).fill(cluster.getCentroidResidual()*1E4);
                 else {
                     double phi = Math.toDegrees(track.phi());
                     if(Math.abs(phi-Constants.BMTMEANPHI[cluster.getSector()-1])>180) 
                         phi -= Math.signum(Math.abs(phi-Constants.BMTMEANPHI[cluster.getSector()-1]))*360;
-                    this.getHistos().get(detector).getH1F("hi_res_"+name).fill(cluster.getCentroidResidual()*1E4);
-                    this.getHistos().get(detector+"p").getH2F("hi_res_"+name).fill(track.p(),cluster.getCentroidResidual()*1E4);
-                    this.getHistos().get(detector+"phi").getH2F("hi_res_"+name).fill(phi,cluster.getCentroidResidual()*1E4);
-                    this.getHistos().get(detector+"theta").getH2F("hi_res_"+name).fill(Math.toDegrees(track.theta()),cluster.getCentroidResidual()*1E4);
+                    this.getHistos().get(detector.getName()).getH1F("hi_res_"+name).fill(cluster.getCentroidResidual()*1E4);
+                    this.getHistos().get(detector.getName()+"strip").getH2F("hi_res_"+name).fill(cluster.getCentroid(),cluster.getCentroidResidual()*1E4);
+                    this.getHistos().get(detector.getName()+"p").getH2F("hi_res_"+name).fill(track.p(),cluster.getCentroidResidual()*1E4);
+                    this.getHistos().get(detector.getName()+"phi").getH2F("hi_res_"+name).fill(phi,cluster.getCentroidResidual()*1E4);
+                    this.getHistos().get(detector.getName()+"theta").getH2F("hi_res_"+name).fill(Math.toDegrees(track.theta()),cluster.getCentroidResidual()*1E4);
                 }
-                this.getHistos().get(detector + "sum").getH1F("hi_res").fill(cluster.getCentroidResidual()*1E4);
-                this.getHistos().get(detector + "sum").getH2F("hi_res_p").fill(track.p(), cluster.getCentroidResidual()*1E4);
-                this.getHistos().get(detector + "sum").getH2F("hi_res_theta").fill(Math.toDegrees(track.theta()), cluster.getCentroidResidual()*1E4);
-                this.getHistos().get(detector + "sum").getH2F("hi_res_phi").fill(Math.toDegrees(track.phi()), cluster.getCentroidResidual()*1E4);
+                this.getHistos().get(detector.getName() + "sum").getH1F("hi_res").fill(cluster.getCentroidResidual()*1E4);
+                this.getHistos().get(detector.getName() + "sum").getH2F("hi_res_p").fill(track.p(), cluster.getCentroidResidual()*1E4);
+                this.getHistos().get(detector.getName() + "sum").getH2F("hi_res_theta").fill(Math.toDegrees(track.theta()), cluster.getCentroidResidual()*1E4);
+                this.getHistos().get(detector.getName() + "sum").getH2F("hi_res_phi").fill(Math.toDegrees(track.phi()), cluster.getCentroidResidual()*1E4);
             }
         }
     }
@@ -158,15 +165,15 @@ public class ResidualModule extends Module {
     
     @Override
     public void analyzeHistos() {
-        for(int i=0; i<names.length; i++) {
+        for(int i=0; i<types.length; i++) {
             if(i==0) {
                 for(int il=0; il<Constants.SVTLAYERS; il++) {
                     int layer = il+1;
-                    GraphErrors graph = this.getHistos().get(names[i]).getGraph("gr_L" + layer);
+                    GraphErrors graph = this.getHistos().get(types[i].getName()).getGraph("gr_L" + layer);
                     for(int is=0; is<Constants.SVTSECTORS[il]; is++) {
                         int sector = is+1;
                         String name = "L"+layer+"S"+sector;
-                        H1F hi = this.getHistos().get(names[i] + "L" + layer).getH1F("hi_res_"+name);
+                        H1F hi = this.getHistos().get(types[i].getName() + "L" + layer).getH1F("hi_res_"+name);
                         this.fitResiduals(hi);
                         double mean  = hi.getFunction().getParameter(1);
                         double sigma = hi.getFunction().getParameter(2);
@@ -180,13 +187,13 @@ public class ResidualModule extends Module {
                     for(int is=0; is<Constants.BMTSECTORS; is++) {
                         int sector = is+1;
                         String name = "L" + Constants.BMTCLAYERS[ir] + "S" + (is + 1);
-                        if(names[i].equals("BMTZ"))
+                        if(types[i]==CVTType.BMTZ)
                             name = "L" + Constants.BMTZLAYERS[ir] + "S" + (is + 1);
-                        this.fitResiduals(this.getHistos().get(names[i]).getH1F("hi_res_"+name));
+                        this.fitResiduals(this.getHistos().get(types[i].getName()).getH1F("hi_res_"+name));
                     }
                 }
             }
-            this.fitResiduals(this.getHistos().get(names[i] + "sum").getH1F("hi_res"));
+            this.fitResiduals(this.getHistos().get(types[i].getName() + "sum").getH1F("hi_res"));
         }
     }
 
