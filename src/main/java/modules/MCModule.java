@@ -483,8 +483,8 @@ public class MCModule extends Module {
     
     @Override
     public void drawHistos() {
-        this.setCanvas(new EmbeddedCanvasTabbed("MC", "Seed", "SeedResolution1", "SeedResolution2", "SeedResolution3", "SeedPulls", 
-                                                "Track", "Resolution1", "Resolution2", "Resolution3", "Pulls", "Efficiency"));
+        this.addCanvas("MC", "Seed", "SeedResolution1", "SeedResolution2", "SeedResolution3", "SeedPulls", 
+                       "Track", "Resolution1", "Resolution2", "Resolution3", "Pulls", "Efficiency");
         this.getCanvas("MC").draw(this.getHistos().get("MC"));
         this.getCanvas("Seed").draw(this.getHistos().get("AllSeeds"));
         this.getCanvas("Seed").draw(this.getHistos().get("Seed"));

@@ -140,7 +140,7 @@ public class HitModule extends Module {
     
     @Override
     public void drawHistos() {
-        this.setCanvas(new EmbeddedCanvasTabbed("Hits", "SVT", "BMTC", "BMTZ"));
+        this.addCanvas("Hits", "SVT", "BMTC", "BMTZ");
         this.getCanvas().getCanvas("Hits").draw(this.getHistos().get("Hits"));
         this.getCanvas().getCanvas("Hits").draw(this.getHistos().get("HitsNotOnTrack"));
         this.getCanvas().getCanvas("Hits").draw(this.getHistos().get("HitsOnTrack"));

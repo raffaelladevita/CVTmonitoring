@@ -161,7 +161,7 @@ public class ClusterModule extends Module {
     
     @Override
     public void drawHistos() {
-        this.setCanvas(new EmbeddedCanvasTabbed("Clusters", "SVT", "BMTC", "BMTZ", "BMTCsize", "BMTZsize"));
+        this.addCanvas("Clusters", "SVT", "BMTC", "BMTZ", "BMTCsize", "BMTZsize");
         this.getCanvas("Clusters").draw(this.getHistos().get("Clusters"));
         this.getCanvas("Clusters").draw(this.getHistos().get("ClustersNotOnTrack"));
         this.getCanvas("Clusters").draw(this.getHistos().get("ClustersOnTrack"));

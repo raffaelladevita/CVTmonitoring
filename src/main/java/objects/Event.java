@@ -32,9 +32,10 @@ public class Event {
     private final Map<Integer, List<Integer>> clusterMap = new HashMap<>();
     private final Map<Integer, List<Integer>> hitMap = new HashMap<>();
     private final Map<Integer, List<Integer>> trajMap = new HashMap<>();
-
+    private DataEvent hipoEvent;
 
     public Event(DataEvent event) {
+        this.hipoEvent = event;
         this.readEvent(event);
         if(debug) System.out.println("Read event with " + tracks.size() + " particles");
     }
@@ -273,6 +274,10 @@ public class Event {
     
     public double getStartTime() {
         return startTime;
+    }
+
+    public DataEvent getHipoEvent() {
+        return hipoEvent;
     }
     
     

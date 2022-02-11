@@ -22,10 +22,11 @@ public class PullsModule extends Module {
     private static final double BMAX = 5;
     private static final double SMAX = 5;
     private static final String[] names = new String[]{"SVT", "BMTC", "BMTZ"};
-
+    private int scale = 1;
     
-    public PullsModule() {
+    public PullsModule(int residualScale) {
         super("Pulls",false);
+        this.scale = residualScale;
     }
     
     public DataGroup svtLayerGroup(int layer) {
@@ -112,7 +113,7 @@ public class PullsModule extends Module {
                 String name = "L"+layer+"S"+sector;
                 
                 double pull = cluster.getCentroidResidual()/cluster.getCentroidError();
-                if(cluster.getType()==CVTType.BMTZ) pull = pull/Constants.BMTRADIUS[layer-1];
+                if(cluster.getType()==CVTType.BMTZ) pull = pull/Constants.BMTRADIUS[layer-1]/this.scale;
                 
                 Track track = event.getTracks().get(event.getTrackMap().get(cluster.getTrackId()));
                 if(cluster.getType()==CVTType.SVT)

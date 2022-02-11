@@ -1,8 +1,6 @@
 package modules;
 
 import analysis.Constants;
-import java.util.ArrayList;
-import java.util.List;
 import objects.Cluster;
 import objects.Event;
 import analysis.Module;
@@ -14,7 +12,6 @@ import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.fitter.DataFitter;
-import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.graphics.EmbeddedPad;
 import org.jlab.groot.group.DataGroup;
@@ -120,6 +117,9 @@ public class LorentzModule extends Module {
             if(cluster.getTrackId()>0) {
                 CVTType detector = cluster.getType();                               
                 Track track = event.getTracks().get(event.getTrackMap().get(cluster.getTrackId()));
+                if(event.getTrajectoryMap()==null || !event.getTrajectoryMap().containsKey(cluster.getTrackId())) {
+                    return;
+                }
                 if(detector==CVTType.BMTZ) {
                     Trajectory traj = null;
                     for(Trajectory t : event.getTrajectories(cluster.getTrackId())) {
@@ -181,7 +181,7 @@ public class LorentzModule extends Module {
     }
 
     public void drawHistos() {
-        this.setCanvas(new EmbeddedCanvasTabbed("Size", "Size2D", "LanglePhi", "Langle2D", "Langle"));
+        this.addCanvas("Size", "Size2D", "LanglePhi", "Langle2D", "Langle");
         this.getCanvas("Size").draw(this.getHistos().get("SizePos"));
         this.getCanvas("Size").draw(this.getHistos().get("Size"));
         this.getCanvas("Size").draw(this.getHistos().get("SizeNeg"));

@@ -22,10 +22,11 @@ public class ResidualModule extends Module {
     private static final double BMAX = 1500;
     private static final double SMAX =  500;
     private static final CVTType[] types = new CVTType[]{CVTType.SVT, CVTType.BMTC, CVTType.BMTZ};
-
+    private int scale = 1;
     
-    public ResidualModule() {
+    public ResidualModule(int residualScale) {
         super("Residuals",false);
+        this.scale = residualScale;
     }
     
     public DataGroup svtLayerGroup(int layer) {
@@ -141,22 +142,23 @@ public class ResidualModule extends Module {
                     for(Track t : event.getTracks()) System.out.println(t.getId());
                 }
                 Track track = event.getTracks().get(event.getTrackMap().get(cluster.getTrackId()));
+                double residual = cluster.getCentroidResidual()*1E4/this.scale;
                 if(detector==CVTType.SVT)
-                    this.getHistos().get(detector.getName() + "L" + layer).getH1F("hi_res_"+name).fill(cluster.getCentroidResidual()*1E4);
+                    this.getHistos().get(detector.getName() + "L" + layer).getH1F("hi_res_"+name).fill(residual);
                 else {
                     double phi = Math.toDegrees(track.phi());
                     if(Math.abs(phi-Constants.BMTMEANPHI[cluster.getSector()-1])>180) 
                         phi -= Math.signum(Math.abs(phi-Constants.BMTMEANPHI[cluster.getSector()-1]))*360;
-                    this.getHistos().get(detector.getName()).getH1F("hi_res_"+name).fill(cluster.getCentroidResidual()*1E4);
-                    this.getHistos().get(detector.getName()+"strip").getH2F("hi_res_"+name).fill(cluster.getCentroid(),cluster.getCentroidResidual()*1E4);
-                    this.getHistos().get(detector.getName()+"p").getH2F("hi_res_"+name).fill(track.p(),cluster.getCentroidResidual()*1E4);
-                    this.getHistos().get(detector.getName()+"phi").getH2F("hi_res_"+name).fill(phi,cluster.getCentroidResidual()*1E4);
-                    this.getHistos().get(detector.getName()+"theta").getH2F("hi_res_"+name).fill(Math.toDegrees(track.theta()),cluster.getCentroidResidual()*1E4);
+                    this.getHistos().get(detector.getName()).getH1F("hi_res_"+name).fill(residual);
+                    this.getHistos().get(detector.getName()+"strip").getH2F("hi_res_"+name).fill(cluster.getCentroid(),residual);
+                    this.getHistos().get(detector.getName()+"p").getH2F("hi_res_"+name).fill(track.p(),residual);
+                    this.getHistos().get(detector.getName()+"phi").getH2F("hi_res_"+name).fill(phi,residual);
+                    this.getHistos().get(detector.getName()+"theta").getH2F("hi_res_"+name).fill(Math.toDegrees(track.theta()),residual);
                 }
-                this.getHistos().get(detector.getName() + "sum").getH1F("hi_res").fill(cluster.getCentroidResidual()*1E4);
-                this.getHistos().get(detector.getName() + "sum").getH2F("hi_res_p").fill(track.p(), cluster.getCentroidResidual()*1E4);
-                this.getHistos().get(detector.getName() + "sum").getH2F("hi_res_theta").fill(Math.toDegrees(track.theta()), cluster.getCentroidResidual()*1E4);
-                this.getHistos().get(detector.getName() + "sum").getH2F("hi_res_phi").fill(Math.toDegrees(track.phi()), cluster.getCentroidResidual()*1E4);
+                this.getHistos().get(detector.getName() + "sum").getH1F("hi_res").fill(residual);
+                this.getHistos().get(detector.getName() + "sum").getH2F("hi_res_p").fill(track.p(), residual);
+                this.getHistos().get(detector.getName() + "sum").getH2F("hi_res_theta").fill(Math.toDegrees(track.theta()), residual);
+                this.getHistos().get(detector.getName() + "sum").getH2F("hi_res_phi").fill(Math.toDegrees(track.phi()), residual);
             }
         }
     }
@@ -201,7 +203,7 @@ public class ResidualModule extends Module {
         double mean = hi.getDataX(hi.getMaximumBin());
         double amp  = hi.getBinContent(hi.getMaximumBin());
         double rms  = hi.getRMS();
-        double sigma = rms/2;
+        double sigma = rms/3;
         String name = hi.getName().split("hi")[1];
         F1D f1 = new F1D("f1" + name,"[amp]*gaus(x,[mean],[sigma])",-0.3, 0.3);
         f1.setLineColor(2);

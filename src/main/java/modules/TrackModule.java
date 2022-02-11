@@ -144,7 +144,7 @@ public class TrackModule extends Module {
     
     @Override
     public void drawHistos() {
-        this.setCanvas(new EmbeddedCanvasTabbed("Tracks", "Tracks2D", "Seeds", "EBTracks"));
+        this.addCanvas("Tracks", "Tracks2D", "Seeds", "EBTracks");
         this.getCanvas("Tracks").draw(this.getHistos().get("Tracks"));
         this.getCanvas("Tracks2D").draw(this.getHistos().get("Tracks2D"));
         this.getCanvas("Seeds").draw(this.getHistos().get("Seeds"));

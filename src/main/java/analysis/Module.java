@@ -1,5 +1,7 @@
 package analysis;
 
+import java.io.File;
+import java.util.ArrayList;
 import objects.Event;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,7 +25,8 @@ public class Module {
     private final String          moduleName;
     private Map<String,DataGroup> moduleGroup  = new LinkedHashMap<>();
     private EmbeddedCanvasTabbed  moduleCanvas = null;
-    
+    private List<String> canvasNames = new ArrayList<>();
+            
     private int nevents;
     private boolean cosmics;
 
@@ -70,6 +73,10 @@ public class Module {
         return moduleCanvas.getCanvas(name);
     }
     
+    public List<String> getCanvasNames() {
+        return canvasNames;
+    }
+    
     public Map<String,DataGroup> getHistos() {
         return moduleGroup;
     }
@@ -109,20 +116,26 @@ public class Module {
 
     public void drawHistos() {
         for(String key : moduleGroup.keySet()) {            
-            if(this.moduleCanvas==null) this.moduleCanvas = new EmbeddedCanvasTabbed(key);
-            else                        this.moduleCanvas.addCanvas(key);
+            this.addCanvas(key);
             this.moduleCanvas.getCanvas(key).draw(moduleGroup.get(key));
             this.setPlottingOptions(key);
             this.moduleCanvas.getCanvas(key).setGridX(false);
             this.moduleCanvas.getCanvas(key).setGridY(false);
         }
     }
-
-    public void setCanvas(EmbeddedCanvasTabbed moduleCanvas) {
-        this.moduleCanvas = moduleCanvas;
+    
+    public final void addCanvas(String name) {
+        if(this.moduleCanvas==null) this.moduleCanvas = new EmbeddedCanvasTabbed(name);
+        else                        this.moduleCanvas.addCanvas(name);
+        this.canvasNames.add(name);
     }
     
-
+    public final void addCanvas(String... names) {
+        for(String name : names) {
+            this.addCanvas(name);
+        }
+    }
+    
     public final void setHistos(Map<String,DataGroup> group) {
         this.moduleGroup = group;
     }
@@ -132,6 +145,27 @@ public class Module {
         this.getCanvas().getCanvas(name).setGridY(false);        
     }
 
+    public void printHistos(String figures) {
+        File theDir = new File(figures);
+        // if the directory does not exist, create it
+        if (!theDir.exists()) {
+            boolean result = false;
+            try{
+                theDir.mkdir();
+                result = true;
+            } 
+            catch(SecurityException se){
+                //handle it
+            }        
+            if(result) {    
+            System.out.println(">>>>> Created directory " + figures);
+            }
+        }
+        for(String cname : canvasNames) {
+            this.moduleCanvas.getCanvas(cname).save(figures + "/" + this.getName() + "_" + cname + ".png");
+        }
+    }
+        
     public final void readDataGroup(TDirectory dir) {
         for(String key : moduleGroup.keySet()) {
             String folder = this.getName() + "/" + key + "/";

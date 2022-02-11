@@ -38,13 +38,13 @@ public class CVTMonitoring {
         
     ArrayList<Module>    modules = new ArrayList<>();
 
-    public CVTMonitoring(int pid, boolean cosmics, String opts) {
-        this.init(pid, cosmics, opts);
+    public CVTMonitoring(int pid, boolean cosmics, int residualScale, String opts) {
+        this.init(pid, cosmics, residualScale, opts);
     }
     
     
 
-    private void init(int pid, boolean cosmics, String opts) {
+    private void init(int pid, boolean cosmics, int residualScale, String opts) {
         
         GStyle.getH1FAttributes().setOptStat(opts);
         GStyle.getAxisAttributesX().setTitleFontSize(24);
@@ -66,8 +66,8 @@ public class CVTMonitoring {
         this.modules.add(new HitModule());
         this.modules.add(new ClusterModule());
         this.modules.add(new LorentzModule());
-        this.modules.add(new ResidualModule());
-        this.modules.add(new PullsModule());
+        this.modules.add(new ResidualModule(residualScale));
+        this.modules.add(new PullsModule(residualScale));
         this.modules.add(new MCModule(cosmics));
     }
 
@@ -120,13 +120,20 @@ public class CVTMonitoring {
         System.setErr(errStream);
     }
 
+    private void printHistos() {
+        System.out.println("\n>>>>> Printing canvases to directory plots");
+        for(Module m : modules) {
+            m.printHistos("plots");
+        }
+    }
+    
     private void testHistos() {
         for(Module m : modules) {
             m.testHistos();
         }
     }
     
-        public static void main(String[] args) {
+    public static void main(String[] args) {
         
         OptionParser parser = new OptionParser("cvtMonitoring [options] file1 file2 ... fileN");
         parser.setRequiresInputList(false);
@@ -136,9 +143,11 @@ public class CVTMonitoring {
         // histogram based analysis
         parser.addOption("-histo"      ,"0",    "read histogram file (0/1)");
         parser.addOption("-plot"       ,"1",    "display histograms (0/1)");
+        parser.addOption("-print"      ,"0",    "print histograms (0/1)");
         parser.addOption("-stats"      ,"",     "histogram stat option (e.g. \"10\" will display entries)");
         parser.addOption("-pid"        ,"0",    "MC particle PID (default: use first particle in the bank)");
         parser.addOption("-cosmics"    ,"0",    "analyze as cosmics (0=false, 1=true)");
+        parser.addOption("-residual"   ,"1",    "residual scale (1=cm, 10=mm)");
         
         parser.parse(args);
         
@@ -147,16 +156,18 @@ public class CVTMonitoring {
         if(!namePrefix.isEmpty()) {
             histoName  = namePrefix + "_" + histoName; 
         }
-        int     maxEvents    = parser.getOption("-n").intValue();        
-        boolean readHistos   = (parser.getOption("-histo").intValue()!=0);            
-        boolean openWindow   = (parser.getOption("-plot").intValue()!=0);
-        String  optStats     = parser.getOption("-stats").stringValue(); 
-        int     pid          = parser.getOption("-pid").intValue();  
-        boolean cosmics      = parser.getOption("-cosmics").intValue()!=0;
+        int     maxEvents     = parser.getOption("-n").intValue();        
+        boolean readHistos    = (parser.getOption("-histo").intValue()!=0);            
+        boolean openWindow    = (parser.getOption("-plot").intValue()!=0);
+        boolean printHistos   = (parser.getOption("-print").intValue()!=0);
+        String  optStats      = parser.getOption("-stats").stringValue(); 
+        int     pid           = parser.getOption("-pid").intValue();  
+        boolean cosmics       = parser.getOption("-cosmics").intValue()!=0;
+        int     residualScale = parser.getOption("-residual").intValue();  
 
         if(!openWindow) System.setProperty("java.awt.headless", "true");
 
-        CVTMonitoring cvtMon = new CVTMonitoring(pid, cosmics, optStats);
+        CVTMonitoring cvtMon = new CVTMonitoring(pid, cosmics, residualScale, optStats);
         
         List<String> inputList = parser.getInputList();
         if(inputList.isEmpty()==true){
@@ -204,6 +215,7 @@ public class CVTMonitoring {
             frame.add(cvtMon.plotHistos());
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
+            if(printHistos) cvtMon.printHistos();
         }
     }
 

@@ -342,7 +342,7 @@ public class Track extends Particle {
     }
     
     public void addScale(DataBank config) {
-        this.solenoid = config.getFloat("solenoid", id);
+        this.solenoid = config.getFloat("solenoid", 0);
     }
     
     public void addEBinfo(DataBank part, DataBank track) {
