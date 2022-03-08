@@ -40,7 +40,6 @@ public class ElasticModule extends Module {
     }
     
     private DataGroup generalGroup() {
-        System.out.println(this.getBeamEnergy());
         H2F hi_q2w   = histo2D("hi_q2w", "W (GeV)", "Q^2 (GeV^2)", 100, MINW, MAXW, 100, MINQ, MAXQ); 
         H1F hi_w     = histo1D("hi_w", "W (GeV)", "Counts", 100, MINW, MAXW, 0);
         H2F hi_wphi  = histo2D("hi_wphi", "#phi (deg)", "W (GeV)", 100, PHIMIN, PHIMAX, 100, MINW, MAXW); 

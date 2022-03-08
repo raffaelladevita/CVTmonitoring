@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 import modules.ClusterModule;
+import modules.DoubletsModule;
 import modules.ElasticModule;
 import modules.HitModule;
 import modules.LorentzModule;
@@ -71,6 +72,7 @@ public class CVTMonitoring {
         this.modules.add(new PullsModule(residualScale));
         this.modules.add(new MCModule(cosmics));
         this.modules.add(new ElasticModule(ebeam, lund));
+        this.modules.add(new DoubletsModule(ebeam, lund));
     }
 
     private void processEvent(DataEvent de) {
@@ -151,7 +153,7 @@ public class CVTMonitoring {
         parser.addOption("-beam"       ,"10.6", "Beam energy (GeV)");
         parser.addOption("-cosmics"    ,"0",    "analyze as cosmics (0=false, 1=true)");
         parser.addOption("-residual"   ,"1",    "residual scale (1=cm, 10=mm)");
-        parser.addOption("-lund"       ,"",     "save events to lund");
+        parser.addOption("-lund"       ,"0",    "save events to lund");
         
         parser.parse(args);
         
