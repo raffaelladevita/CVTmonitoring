@@ -22,6 +22,7 @@ public class Constants {
     public static final double B = 5; //field in Tesla
     
     public static int PID = 2212;
+    public static double THMIN = 30;
     
     public static final int NSIGMA = 3;
     public static final double SIGMA_P = 5; // 3;

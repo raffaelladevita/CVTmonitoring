@@ -21,6 +21,7 @@ public class Event {
     private int event;
     private double startTime;
     private Track mcParticle;
+    private final List<Track> particles  = new ArrayList<>();
     private final List<Track> tracks     = new ArrayList<>();
     private final List<Track> seeds      = new ArrayList<>();
     private final List<Track> mcTracks   = new ArrayList<>();
@@ -62,24 +63,68 @@ public class Event {
         DataBank mc  = this.getBank(event, "MC::Particle");
         if(mc!=null) {
             int index = 0;
+            int pid = 0;
             if(Constants.PID!=0) {
+                pid = Constants.PID;
                 for (int loop = 0; loop < mc.rows(); loop++) {
-                    if(mc.getInt("pid", loop)==Constants.PID) {
+                    double px = mc.getFloat("px", loop);
+                    double py = mc.getFloat("py", loop);
+                    double pz = mc.getFloat("pz", loop);
+                    double theta = Math.toDegrees(Math.acos(pz/Math.sqrt(px*px+py*py+pz*pz)));
+                    if(mc.getInt("pid", loop)==Constants.PID  && theta>Constants.THMIN) {
                         index = loop;
                         break;
                     }
                 }
             }
             else {
-                Constants.PID = mc.getInt("pid", 0);
+                if(mc.getInt("pid", 0)!=0) 
+                    pid = mc.getInt("pid", 0);
+                else
+                    pid = -13;
             }
-            mcParticle = new Track(Constants.PID,
+            mcParticle = new Track(pid,
                             mc.getFloat("px", index),
                             mc.getFloat("py", index),
                             mc.getFloat("pz", index),
                             mc.getFloat("vx", index),
                             mc.getFloat("vy", index),
                             mc.getFloat("vz", index));
+        }
+    }
+    
+    private void readParticles(DataEvent event) {
+        DataBank recPart   = this.getBank(event, "REC::Particle");
+        DataBank recTrack  = this.getBank(event, "REC::Track");
+        if(recPart!=null) {
+            for (int loop = 0; loop < recPart.rows(); loop++) {    
+                int pid    = recPart.getInt("pid", loop);
+                int charge = recPart.getByte("charge", loop);
+                if(pid==0) {
+                    pid = charge==0 ? 22 : charge*211;
+                }
+                Track t = new Track(pid,
+                            recPart.getFloat("px", loop),
+                            recPart.getFloat("py", loop),
+                            recPart.getFloat("pz", loop),
+                            recPart.getFloat("vx", loop),
+                            recPart.getFloat("vy", loop),
+                            recPart.getFloat("vz", loop));
+                t.setRECStatus(recPart.getShort("status", loop));
+                t.setChi2pid(recPart.getFloat("chi2pid", loop));
+                if(recTrack!=null) {
+                    for(int j=0; j<recTrack.rows(); j++) {
+                        if(recTrack.getShort("pindex", j)==loop) {
+                            t.setSector(recTrack.getByte("sector", j));
+                            t.setNDF(recTrack.getShort("NDF", j));
+                            t.setChi2(recTrack.getFloat("chi2", j));
+                            t.setStatus(recTrack.getShort("status", j));
+                            break;
+                        }
+                    }
+                }                    
+                particles.add(t);
+            }
         }
     }
     
@@ -207,6 +252,7 @@ public class Event {
     private void readEvent(DataEvent de) {
         this.readHeader(de);
         this.readMCParticle(de);
+        this.readParticles(de);
         this.readStartTime(de);
         this.readTracks(de);
         this.readTrajectory(de);
@@ -261,6 +307,10 @@ public class Event {
     public Track getMCTrack(boolean cosmics) {
         if(cosmics && mcParticle!=null) mcParticle.toCosmic();
         return mcParticle;
+    }
+
+    public List<Track> getParticles() {
+        return particles;
     }
 
     public int getRun() {

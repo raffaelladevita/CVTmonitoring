@@ -26,6 +26,8 @@ public class Track extends Particle {
     private int pindex = -1;
     private double solenoid = -1;
     private double chi2pid = Double.POSITIVE_INFINITY;
+    private int recStatus;
+    private int sector;
     private int status;
     private int type;
     private final double[][] covMatrix = new double[5][5];
@@ -166,6 +168,26 @@ public class Track extends Particle {
 
     public void setChi2pid(double chi2pid) {
         this.chi2pid = chi2pid;
+    }
+
+    public int getDetector() {
+        return (int) Math.abs(this.recStatus)/1000;
+    }
+
+    public int getRECStatus() {
+        return recStatus;
+    }
+
+    public void setRECStatus(int status) {
+        this.recStatus = status;
+    }
+
+    public int getSector() {
+        return sector;
+    }
+
+    public void setSector(int sector) {
+        this.sector = sector;
     }
 
     public double pt() {

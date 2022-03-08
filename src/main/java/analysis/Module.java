@@ -1,11 +1,15 @@
 package analysis;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import objects.Event;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.jlab.clas.physics.PhysicsEvent;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.data.IDataSet;
@@ -29,10 +33,27 @@ public class Module {
             
     private int nevents;
     private boolean cosmics;
+    private double beamenergy;
+
+    private BufferedWriter lundFile = null;
+    private PhysicsEvent physicsEvent = null;
+    
+    public Module(String name){                               
+        this.moduleName = name;
+        this.init();
+    }
 
     public Module(String name, boolean cosmics){                               
         this.moduleName = name;
         this.cosmics    = cosmics;
+        this.init();
+    }
+
+    public Module(String name, boolean cosmics, double beamenergy, boolean lund) {                             
+        this.moduleName = name;
+        this.cosmics    = cosmics;
+        this.beamenergy = beamenergy;
+        if(lund) this.openLund();
         this.init();
     }
 
@@ -63,6 +84,18 @@ public class Module {
 
     public boolean isCosmics() {
         return cosmics;
+    }
+
+    public double getBeamEnergy() {
+        return beamenergy;
+    }
+
+    public PhysicsEvent getPhysicsEvent() {
+        return physicsEvent;
+    }
+
+    public void setPhysicsEvent(PhysicsEvent physicsEvent) {
+        this.physicsEvent = physicsEvent;
     }
 
     public EmbeddedCanvasTabbed getCanvas() {
@@ -105,9 +138,19 @@ public class Module {
         // process event
         this.nevents++;
         this.fillHistos(event);
+        this.writeToLund();
     }
 
-    
+    private void writeToLund(){
+        if(lundFile!=null && physicsEvent!=null) {
+            try {
+                lundFile.write(physicsEvent.toLundString());
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+    }
+
     public final EmbeddedCanvasTabbed plotHistos() {
         this.analyzeHistos();
         this.drawHistos();
@@ -184,6 +227,23 @@ public class Module {
             }            
             this.moduleGroup.replace(key, newGroup);
         }
+    }
+    public void openLund() {
+        try {
+            this.lundFile = new BufferedWriter(new FileWriter(this.getName() + ".lund"));
+            }
+            catch(IOException e) {
+                System.out.println(e.getMessage());
+        }
+    }
+    
+    public void closeLund() {
+        if(lundFile!=null)
+            try {
+                this.lundFile.close();
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
     }
     
     public final void writeDataGroup(TDirectory dir) {

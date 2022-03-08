@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 import modules.ClusterModule;
+import modules.ElasticModule;
 import modules.HitModule;
 import modules.LorentzModule;
 import modules.MCModule;
@@ -38,13 +39,13 @@ public class CVTMonitoring {
         
     ArrayList<Module>    modules = new ArrayList<>();
 
-    public CVTMonitoring(int pid, boolean cosmics, int residualScale, String opts) {
-        this.init(pid, cosmics, residualScale, opts);
+    public CVTMonitoring(int pid, double ebeam, boolean cosmics, int residualScale, String opts, boolean lund) {
+        this.init(pid, ebeam, cosmics, residualScale, opts, lund);
     }
     
     
 
-    private void init(int pid, boolean cosmics, int residualScale, String opts) {
+    private void init(int pid, double ebeam, boolean cosmics, int residualScale, String opts, boolean lund) {
         
         GStyle.getH1FAttributes().setOptStat(opts);
         GStyle.getAxisAttributesX().setTitleFontSize(24);
@@ -69,6 +70,7 @@ public class CVTMonitoring {
         this.modules.add(new ResidualModule(residualScale));
         this.modules.add(new PullsModule(residualScale));
         this.modules.add(new MCModule(cosmics));
+        this.modules.add(new ElasticModule(ebeam, lund));
     }
 
     private void processEvent(DataEvent de) {
@@ -146,8 +148,10 @@ public class CVTMonitoring {
         parser.addOption("-print"      ,"0",    "print histograms (0/1)");
         parser.addOption("-stats"      ,"",     "histogram stat option (e.g. \"10\" will display entries)");
         parser.addOption("-pid"        ,"0",    "MC particle PID (default: use first particle in the bank)");
+        parser.addOption("-beam"       ,"10.6", "Beam energy (GeV)");
         parser.addOption("-cosmics"    ,"0",    "analyze as cosmics (0=false, 1=true)");
         parser.addOption("-residual"   ,"1",    "residual scale (1=cm, 10=mm)");
+        parser.addOption("-lund"       ,"",     "save events to lund");
         
         parser.parse(args);
         
@@ -162,12 +166,14 @@ public class CVTMonitoring {
         boolean printHistos   = (parser.getOption("-print").intValue()!=0);
         String  optStats      = parser.getOption("-stats").stringValue(); 
         int     pid           = parser.getOption("-pid").intValue();  
+        double  ebeam         = parser.getOption("-beam").doubleValue();
         boolean cosmics       = parser.getOption("-cosmics").intValue()!=0;
         int     residualScale = parser.getOption("-residual").intValue();  
+        boolean lund          = (parser.getOption("-lund").intValue()!=0);
 
         if(!openWindow) System.setProperty("java.awt.headless", "true");
 
-        CVTMonitoring cvtMon = new CVTMonitoring(pid, cosmics, residualScale, optStats);
+        CVTMonitoring cvtMon = new CVTMonitoring(pid, ebeam, cosmics, residualScale, optStats, lund);
         
         List<String> inputList = parser.getInputList();
         if(inputList.isEmpty()==true){

@@ -8,9 +8,7 @@ import org.jlab.clas.pdg.PhysicsConstants;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.fitter.DataFitter;
-import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.group.DataGroup;
-import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.math.F1D;
 
 /**
