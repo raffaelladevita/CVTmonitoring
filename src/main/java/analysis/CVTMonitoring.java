@@ -82,7 +82,6 @@ public class CVTMonitoring {
             flag = false;
             String[] mods = active.split(":");
             for(String m : mods) {
-                System.out.println(m + " " + module.getName());
                 if(m.trim().equalsIgnoreCase(module.getName())) {
                     flag = true;
                     break;
