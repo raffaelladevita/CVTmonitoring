@@ -32,7 +32,7 @@ public class DoubletsModule extends Module {
     private final double THETAMIN = 30.0;
     private final double THETAMAX = 44.0;
     private final double DTHETA   = 15.0;
-    private final double THETACUT = 36.0;
+    private final double THETACUT = 34.0;
     private final double VZMIN = -10; 
     private final double VZMAX =  10;
     
@@ -48,7 +48,7 @@ public class DoubletsModule extends Module {
             H2F hi_dtheta_dphi  = histo2D("hi_dtheta_dphi_"  + charges[i], "#theta_f-#theta_c (deg)", "#phi_f-#phi_c (deg)", 100, -DTHETA, DTHETA, 100, -DPHI, DPHI); 
             H2F hi_dtheta_dp    = histo2D("hi_dtheta_dp_"    + charges[i], "#theta_f-#theta_c (deg)", "p_f-p_c (GeV)",       100, -DTHETA, DTHETA, 100, -DP, DP); 
             H2F hi_theta_dtheta = histo2D("hi_theta_dtheta_" + charges[i], "#theta_f (deg)", "#theta_f-#theta_c (deg)",      100, THETAMIN, THETAMAX, 100, -DTHETA, DTHETA); 
-            H2F hi_theta_dphi   = histo2D("hi_theta_dphi_"   + charges[i], "#theta_f (deg)", "#phi_f-$phi_c (deg)",          100, THETAMIN, THETAMAX, 100, -DPHI, DPHI); 
+            H2F hi_theta_dphi   = histo2D("hi_theta_dphi_"   + charges[i], "#theta_f (deg)", "#phi_f-#phi_c (deg)",          100, THETAMIN, THETAMAX, 100, -DPHI, DPHI); 
             dg.addDataSet(hi_dtheta_dphi,  0+i*4);
             dg.addDataSet(hi_dtheta_dp,    1+i*4);
             dg.addDataSet(hi_theta_dtheta, 2+i*4);

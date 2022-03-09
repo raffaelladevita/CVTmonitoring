@@ -40,13 +40,13 @@ public class CVTMonitoring {
         
     ArrayList<Module>    modules = new ArrayList<>();
 
-    public CVTMonitoring(int pid, double ebeam, boolean cosmics, int residualScale, String opts, boolean lund) {
-        this.init(pid, ebeam, cosmics, residualScale, opts, lund);
+    public CVTMonitoring(String active, int pid, double ebeam, boolean cosmics, int residualScale, String opts, boolean lund) {
+        this.init(active, pid, ebeam, cosmics, residualScale, opts, lund);
     }
     
     
 
-    private void init(int pid, double ebeam, boolean cosmics, int residualScale, String opts, boolean lund) {
+    private void init(String active, int pid, double ebeam, boolean cosmics, int residualScale, String opts, boolean lund) {
         
         GStyle.getH1FAttributes().setOptStat(opts);
         GStyle.getAxisAttributesX().setTitleFontSize(24);
@@ -64,17 +64,37 @@ public class CVTMonitoring {
         GStyle.getH1FAttributes().setLineWidth(1);
 
         Constants.setPID(pid);
-        this.modules.add(new TrackModule(cosmics));
-        this.modules.add(new HitModule());
-        this.modules.add(new ClusterModule());
-        this.modules.add(new LorentzModule());
-        this.modules.add(new ResidualModule(residualScale));
-        this.modules.add(new PullsModule(residualScale));
-        this.modules.add(new MCModule(cosmics));
-        this.modules.add(new ElasticModule(ebeam, lund));
-        this.modules.add(new DoubletsModule(ebeam, lund));
+        
+        this.addModule(active, new TrackModule(cosmics));
+        this.addModule(active, new HitModule());
+        this.addModule(active, new ClusterModule());
+        this.addModule(active, new LorentzModule());
+        this.addModule(active, new ResidualModule(residualScale));
+        this.addModule(active, new PullsModule(residualScale));
+        this.addModule(active, new MCModule(cosmics));
+        this.addModule(active, new ElasticModule(ebeam, lund));
+        this.addModule(active, new DoubletsModule(ebeam, lund));
     }
 
+    private void addModule(String active, Module module) {
+        boolean flag = true;
+        if(active!=null && !active.isEmpty()) {
+            flag = false;
+            String[] mods = active.split(":");
+            for(String m : mods) {
+                System.out.println(m + " " + module.getName());
+                if(m.trim().equalsIgnoreCase(module.getName())) {
+                    flag = true;
+                    break;
+                }
+            }
+        }
+        if(flag) {
+            System.out.println("Adding module " + module.getName());
+            this.modules.add(module);
+        }
+    }
+    
     private void processEvent(DataEvent de) {
         Event event = new Event(de);
         
@@ -154,6 +174,7 @@ public class CVTMonitoring {
         parser.addOption("-cosmics"    ,"0",    "analyze as cosmics (0=false, 1=true)");
         parser.addOption("-residual"   ,"1",    "residual scale (1=cm, 10=mm)");
         parser.addOption("-lund"       ,"0",    "save events to lund");
+        parser.addOption("-modules"    ,"",     "comma-separated list of modules to be activated");
         
         parser.parse(args);
         
@@ -172,10 +193,11 @@ public class CVTMonitoring {
         boolean cosmics       = parser.getOption("-cosmics").intValue()!=0;
         int     residualScale = parser.getOption("-residual").intValue();  
         boolean lund          = (parser.getOption("-lund").intValue()!=0);
-
+        String  modules       = parser.getOption("-modules").stringValue();
+        
         if(!openWindow) System.setProperty("java.awt.headless", "true");
 
-        CVTMonitoring cvtMon = new CVTMonitoring(pid, ebeam, cosmics, residualScale, optStats, lund);
+        CVTMonitoring cvtMon = new CVTMonitoring(modules, pid, ebeam, cosmics, residualScale, optStats, lund);
         
         List<String> inputList = parser.getInputList();
         if(inputList.isEmpty()==true){
