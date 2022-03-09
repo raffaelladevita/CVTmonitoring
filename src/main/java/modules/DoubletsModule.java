@@ -23,13 +23,16 @@ import org.jlab.groot.math.F1D;
 public class DoubletsModule extends Module {
     
     private final double DP = 1.0;
-    private final double DPP = 1.0;
+    private final double PCUT = 1.0;
+    private final double PMIN = 0.4;
+    private final double PMAX = 2.0;
     private final double PHIMIN = -180.0;
     private final double PHIMAX = 180.0;
-    private final double DPHI = 30.0;
-    private final double THETAMIN = 34.0;
+    private final double DPHI = 20.0;
+    private final double THETAMIN = 30.0;
     private final double THETAMAX = 44.0;
     private final double DTHETA   = 15.0;
+    private final double THETACUT = 36.0;
     private final double VZMIN = -10; 
     private final double VZMAX =  10;
     
@@ -42,10 +45,10 @@ public class DoubletsModule extends Module {
     private DataGroup selectionGroup() {
         DataGroup dg = new DataGroup(4,2);
         for(int i=0; i<2; i++) {
-            H2F hi_dtheta_dphi  = histo2D("hi_dtheta_dphi_"  + charges[i], "#Delta#theta (deg)", "#Delta#phi (deg)", 100, -DTHETA, DTHETA, 100, -DPHI, DPHI); 
-            H2F hi_dtheta_dp    = histo2D("hi_dtheta_dp_"    + charges[i], "#Delta#theta (deg)", "#Deltap (GeV)",    100, -DTHETA, DTHETA, 100, -DP, DP); 
-            H2F hi_theta_dtheta = histo2D("hi_theta_dtheta_" + charges[i], "#theta (deg)", "#Delta#theta (deg)",     100, THETAMIN, THETAMAX, 100, -DTHETA, DTHETA); 
-            H2F hi_theta_dphi   = histo2D("hi_theta_dphi_"   + charges[i], "#theta (deg)", "#Delta#phi (deg)",       100, THETAMIN, THETAMAX, 100, -DPHI, DPHI); 
+            H2F hi_dtheta_dphi  = histo2D("hi_dtheta_dphi_"  + charges[i], "#theta_f-#theta_c (deg)", "#phi_f-#phi_c (deg)", 100, -DTHETA, DTHETA, 100, -DPHI, DPHI); 
+            H2F hi_dtheta_dp    = histo2D("hi_dtheta_dp_"    + charges[i], "#theta_f-#theta_c (deg)", "p_f-p_c (GeV)",       100, -DTHETA, DTHETA, 100, -DP, DP); 
+            H2F hi_theta_dtheta = histo2D("hi_theta_dtheta_" + charges[i], "#theta_f (deg)", "#theta_f-#theta_c (deg)",      100, THETAMIN, THETAMAX, 100, -DTHETA, DTHETA); 
+            H2F hi_theta_dphi   = histo2D("hi_theta_dphi_"   + charges[i], "#theta_f (deg)", "#phi_f-$phi_c (deg)",          100, THETAMIN, THETAMAX, 100, -DPHI, DPHI); 
             dg.addDataSet(hi_dtheta_dphi,  0+i*4);
             dg.addDataSet(hi_dtheta_dp,    1+i*4);
             dg.addDataSet(hi_theta_dtheta, 2+i*4);
@@ -54,13 +57,43 @@ public class DoubletsModule extends Module {
         return dg;
     }
 
+    private DataGroup resolutionGroup() {
+        DataGroup dg = new DataGroup(4,2);
+        for(int i=0; i<2; i++) {
+            H1F hi_dphi   = histo1D("hi_dphi_"  + charges[i], "#phi_f-#phi_c (deg)",    "Counts", 100, -DPHI, DPHI, 0); 
+            H1F hi_dtheta = histo1D("hi_dtheta_"+ charges[i], "#theta_f-#theta_c (deg)","Counts", 100, -DTHETA, DTHETA, 0); 
+            H1F hi_dz     = histo1D("hi_dz_"    + charges[i], "z_f-z_c (cm)",           "Counts", 100,  VZMIN, VZMAX, 0); 
+            H1F hi_dp     = histo1D("hi_dp_"    + charges[i], "(p_f-p_c)/p_c",          "Counts", 100, -DP, DP, 0); 
+            dg.addDataSet(hi_dphi,   0+i*4);
+            dg.addDataSet(hi_dtheta, 1+i*4);
+            dg.addDataSet(hi_dz,     2+i*4);
+            dg.addDataSet(hi_dp,     3+i*4);
+        }
+        return dg;
+    }
+    
+    private DataGroup pGroup() {
+        DataGroup dg = new DataGroup(4,2);
+        for(int i=0; i<2; i++) {
+            H2F hi_p_dphi   = histo2D("hi_p_dphi_"  + charges[i], "p_c (deg)", "#phi_f-#phi_c (deg)",     100, PMIN, PMAX, 100, -DPHI, DPHI); 
+            H2F hi_p_dtheta = histo2D("hi_p_dtheta_"+ charges[i], "p_c (deg)", "#theta_f-#theta_c (deg)", 100, PMIN, PMAX, 100, -DTHETA, DTHETA); 
+            H2F hi_p_dz     = histo2D("hi_p_dz_"    + charges[i], "p_c (deg)", "z_f-z_c (cm)",            100, PMIN, PMAX, 100,  VZMIN, VZMAX); 
+            H2F hi_p_dp     = histo2D("hi_p_dp_"    + charges[i], "p_c (deg)", "(p_f-p_c)/p_c",           100, PMIN, PMAX, 100, -DP, DP); 
+            dg.addDataSet(hi_p_dphi,   0+i*4);
+            dg.addDataSet(hi_p_dtheta, 1+i*4);
+            dg.addDataSet(hi_p_dz,     2+i*4);
+            dg.addDataSet(hi_p_dp,     3+i*4);
+        }
+        return dg;
+    }
+    
     private DataGroup phiGroup() {
         DataGroup dg = new DataGroup(4,2);
         for(int i=0; i<2; i++) {
-            H2F hi_phi_dphi   = histo2D("hi_phi_dphi_"  + charges[i], "#phi (deg)", "#Delta#phi (deg)",   100, PHIMIN, PHIMAX, 100, -DPHI, DPHI); 
-            H2F hi_phi_dtheta = histo2D("hi_phi_dtheta_"+ charges[i], "#phi (deg)", "#Delta#theta (deg)", 100, PHIMIN, PHIMAX, 100, -DTHETA, DTHETA); 
-            H2F hi_phi_dz     = histo2D("hi_phi_dz_"    + charges[i], "#phi (deg)", "#Deltaz (cm)",       100, PHIMIN, PHIMAX, 100, VZMIN, VZMAX); 
-            H2F hi_phi_dp     = histo2D("hi_phi_dp_"    + charges[i], "#phi (deg)", "#Deltap/p",          100, PHIMIN, PHIMAX, 100, -DPP, DPP); 
+            H2F hi_phi_dphi   = histo2D("hi_phi_dphi_"  + charges[i], "#phi_c (deg)", "#phi_f-#phi_c (deg)",     100, PHIMIN, PHIMAX, 100, -DPHI, DPHI); 
+            H2F hi_phi_dtheta = histo2D("hi_phi_dtheta_"+ charges[i], "#phi_c (deg)", "#theta_f-#theta_c (deg)", 100, PHIMIN, PHIMAX, 100, -DTHETA, DTHETA); 
+            H2F hi_phi_dz     = histo2D("hi_phi_dz_"    + charges[i], "#phi_c (deg)", "z_f-z_c (cm)",            100, PHIMIN, PHIMAX, 100,  VZMIN, VZMAX); 
+            H2F hi_phi_dp     = histo2D("hi_phi_dp_"    + charges[i], "#phi_c (deg)", "(p_f-p_c)/p_c",           100, PHIMIN, PHIMAX, 100, -DP, DP); 
             dg.addDataSet(hi_phi_dphi,   0+i*4);
             dg.addDataSet(hi_phi_dtheta, 1+i*4);
             dg.addDataSet(hi_phi_dz,     2+i*4);
@@ -72,10 +105,10 @@ public class DoubletsModule extends Module {
     private DataGroup thetaGroup() {
         DataGroup dg = new DataGroup(4,2);
         for(int i=0; i<2; i++) {
-            H2F hi_theta_dphi   = histo2D("hi_theta_dphi_"  + charges[i], "#phi (deg)", "#Delta#phi (deg)",   100, THETAMIN, THETAMAX, 100, -DPHI, DPHI); 
-            H2F hi_theta_dtheta = histo2D("hi_theta_dtheta_"+ charges[i], "#phi (deg)", "#Delta#theta (deg)", 100, THETAMIN, THETAMAX, 100, -DTHETA, DTHETA); 
-            H2F hi_theta_dz     = histo2D("hi_theta_dz_"    + charges[i], "#phi (deg)", "#Deltaz (cm)",       100, THETAMIN, THETAMAX, 100, VZMIN, VZMAX); 
-            H2F hi_theta_dp     = histo2D("hi_theta_dp_"    + charges[i], "#phi (deg)", "#Deltap/p",          100, THETAMIN, THETAMAX, 100, -DPP, DPP); 
+            H2F hi_theta_dphi   = histo2D("hi_theta_dphi_"  + charges[i], "#theta_c (deg)", "#phi_f-#phi_c (deg)",     100, THETAMIN, THETAMAX, 100, -DPHI, DPHI); 
+            H2F hi_theta_dtheta = histo2D("hi_theta_dtheta_"+ charges[i], "#theta_c (deg)", "#theta_f-#theta_c (deg)", 100, THETAMIN, THETAMAX, 100, -DTHETA, DTHETA); 
+            H2F hi_theta_dz     = histo2D("hi_theta_dz_"    + charges[i], "#theta_c (deg)", "z_f-z_c (cm)",            100, THETAMIN, THETAMAX, 100,  VZMIN, VZMAX); 
+            H2F hi_theta_dp     = histo2D("hi_theta_dp_"    + charges[i], "#theta_c (deg)", "(p_f-p_c)/p_c",           100, THETAMIN, THETAMAX, 100, -DPP, DPP); 
             dg.addDataSet(hi_theta_dphi,   0+i*4);
             dg.addDataSet(hi_theta_dtheta, 1+i*4);
             dg.addDataSet(hi_theta_dz,     2+i*4);
@@ -88,9 +121,11 @@ public class DoubletsModule extends Module {
     @Override
     public void createHistos() {
         charges = new String[]{"pos", "neg"};
-        this.getHistos().put("Selection", this.selectionGroup());
-        this.getHistos().put("Phi",       this.phiGroup());
-        this.getHistos().put("Theta",     this.thetaGroup());
+        this.getHistos().put("Selection",  this.selectionGroup());
+        this.getHistos().put("Resolution", this.resolutionGroup());
+        this.getHistos().put("P",          this.pGroup());
+        this.getHistos().put("Phi",        this.phiGroup());
+        this.getHistos().put("Theta",      this.thetaGroup());
     }
     
     private Track getElectron(Event event) {
@@ -104,12 +139,12 @@ public class DoubletsModule extends Module {
     
     private Track getFDTrack(Event event) {
         if(event.getParticles().size()>1) {
-            for(int i=0; i< event.getParticles().size(); i++) {
+            for(int i=1; i< event.getParticles().size(); i++) {
                 Track t = event.getParticles().get(i);
                 if(t.getDetector()==2 && 
                    t.charge()!=0 &&
-                   t.p()>0.4 &&
-                   Math.toDegrees(t.theta())>34 && Math.toDegrees(t.theta())<44 &&
+                   t.p()>PMIN &&
+                   Math.toDegrees(t.theta())>THETAMIN && Math.toDegrees(t.theta())<THETAMAX &&
                    Math.abs(t.getChi2pid())<3 &&
                    t.getSector()!=event.getParticles().get(0).getSector()     )
                     return t;
@@ -120,12 +155,12 @@ public class DoubletsModule extends Module {
     
     private Track getCDTrack(Event event) {
         if(event.getParticles().size()>1) {
-            for(int i=0; i< event.getParticles().size(); i++) {
+            for(int i=1; i< event.getParticles().size(); i++) {
                 Track t = event.getParticles().get(i);
                 if(t.getDetector()==4 && 
                    t.charge()!=0 &&
-                   t.p()>0.4 &&
-                   Math.toDegrees(t.theta())>34 && Math.toDegrees(t.theta())<44)
+                   t.p()>PMIN &&
+                   Math.toDegrees(t.theta())>THETAMIN && Math.toDegrees(t.theta())<THETAMAX)
                     return t;
             }
         }
@@ -147,6 +182,16 @@ public class DoubletsModule extends Module {
         this.getHistos().get("Selection").getH2F("hi_dtheta_dp_"+charge).fill(Math.toDegrees(forward.theta()-central.theta()), forward.p()-central.p());
         this.getHistos().get("Selection").getH2F("hi_theta_dtheta_"+charge).fill(Math.toDegrees(forward.theta()), Math.toDegrees(forward.theta()-central.theta()));
         this.getHistos().get("Selection").getH2F("hi_theta_dphi_"+charge).fill(Math.toDegrees(forward.theta()), Math.toDegrees(forward.phi()-central.phi()));
+        if(central.p()>PCUT && Math.toDegrees(central.theta())<THETACUT) {
+            this.getHistos().get("Resolution").getH1F("hi_dphi_"+charge).fill(Math.toDegrees(forward.phi()-central.phi()));
+            this.getHistos().get("Resolution").getH1F("hi_dtheta_"+charge).fill(Math.toDegrees(forward.theta()-central.theta()));
+            this.getHistos().get("Resolution").getH1F("hi_dz_"+charge).fill(forward.vz()-central.vz());
+            this.getHistos().get("Resolution").getH1F("hi_dp_"+charge).fill((forward.p()-central.p())/central.p());
+        }
+        this.getHistos().get("P").getH2F("hi_p_dphi_"+charge).fill(central.p(), Math.toDegrees(forward.phi()-central.phi()));
+        this.getHistos().get("P").getH2F("hi_p_dtheta_"+charge).fill(central.p(), Math.toDegrees(forward.theta()-central.theta()));
+        this.getHistos().get("P").getH2F("hi_p_dz_"+charge).fill(central.p(), forward.vz()-central.vz());
+        this.getHistos().get("P").getH2F("hi_p_dp_"+charge).fill(central.p(), (forward.p()-central.p())/central.p());
         this.getHistos().get("Phi").getH2F("hi_phi_dphi_"+charge).fill(Math.toDegrees(central.phi()), Math.toDegrees(forward.phi()-central.phi()));
         this.getHistos().get("Phi").getH2F("hi_phi_dtheta_"+charge).fill(Math.toDegrees(central.phi()), Math.toDegrees(forward.theta()-central.theta()));
         this.getHistos().get("Phi").getH2F("hi_phi_dz_"+charge).fill(Math.toDegrees(central.phi()), forward.vz()-central.vz());
@@ -161,7 +206,12 @@ public class DoubletsModule extends Module {
     
     @Override
     public void analyzeHistos() {
-        
+        for(int i=0; i<2; i++) {
+            fitGauss(this.getHistos().get("Resolution").getH1F("hi_dphi_"+charges[i]));
+            fitGauss(this.getHistos().get("Resolution").getH1F("hi_dtheta_"+charges[i]));
+            fitGauss(this.getHistos().get("Resolution").getH1F("hi_dz_"+charges[i]));
+            fitGauss(this.getHistos().get("Resolution").getH1F("hi_dp_"+charges[i]));       
+        }
     }
     
     @Override
