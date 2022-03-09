@@ -108,7 +108,7 @@ public class DoubletsModule extends Module {
             H2F hi_theta_dphi   = histo2D("hi_theta_dphi_"  + charges[i], "#theta_c (deg)", "#phi_f-#phi_c (deg)",     100, THETAMIN, THETAMAX, 100, -DPHI, DPHI); 
             H2F hi_theta_dtheta = histo2D("hi_theta_dtheta_"+ charges[i], "#theta_c (deg)", "#theta_f-#theta_c (deg)", 100, THETAMIN, THETAMAX, 100, -DTHETA, DTHETA); 
             H2F hi_theta_dz     = histo2D("hi_theta_dz_"    + charges[i], "#theta_c (deg)", "z_f-z_c (cm)",            100, THETAMIN, THETAMAX, 100,  VZMIN, VZMAX); 
-            H2F hi_theta_dp     = histo2D("hi_theta_dp_"    + charges[i], "#theta_c (deg)", "(p_f-p_c)/p_c",           100, THETAMIN, THETAMAX, 100, -DPP, DPP); 
+            H2F hi_theta_dp     = histo2D("hi_theta_dp_"    + charges[i], "#theta_c (deg)", "(p_f-p_c)/p_c",           100, THETAMIN, THETAMAX, 100, -DP, DP); 
             dg.addDataSet(hi_theta_dphi,   0+i*4);
             dg.addDataSet(hi_theta_dtheta, 1+i*4);
             dg.addDataSet(hi_theta_dz,     2+i*4);
