@@ -2,6 +2,7 @@ package objects;
 
 import analysis.Constants;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ public class Event {
     private final List<Cluster> clusters = new ArrayList<>();
     private final List<Hit> hits         = new ArrayList<>();
     private final List<Trajectory> trajs = new ArrayList<>();
+    private final List<True> trues       = new ArrayList<>();
     private final Map<Integer, Integer> trackMap = new HashMap<>();
     private final Map<Integer, Integer> seedMap = new HashMap<>();
     private final Map<Integer, List<Integer>> clusterMap = new HashMap<>();
@@ -238,6 +240,28 @@ public class Event {
         }
     }
 
+    private void readTrues(DataEvent event) {
+        DataBank mc  = this.getBank(event, "MC::True");
+        DataBank bmt = this.getBank(event, "BMT::adc");
+        DataBank bst = this.getBank(event, "BST::adc");
+        if(mc==null || (bmt==null && bst==null)) return;
+        int offset = 0;
+        if(bmt!=null) {
+            for(int i=0; i<bmt.rows(); i++) {
+                True t = True.readTruth(bmt, mc, i, offset, DetectorType.BMT);
+                trues.add(t);
+            }
+            offset += bmt.rows();
+        }
+        if(bst!=null) {
+            for(int i=0; i<bst.rows(); i++) {
+                True t = True.readTruth(bst, mc, i, offset, DetectorType.BST);
+                trues.add(t);
+            }
+        }
+        Collections.sort(trues);
+    }
+    
     private void loadMap(Map<Integer, List<DetectorResponse>> map, DetectorResponse response) {
         final int iTo = response.getAssociation();
         if (map.containsKey(iTo)) {
@@ -259,6 +283,7 @@ public class Event {
         this.readSeeds(de);
         this.readClusters(de);
         this.readHits(de);
+        this.readTrues(de);
     }
 
     public List<Track> getTracks() {
@@ -311,6 +336,10 @@ public class Event {
 
     public List<Track> getParticles() {
         return particles;
+    }
+
+    public List<True> getTrues() {
+        return trues;
     }
 
     public int getRun() {

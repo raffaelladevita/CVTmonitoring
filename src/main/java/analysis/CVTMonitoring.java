@@ -13,6 +13,7 @@ import modules.ElasticModule;
 import modules.HitModule;
 import modules.LorentzModule;
 import modules.MCModule;
+import modules.TruthModule;
 import modules.PullsModule;
 import modules.ResidualModule;
 import modules.TrackModule;
@@ -72,6 +73,7 @@ public class CVTMonitoring {
         this.addModule(active, new ResidualModule(residualScale));
         this.addModule(active, new PullsModule(residualScale));
         this.addModule(active, new MCModule(cosmics));
+        this.addModule(active, new TruthModule());
         this.addModule(active, new ElasticModule(ebeam, lund));
         this.addModule(active, new DoubletsModule(ebeam, lund));
     }

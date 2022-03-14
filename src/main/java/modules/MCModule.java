@@ -85,6 +85,36 @@ public class MCModule extends Module {
         return dg;
     }
 
+    private DataGroup trackResolution2DGroup() {
+        H2F hi_p_dp     = histo2D("hi_p_dp",     "p (GeV)", "#Deltap/p",          50, PMIN, PMAX, 50, -DP, DP);
+        H2F hi_p_dtheta = histo2D("hi_p_dtheta", "p (GeV)", "#Delta#theta (deg)", 50, PMIN, PMAX, 50, -DTHETA, DTHETA);
+        H2F hi_p_dphi   = histo2D("hi_p_dphi",   "p (GeV)", "#Delta#phi (deg)",   50, PMIN, PMAX, 50, -DPHI, DPHI);
+        H2F hi_p_dvz    = histo2D("hi_p_dvz",    "p (GeV)", "#Deltavz (cm)",      50, PMIN, PMAX, 50, -DVZ,  DVZ);
+        H2F hi_theta_dp     = histo2D("hi_theta_dp",     "#theta (deg)", "#Deltap/p",          50, THETAMIN, THETAMAX, 50, -DP, DP);
+        H2F hi_theta_dtheta = histo2D("hi_theta_dtheta", "#theta (deg)", "#Delta#theta (deg)", 50, THETAMIN, THETAMAX, 50, -DTHETA, DTHETA);
+        H2F hi_theta_dphi   = histo2D("hi_theta_dphi",   "#theta (deg)", "#Delta#phi (deg)",   50, THETAMIN, THETAMAX, 50, -DPHI, DPHI);
+        H2F hi_theta_dvz    = histo2D("hi_theta_dvz",    "#theta (deg)", "#Deltavz (cm)",      50, THETAMIN, THETAMAX, 50, -DVZ,  DVZ);
+        H2F hi_phi_dp     = histo2D("hi_phi_dp",     "#phi (deg)", "#Deltap/p",          50, PHIMIN, PHIMAX, 50, -DP, DP);
+        H2F hi_phi_dtheta = histo2D("hi_phi_dtheta", "#phi (deg)", "#Delta#theta (deg)", 50, PHIMIN, PHIMAX, 50, -DTHETA, DTHETA);
+        H2F hi_phi_dphi   = histo2D("hi_phi_dphi",   "#phi (deg)", "#Delta#phi (deg)",   50, PHIMIN, PHIMAX, 50, -DPHI, DPHI);
+        H2F hi_phi_dvz    = histo2D("hi_phi_dvz",    "#phi (deg)", "#Deltavz (cm)",      50, PHIMIN, PHIMAX, 50, -DVZ,  DVZ);
+
+        DataGroup dg = new DataGroup(4,3);
+        dg.addDataSet(hi_p_dp,        0);
+        dg.addDataSet(hi_p_dtheta,    1);
+        dg.addDataSet(hi_p_dphi,      2);
+        dg.addDataSet(hi_p_dvz,       3);
+        dg.addDataSet(hi_theta_dp,    4);
+        dg.addDataSet(hi_theta_dtheta,5);
+        dg.addDataSet(hi_theta_dphi,  6);
+        dg.addDataSet(hi_theta_dvz,   7);
+        dg.addDataSet(hi_phi_dp,      8);
+        dg.addDataSet(hi_phi_dtheta,  9);
+        dg.addDataSet(hi_phi_dphi,    10);
+        dg.addDataSet(hi_phi_dvz,     11);
+        return dg;
+    }
+
     private DataGroup helixResolutionGroup(int icol) {
         H1F hi_chi2   = histo1D("hi_chi2", "#chi^2", "Counts", 100, 0, 5,  icol);
         H1F hi_d0     = histo1D("hi_d0", "#Deltad0 (cm)", "Counts", 100, -DVXY, DVXY, icol);
@@ -286,6 +316,7 @@ public class MCModule extends Module {
         this.getHistos().put("Resolution1", this.trackResolutionGroup(46));
         this.getHistos().put("Resolution2", this.repResolutionGroup(46));
         this.getHistos().put("Resolution3", this.repResolution2DGroup());
+        this.getHistos().put("Resolution4", this.trackResolution2DGroup());
         this.getHistos().put("Pulls", this.pullsGroup(46));
         this.getHistos().put("Efficiency", this.efficiencyGroup());
         this.getHistos().put("Efficiency2", this.efficiencyGroup());
@@ -330,6 +361,7 @@ public class MCModule extends Module {
                 this.fillTrackResolutionGroup(this.getHistos().get("Resolution1"), mcTrack, matchedTrack);
                 this.fillRepResolutionGroup(this.getHistos().get("Resolution2"), mcTrack, matchedTrack);
                 this.fillRepResolution2DGroup(this.getHistos().get("Resolution3"), mcTrack, matchedTrack);
+                this.fillTrackResolution2DGroup(this.getHistos().get("Resolution4"), mcTrack, matchedTrack);
                 this.fillPullsGroup(this.getHistos().get("Pulls"), mcTrack, matchedTrack);
             }
         }
@@ -362,6 +394,21 @@ public class MCModule extends Module {
         group.getH1F("hi_vx").fill(mc.vx()-track.vx());
         group.getH1F("hi_vy").fill(mc.vy()-track.vy());
         group.getH1F("hi_vz").fill(mc.vz()-track.vz());
+    }
+    
+    private void fillTrackResolution2DGroup(DataGroup group, Track mc, Track track) {
+        group.getH2F("hi_p_dp").fill(mc.p(),(mc.p()-track.p())/mc.p());
+        group.getH2F("hi_p_dtheta").fill(mc.p(),Math.toDegrees(mc.theta()-track.theta()));
+        group.getH2F("hi_p_dphi").fill(mc.p(),Math.toDegrees(mc.deltaPhi(track)));
+        group.getH2F("hi_p_dvz").fill(mc.p(),mc.vz()-track.vz());
+        group.getH2F("hi_theta_dp").fill(Math.toDegrees(mc.theta()),(mc.p()-track.p())/mc.p());
+        group.getH2F("hi_theta_dtheta").fill(Math.toDegrees(mc.theta()),Math.toDegrees(mc.theta()-track.theta()));
+        group.getH2F("hi_theta_dphi").fill(Math.toDegrees(mc.theta()),Math.toDegrees(mc.deltaPhi(track)));
+        group.getH2F("hi_theta_dvz").fill(Math.toDegrees(mc.theta()),mc.vz()-track.vz());
+        group.getH2F("hi_phi_dp").fill(Math.toDegrees(mc.phi()),(mc.p()-track.p())/mc.p());
+        group.getH2F("hi_phi_dtheta").fill(Math.toDegrees(mc.phi()),Math.toDegrees(mc.theta()-track.theta()));
+        group.getH2F("hi_phi_dphi").fill(Math.toDegrees(mc.phi()),Math.toDegrees(mc.deltaPhi(track)));
+        group.getH2F("hi_phi_dvz").fill(Math.toDegrees(mc.phi()),mc.vz()-track.vz());
     }
     
     private void fillHelixResolutionGroup(DataGroup group, Track mc, Track track) {
@@ -482,7 +529,7 @@ public class MCModule extends Module {
     @Override
     public void drawHistos() {
         this.addCanvas("MC", "Seed", "SeedResolution1", "SeedResolution2", "SeedResolution3", "SeedPulls", 
-                       "Track", "Resolution1", "Resolution2", "Resolution3", "Pulls", "Efficiency");
+                       "Track", "Resolution1", "Resolution2", "Resolution3", "Resolution4", "Pulls", "Efficiency");
         this.getCanvas("MC").draw(this.getHistos().get("MC"));
         this.getCanvas("Seed").draw(this.getHistos().get("AllSeeds"));
         this.getCanvas("Seed").draw(this.getHistos().get("Seed"));
@@ -495,6 +542,7 @@ public class MCModule extends Module {
         this.getCanvas("Resolution1").draw(this.getHistos().get("Resolution1"));
         this.getCanvas("Resolution2").draw(this.getHistos().get("Resolution2"));
         this.getCanvas("Resolution3").draw(this.getHistos().get("Resolution3"));
+        this.getCanvas("Resolution4").draw(this.getHistos().get("Resolution4"));
         this.getCanvas("Pulls").draw(this.getHistos().get("Pulls"));
         this.getCanvas("Efficiency").draw(this.getHistos().get("Efficiency"));
         this.getCanvas("Efficiency").draw(this.getHistos().get("Efficiency2"));
@@ -508,6 +556,7 @@ public class MCModule extends Module {
         this.setPlottingOptions("Resolution1");
         this.setPlottingOptions("Resolution2");
         this.setPlottingOptions("Resolution3");
+        this.setPlottingOptions("Resolution4");
         this.setPlottingOptions("Pulls");
         this.setPlottingOptions("Efficiency");
     }
