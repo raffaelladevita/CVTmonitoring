@@ -237,16 +237,8 @@ public class ElasticModule extends Module {
     
     @Override
     public void setPlottingOptions(String name) {
-        for(EmbeddedPad p : this.getCanvas().getCanvas(name).getCanvasPads()) {
-            p.getAxisZ().setLog(true);
-            for(IDataSetPlotter dsp: p.getDatasetPlotters()) {
-                IDataSet ds = dsp.getDataSet();
-                if(ds instanceof H1F) {
-                    H1F h1 = (H1F) ds;
-                    h1.setLineWidth(2);
-                }
-            }
-        }
+        this.setLogZ(name);  
+        this.setH1LineWidth(name);
     }
 
     void fitW(H1F hiw) {

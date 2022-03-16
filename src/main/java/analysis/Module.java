@@ -17,6 +17,8 @@ import org.jlab.groot.data.TDirectory;
 import org.jlab.groot.fitter.DataFitter;
 import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
+import org.jlab.groot.graphics.EmbeddedPad;
+import org.jlab.groot.graphics.IDataSetPlotter;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.groot.math.F1D;
 
@@ -187,6 +189,24 @@ public class Module {
         this.getCanvas().getCanvas(name).setGridX(false);
         this.getCanvas().getCanvas(name).setGridY(false);        
     }
+
+    public void setLogZ(String name) {
+        for(EmbeddedPad p : this.getCanvas().getCanvas(name).getCanvasPads()) {
+            p.getAxisZ().setLog(true);
+        }
+    }
+    
+    public void setH1LineWidth(String name) {
+        for(EmbeddedPad p : this.getCanvas().getCanvas(name).getCanvasPads()) {
+            for(IDataSetPlotter dsp: p.getDatasetPlotters()) {
+                IDataSet ds = dsp.getDataSet();
+                if(ds instanceof H1F) {
+                    H1F h1 = (H1F) ds;
+                    h1.setLineWidth(2);
+                }
+            }
+        }
+    }    
 
     public void printHistos(String figures) {
         File theDir = new File(figures);

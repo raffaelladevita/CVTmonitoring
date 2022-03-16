@@ -17,6 +17,7 @@ import modules.TruthModule;
 import modules.PullsModule;
 import modules.ResidualModule;
 import modules.TrackModule;
+import modules.VertexModule;
 import org.jlab.groot.base.GStyle;
 
 import org.jlab.io.base.DataEvent;
@@ -67,6 +68,7 @@ public class CVTMonitoring {
         Constants.setPID(pid);
         
         this.addModule(active, new TrackModule(cosmics));
+        this.addModule(active, new VertexModule());
         this.addModule(active, new HitModule());
         this.addModule(active, new ClusterModule());
         this.addModule(active, new LorentzModule());

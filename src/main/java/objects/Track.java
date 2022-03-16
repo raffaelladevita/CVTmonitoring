@@ -203,7 +203,7 @@ public class Track extends Particle {
     }
     
     public double d0() {
-        return Math.sqrt(this.vx()*this.vx()+this.vy()*this.vy());
+        return Math.signum(this.vy()/Math.cos(this.phi()))*Math.sqrt(this.vx()*this.vx()+this.vy()*this.vy());
     }
     
     public double tx() {

@@ -8,8 +8,6 @@ import analysis.Module;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.group.DataGroup;
-import org.jlab.groot.graphics.EmbeddedCanvas;
-import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 
 /**
  *
