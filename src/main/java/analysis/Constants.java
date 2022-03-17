@@ -1,5 +1,7 @@
 package analysis;
 
+import org.jlab.clas.pdg.PhysicsConstants;
+
 /**
  *
  * @author devita
@@ -20,7 +22,8 @@ public class Constants {
     public static final double[] BMTRADIUS = {14.7746, 16.2646, 17.7646, 19.2646, 20.7646, 22.2646}; // radius at half drift
     
     public static final double B = 5; //field in Tesla
-    
+    public static final double ALPHA = 1E6/PhysicsConstants.speedOfLight()/B;
+
     public static int PID = 2212;
     public static double THMIN = 30;
     

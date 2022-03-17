@@ -60,16 +60,22 @@ public class VertexModule extends Module {
 
     @Override
     public void createHistos() {
-        this.getHistos().put("BeamSpot", this.createGroup(46));
+        this.getHistos().put("Positives", this.createGroup(42));
+        this.getHistos().put("Negatives", this.createGroup(44));
     }
     
     @Override
     public void fillHistos(Event event) {
         List<Track> trackC2pid = new ArrayList<>();
+        List<Track> trackPos = new ArrayList<>();
+        List<Track> trackNeg = new ArrayList<>();
         for(Track track : event.getTracks()) {
+            if(track.charge()>0) trackPos.add(track);
+            else                 trackNeg.add(track);
             if(Math.abs(track.getChi2pid())<CHI2PIDCUT) trackC2pid.add(track);
         }
-        this.fillGroup(this.getHistos().get("BeamSpot"),event.getTracks());
+        this.fillGroup(this.getHistos().get("Positives"), trackPos);
+        this.fillGroup(this.getHistos().get("Negatives"), trackNeg);
     }
     
     public void fillGroup(DataGroup group, List<Track> tracks) {
@@ -92,8 +98,13 @@ public class VertexModule extends Module {
 
     @Override
     public void analyzeHistos() {
-        H2F h2         = this.getHistos().get("BeamSpot").getH2F("hi_d0phi");
-        GraphErrors gr = this.getHistos().get("BeamSpot").getGraph("gr_d0phi");
+        this.analyzeGroup("Positives");
+        this.analyzeGroup("Negatives");
+    }
+    
+    private void analyzeGroup(String name) {
+        H2F h2         = this.getHistos().get(name).getH2F("hi_d0phi");
+        GraphErrors gr = this.getHistos().get(name).getGraph("gr_d0phi");
         this.fitSlices(h2, gr);
         F1D f1 = new F1D("f1","[a]*sin([b]*x+[c])", PHIMIN, PHIMAX);
         f1.setParameter(0, (gr.getMax()-gr.getMin())/2.0);
