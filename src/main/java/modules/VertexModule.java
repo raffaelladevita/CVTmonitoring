@@ -9,6 +9,7 @@ import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.fitter.DataFitter;
+import org.jlab.groot.fitter.ParallelSliceFitter;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.groot.math.F1D;
 
@@ -66,13 +67,13 @@ public class VertexModule extends Module {
     
     @Override
     public void fillHistos(Event event) {
-        List<Track> trackC2pid = new ArrayList<>();
         List<Track> trackPos = new ArrayList<>();
         List<Track> trackNeg = new ArrayList<>();
         for(Track track : event.getTracks()) {
-            if(track.charge()>0) trackPos.add(track);
-            else                 trackNeg.add(track);
-            if(Math.abs(track.getChi2pid())<CHI2PIDCUT) trackC2pid.add(track);
+            if(Math.abs(track.getChi2pid())<CHI2PIDCUT || true) {
+                if(track.charge()>0) trackPos.add(track);
+                else                 trackNeg.add(track);
+            }
         }
         this.fillGroup(this.getHistos().get("Positives"), trackPos);
         this.fillGroup(this.getHistos().get("Negatives"), trackNeg);
@@ -111,36 +112,44 @@ public class VertexModule extends Module {
         f1.setParameter(1, Math.PI/180);
         f1.setParLimits(1, Math.PI/180*0.99, Math.PI/180*1.01);
         DataFitter.fit(f1, gr, "Q");
-        double a = f1.getParameter(0);
-        double b = f1.getParameter(1);
-        double c = f1.getParameter(2);
-        double aerr = 10*f1.parameter(0).error(); // convert to mm
-        double cerr = 10*f1.parameter(2).error();
-        System.out.println(a + " * sin(" + b + " * x + " + c + ")");
         
-        //        System.out.println("x_beam: " + (-10*a*Math.cos(c)) + " mm, y_beam: " + (10*a*Math.sin(c)) + " mm");
-        System.out.printf("x_beam: %2.3f mm,  y_beam: %2.3f mm\n", (-10*a*Math.cos(c)), (10*a*Math.sin(c))); // convert to mm
-        System.out.printf("Rb_err: %2.3f mm, phi0_err: %2.3f deg\n", aerr, cerr);
-        
+        System.out.printf("a sin(b x + c):\n");
+        for(int i=0; i<f1.getNPars(); i++)
+            System.out.printf("\t a = (%.4f +/- %.4f)\n", f1.getParameter(i), f1.parameter(i).error());
+        System.out.printf("x_beam: %2.3f mm, y_beam: %2.3f mm\n", -10*f1.getParameter(0)*Math.cos(f1.getParameter(2)),
+                                                                   10*f1.getParameter(0)*Math.sin(f1.getParameter(2))); // convert to mm        
     }
     
     public void fitSlices(H2F h2, GraphErrors gr) {
         gr.reset();
-        ArrayList<H1F> hslice = h2.getSlicesX();
-        for(int i=0; i<hslice.size(); i++) {
-            double  x = h2.getXAxis().getBinCenter(i);
-            double ex = 0;
-            double  y = hslice.get(i).getRMS();
-            double ey = 0;
-            double mean  = hslice.get(i).getDataX(hslice.get(i).getMaximumBin());
-            double amp   = hslice.get(i).getBinContent(hslice.get(i).getMaximumBin());
-            double sigma = hslice.get(i).getRMS()/5;
-            F1D f1 = new F1D("f1_dpdhi_phi","[amp]*gaus(x,[mean],[sigma])", -10.0, 10.0);
-            f1.setParameter(0, amp);
-            f1.setParameter(1, mean);
-            f1.setParameter(2, sigma);
-            DataFitter.fit(f1, hslice.get(i), "Q"); //No options uses error for sigma 
-            if(amp>10) gr.addPoint(x, f1.getParameter(1), ex, f1.parameter(1).error());
+        ParallelSliceFitter psf = new ParallelSliceFitter(h2);
+        psf.setBackgroundOrder(0);
+        this.toDevNull();
+        psf.fitSlicesX();
+        this.restoreStdOutErr();
+        
+        GraphErrors mean  = psf.getMeanSlices();
+        GraphErrors sigma = psf.getSigmaSlices();
+        for(int i=0; i<mean.getDataSize(0); i++) {
+            if(Math.abs(sigma.getDataY(i))<h2.getSlicesX().get(i).getRMS())
+                gr.addPoint(mean.getDataX(i), mean.getDataY(i), 0, sigma.getDataY(i));
         }
+//        gr = mean;
+//        ArrayList<H1F> hslice = h2.getSlicesX();
+//        for(int i=0; i<hslice.size(); i++) {
+//            double  x = h2.getXAxis().getBinCenter(i);
+//            double ex = 0;
+//            double  y = hslice.get(i).getRMS();
+//            double ey = 0;
+//            double mean  = hslice.get(i).getDataX(hslice.get(i).getMaximumBin());
+//            double amp   = hslice.get(i).getBinContent(hslice.get(i).getMaximumBin());
+//            double sigma = hslice.get(i).getRMS()/5;
+//            F1D f1 = new F1D("f1_dpdhi_phi","[amp]*gaus(x,[mean],[sigma])", -10.0, 10.0);
+//            f1.setParameter(0, amp);
+//            f1.setParameter(1, mean);
+//            f1.setParameter(2, sigma);
+//            DataFitter.fit(f1, hslice.get(i), "Q"); //No options uses error for sigma 
+//            if(amp>10) gr.addPoint(x, f1.getParameter(1), ex, f1.getParameter(2));
+//        }
     }
 }

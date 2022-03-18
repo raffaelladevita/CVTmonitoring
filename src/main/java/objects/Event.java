@@ -98,34 +98,12 @@ public class Event {
     private void readParticles(DataEvent event) {
         DataBank recPart   = this.getBank(event, "REC::Particle");
         DataBank recTrack  = this.getBank(event, "REC::Track");
-        if(recPart!=null) {
-            for (int loop = 0; loop < recPart.rows(); loop++) {    
-                int pid    = recPart.getInt("pid", loop);
-                int charge = recPart.getByte("charge", loop);
-                if(pid==0) {
-                    pid = charge==0 ? 22 : charge*211;
-                }
-                Track t = new Track(pid,
-                            recPart.getFloat("px", loop),
-                            recPart.getFloat("py", loop),
-                            recPart.getFloat("pz", loop),
-                            recPart.getFloat("vx", loop),
-                            recPart.getFloat("vy", loop),
-                            recPart.getFloat("vz", loop));
-                t.setRECStatus(recPart.getShort("status", loop));
-                t.setChi2pid(recPart.getFloat("chi2pid", loop));
-                if(recTrack!=null) {
-                    for(int j=0; j<recTrack.rows(); j++) {
-                        if(recTrack.getShort("pindex", j)==loop) {
-                            t.setSector(recTrack.getByte("sector", j));
-                            t.setNDF(recTrack.getShort("NDF", j));
-                            t.setChi2(recTrack.getFloat("chi2", j));
-                            t.setStatus(recTrack.getShort("status", j));
-                            break;
-                        }
-                    }
-                }                    
-                particles.add(t);
+        DataBank runConfig = this.getBank(event, "RUN::config");
+        if(recPart!=null && recTrack!=null) {
+            for (int i = 0; i < recPart.rows(); i++) {    
+                Track track = Track.readParticle(recPart, recTrack, i);
+                if(runConfig!=null) track.addScale(runConfig);
+                particles.add(track);
             }
         }
     }
@@ -159,6 +137,15 @@ public class Event {
                 tracks.add(track);
                 trackMap.put(track.getId(), i);
             }                
+        }
+        else if(recPart!=null && recTrack!=null) {
+            for (int i = 0; i < recPart.rows(); i++) {    
+                Track track = Track.readParticle(recPart, recTrack, i);
+                if(track.getDetector()!=4 || track.charge()==0) continue;
+                if(runConfig!=null) track.addScale(runConfig);
+                tracks.add(track);
+                trackMap.put(track.getId(), i);
+            }            
         }
     }
         

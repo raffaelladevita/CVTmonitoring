@@ -1,9 +1,11 @@
 package analysis;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import objects.Event;
 import java.util.LinkedHashMap;
@@ -40,6 +42,10 @@ public class Module {
     private BufferedWriter lundFile = null;
     private PhysicsEvent physicsEvent = null;
     
+    ByteArrayOutputStream pipeOut = new ByteArrayOutputStream();
+    private static PrintStream outStream = System.out;
+    private static PrintStream errStream = System.err;
+        
     public Module(String name){                               
         this.moduleName = name;
         this.init();
@@ -290,6 +296,17 @@ public class Module {
         }
     }
 
+    public void toDevNull() {
+        PrintStream pipeStream = new PrintStream(pipeOut);
+        System.setOut(pipeStream);
+        System.setErr(pipeStream);        
+    }
+    
+    public void restoreStdOutErr() {
+        System.setOut(outStream);
+        System.setErr(errStream);        
+    }
+    
     public void fitDataGroup(DataGroup dg) {
         int nx = dg.getColumns();
         int ny = dg.getRows();

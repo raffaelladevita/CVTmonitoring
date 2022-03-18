@@ -36,7 +36,7 @@ public class TrackModule extends Module {
     
     public DataGroup createGroup(int col) {
         H1F hi_mult  = histo1D("hi_mult", "Track multiplicity", "Counts", 10, 0, 10, 48);
-        H1F hi_chi2  = histo1D("hi_chi2", "Normalized #chi^2", "Counts", 100, 0, 50, 48);
+        H1F hi_chi2  = histo1D("hi_chi2", "Normalized #chi^2", "Counts", 100, 0, 10, 48);
         H1F hi_ndf   = histo1D("hi_ndf", "NDF", "Counts", 15, 0, 15.0, 48);
         H1F hi_q     = histo1D("hi_q", "Charge", "Counts", 3, -1.5, 1.5, 48);
         H1F hi_p     = histo1D("hi_p", "p (GeV)", "Counts", 100, PMIN, PMAX, col);
@@ -158,7 +158,7 @@ public class TrackModule extends Module {
     public void setPlottingOptions(String name) {
         this.getCanvas(name).setGridX(false);
         this.getCanvas(name).setGridY(false);
-        this.getCanvas(name).getPad(1).getAxisY().setLog(true);
+//        this.getCanvas(name).getPad(1).getAxisY().setLog(true);
         this.getCanvas(name).getPad(8).getAxisY().setLog(true);
         this.getCanvas(name).getPad(9).getAxisY().setLog(true);
     }

@@ -26,10 +26,10 @@ public class Track extends Particle {
     private int pindex = -1;
     private double solenoid = -1;
     private double chi2pid = Double.POSITIVE_INFINITY;
-    private int recStatus;
-    private int sector;
-    private int status;
-    private int type;
+    private int recStatus=0;
+    private int sector=0;
+    private int status=0;
+    private int type=0;
     private final double[][] covMatrix = new double[5][5];
     
     Track(int pid, double px, double py, double pz, double vx, double vy, double vz) {
@@ -384,11 +384,8 @@ public class Track extends Particle {
                 break;
             }
         }
-        double chi2pid = part.getFloat("chi2pid", this.getPindex());
-        int    status  = part.getShort(("status"), this.getPindex());
-        int det = status/1000;
-        int sci = (status-det*1000)/100;
-        if(det==DetectorType.CTOF.getDetectorId() && sci>0) this.setChi2pid(chi2pid);
+        this.setChi2pid(part.getFloat("chi2pid", this.getPindex()));
+        this.setRECStatus(part.getShort("status", this.getPindex()));
     }
     
     public static List<Track> readTracks(DataBank bank) {
@@ -399,6 +396,36 @@ public class Track extends Particle {
         return tracks;
     }
 
+    public static Track readParticle(DataBank recPart, DataBank recTrack, int row) {
+        int pid    = recPart.getInt("pid", row);
+        int charge = recPart.getByte("charge", row);
+        if(pid==0) {
+            pid = charge==0 ? 22 : charge*211;
+        }
+        Track t = new Track(pid,
+                    recPart.getFloat("px", row),
+                    recPart.getFloat("py", row),
+                    recPart.getFloat("pz", row),
+                    recPart.getFloat("vx", row),
+                    recPart.getFloat("vy", row),
+                    recPart.getFloat("vz", row));
+        t.setChi2pid(recPart.getFloat("chi2pid", row));
+        t.setRECStatus(recPart.getShort("status", row));
+        if(recTrack!=null) {
+            for(int j=0; j<recTrack.rows(); j++) {
+                if(recTrack.getShort("pindex", j)==row) {
+                    t.setIndex(recTrack.getShort("index", j));
+                    t.setSector(recTrack.getByte("sector", j));
+                    t.setNDF(recTrack.getShort("NDF", j));
+                    t.setChi2(recTrack.getFloat("chi2", j));
+                    t.setStatus(recTrack.getShort("status", j));
+                    break;
+                }
+            }
+        }       
+        return t;
+    }
+    
     public static Track readSeed(DataBank bank, int row) {
         if(bank.getByte("q", row)==0) bank.show();
         Track t = new Track(bank.getShort("ID", row),
