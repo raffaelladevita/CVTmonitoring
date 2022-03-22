@@ -406,8 +406,8 @@ public class Track extends Particle {
                     recPart.getFloat("px", row),
                     recPart.getFloat("py", row),
                     recPart.getFloat("pz", row),
-                    recPart.getFloat("vx", row),
-                    recPart.getFloat("vy", row),
+                    recPart.getFloat("vx", row)+Constants.getXBeam(),
+                    recPart.getFloat("vy", row)+Constants.getYBeam(),
                     recPart.getFloat("vz", row));
         t.setChi2pid(recPart.getFloat("chi2pid", row));
         t.setRECStatus(recPart.getShort("status", row));

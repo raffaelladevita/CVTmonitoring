@@ -32,10 +32,22 @@ public class Constants {
     public static final double SIGMA_PHI = 0.3;//0.57; //0.3; //0.12;
     public static final double SIGMA_THETA = 0.5;//0.57; //0.3; //0.2;
 
+    public static double TARGETPOS = -3; // cm
+    public static double[] BEAMSPOT = new double[2];
     
     public static void setPID(int PID) {
         Constants.PID = PID;
     }
+
+    public static void setBEAMSPOT(double[] BEAMSPOT) {
+        Constants.BEAMSPOT = BEAMSPOT;
+    }
     
+    public static double getXBeam() {
+        return BEAMSPOT[0];
+    }
     
+    public static double getYBeam() {
+        return BEAMSPOT[1];
+    }
 }

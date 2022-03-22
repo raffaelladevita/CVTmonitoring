@@ -1,5 +1,6 @@
 package modules;
 
+import analysis.Constants;
 import objects.Track;
 import objects.Event;
 import analysis.Module;
@@ -7,6 +8,7 @@ import org.jlab.clas.pdg.PhysicsConstants;
 import org.jlab.clas.physics.LorentzVector;
 import org.jlab.clas.physics.Particle;
 import org.jlab.clas.physics.PhysicsEvent;
+import org.jlab.groot.data.DataLine;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.data.IDataSet;
@@ -34,6 +36,7 @@ public class ElasticModule extends Module {
     private final double DTHETA   = 30.0;
     private final double VZMIN = -10; 
     private final double VZMAX =  10;
+    private final double DVZ = 5.0;
 
     public ElasticModule(double ebeam, boolean lund) {
         super("Elastic", false, ebeam, lund);
@@ -70,7 +73,7 @@ public class ElasticModule extends Module {
         F1D f1_pr = new F1D("f1_pr", "(180/3.14)*acos(([e0]*[e0]+x*x-pow(([e0]+0.93832-sqrt(x*x+0.9382*0.9382)),2))/2/[e0]/x)", this.getBeamEnergy()*0.08, this.getBeamEnergy()*0.35);
         f1_pr.setParameter(0, this.getBeamEnergy());
         H2F hi_p_dphi  = histo2D("hi_phi_dphi", "#phi (deg)", "#Delta#phi (deg)", 100, -180, 180, 100, PHIMAX-DPHI, PHIMAX+DPHI); 
-        H2F hi_p_dz    = histo2D("hi_phi_dz", "#phi (deg)", "#Deltaz (cm)", 100, -180, 180, 100, VZMIN, VZMAX);
+        H2F hi_p_dz    = histo2D("hi_phi_dz", "#phi (deg)", "#Deltaz (cm)", 100, -180, 180, 100, -DVZ, DVZ);
         H1F hi_dp      = histo1D("hi_dp", "Ebeam (GeV)", "Counts", 100, this.getBeamEnergy()*0.75, this.getBeamEnergy()*1.2, 0);
         H1F hi_dtheta  = histo1D("hi_dtheta", "#Delta#theta (deg)", "Counts", 100, -DTHETA, DTHETA, 0);
         H1F hi_dphi    = histo1D("hi_dphi", "#Delta#phi (deg)", "Counts", 100, PHIMAX-DPHI, PHIMAX+DPHI, 0); 
@@ -84,6 +87,19 @@ public class ElasticModule extends Module {
         dg.addDataSet(hi_dtheta,  5);
         dg.addDataSet(hi_dphi,    6);
         dg.addDataSet(hi_dz,      7);
+        return dg;
+    }
+    
+    private DataGroup vertexGroup() {
+        DataGroup dg = new DataGroup(2,2);
+        H2F hi_dphi = histo2D("hi_phi_dphi", "#phi_p (deg)", "#phi_p #phi_e (deg)", 100, -180, 180, 100, PHIMAX-DPHI, PHIMAX+DPHI); 
+        H2F hi_dz   = histo2D("hi_phi_dz",   "#phi_p (deg)", "z_p - z_e (cm)", 100, -180, 180, 100, -DVZ, DVZ);
+        H2F hi_ze   = histo2D("hi_phi_ze",   "#phi_e (deg)", "z_e (cm)", 100, -180, 180, 100, Constants.TARGETPOS-DVZ*2, Constants.TARGETPOS+DVZ*2);
+        H2F hi_zp   = histo2D("hi_phi_zp",   "#phi_p (deg)", "z_p (cm)", 100, -180, 180, 100, Constants.TARGETPOS-DVZ*2, Constants.TARGETPOS+DVZ*2);
+        dg.addDataSet(hi_dphi, 0);
+        dg.addDataSet(hi_dz,   1);
+        dg.addDataSet(hi_ze,   2);
+        dg.addDataSet(hi_zp,   3);
         return dg;
     }
 
@@ -157,6 +173,7 @@ public class ElasticModule extends Module {
         this.getHistos().put("Sector",     this.sectorGroup());
         this.getHistos().put("Phi",        this.phiGroup());
         this.getHistos().put("W",          this.wGroup());
+        this.getHistos().put("Vertex",     this.vertexGroup());
         this.getHistos().put("Proton",     this.protonGroup());
         this.getHistos().put("General",    this.generalGroup());
     }
@@ -189,6 +206,10 @@ public class ElasticModule extends Module {
                     this.getHistos().get("Proton").getH2F("hi_phi_dz").fill(Math.toDegrees(proton.phi()),proton.vz()-electron.vz());
                     this.getHistos().get("Proton").getH1F("hi_dphi").fill(dphi);
                     this.getHistos().get("Proton").getH1F("hi_dz").fill(proton.vz()-electron.vz());
+                    this.getHistos().get("Vertex").getH2F("hi_phi_dphi").fill(Math.toDegrees(proton.phi()), dphi);
+                    this.getHistos().get("Vertex").getH2F("hi_phi_dz").fill(Math.toDegrees(proton.phi()),proton.vz()-electron.vz());
+                    this.getHistos().get("Vertex").getH2F("hi_phi_ze").fill(Math.toDegrees(electron.phi()),electron.vz());
+                    this.getHistos().get("Vertex").getH2F("hi_phi_zp").fill(Math.toDegrees(proton.phi()),proton.vz());
                     this.getHistos().get("Phi").getH1F("hi_dphi"+electron.getSector()).fill(dphi);
                     if(Math.abs(dphi-180)<DPHI && Math.abs(proton.vz()-electron.vz())<VZMAX) {
                         this.getHistos().get("General").getH2F("hi_pr").fill(proton.p(),Math.toDegrees(proton.theta()));
@@ -239,8 +260,19 @@ public class ElasticModule extends Module {
     public void setPlottingOptions(String name) {
         this.setLogZ(name);  
         this.setH1LineWidth(name);
+        if(name.equals("Vertex")) {
+            this.drawLine(this.getCanvas(name).getPad(2));
+            this.drawLine(this.getCanvas(name).getPad(3));
+        }
     }
 
+    private void drawLine(EmbeddedPad pad) {
+        H2F h2 = (H2F) pad.getDatasetPlotters().get(0).getDataSet();
+        DataLine line= new DataLine(h2.getXAxis().min(),Constants.TARGETPOS,h2.getXAxis().max(),Constants.TARGETPOS);
+        line.setLineWidth(2);
+        pad.draw(line);
+    }
+    
     void fitW(H1F hiw) {
 
         // get histogram maximum in the rane 0.8-1.2

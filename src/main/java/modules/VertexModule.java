@@ -45,17 +45,21 @@ public class VertexModule extends Module {
         gr.setTitleX("#phi (deg)");
         gr.setTitleY("d0 (cm)");
         gr.setMarkerColor(2);
+        H1F hi_vz       = histo1D("hi_vz", "vz (cm)", "Counts", 100, VZMIN, VZMAX, col);
         H2F hi_vxy      = histo2D("hi_vxy", "vx (cm)", "vy (cm)", 100, VXYMIN, VXYMAX, 100, VXYMIN, VXYMAX);
         H2F hi_vxphi    = histo2D("hi_vxphi", "#phi (deg)", "vx (cm)", 100, PHIMIN, PHIMAX, 100, VXYMIN, VXYMAX);
         H2F hi_vyphi    = histo2D("hi_vyphi", "#phi (deg)", "vy (cm)", 100, PHIMIN, PHIMAX, 100, VXYMIN, VXYMAX);
+        H2F hi_vzphi    = histo2D("hi_vzphi", "#phi (deg)", "vz (cm)", 100, PHIMIN, PHIMAX, 100, VZMIN, VZMAX);
 
-        DataGroup dgTrack = new DataGroup(3,2);
+        DataGroup dgTrack = new DataGroup(4,2);
         dgTrack.addDataSet(hi_d0,       0);
         dgTrack.addDataSet(hi_d0phi,    1);
         dgTrack.addDataSet(gr,          2);
-        dgTrack.addDataSet(hi_vxy,      3);
-        dgTrack.addDataSet(hi_vxphi,    4);
-        dgTrack.addDataSet(hi_vyphi,    5);
+        dgTrack.addDataSet(hi_vz,       3);
+        dgTrack.addDataSet(hi_vxy,      4);
+        dgTrack.addDataSet(hi_vxphi,    5);
+        dgTrack.addDataSet(hi_vyphi,    6);
+        dgTrack.addDataSet(hi_vzphi,    7);
         return dgTrack;
     }
 
@@ -70,7 +74,7 @@ public class VertexModule extends Module {
         List<Track> trackPos = new ArrayList<>();
         List<Track> trackNeg = new ArrayList<>();
         for(Track track : event.getTracks()) {
-            if(Math.abs(track.getChi2pid())<CHI2PIDCUT || true) {
+            if(Math.abs(track.getChi2pid())<CHI2PIDCUT) {
                 if(track.charge()>0) trackPos.add(track);
                 else                 trackNeg.add(track);
             }
@@ -81,12 +85,14 @@ public class VertexModule extends Module {
     
     public void fillGroup(DataGroup group, List<Track> tracks) {
         for(Track track : tracks) {
-            if(track.getChi2()>3 || track.getNDF()<2 || track.pt()<0.2) continue;
+        if(track.getNDF()<2 || track.getChi2()/track.getNDF()>3 || track.pt()<0.2) continue;
             group.getH1F("hi_d0").fill(track.d0());
             group.getH2F("hi_d0phi").fill(Math.toDegrees(track.phi()),track.d0());
+            group.getH1F("hi_vz").fill(track.vz());
             group.getH2F("hi_vxy").fill(track.vx(),track.vy());
             group.getH2F("hi_vxphi").fill(Math.toDegrees(track.phi()),track.vx());
             group.getH2F("hi_vyphi").fill(Math.toDegrees(track.phi()),track.vy());
+            group.getH2F("hi_vzphi").fill(Math.toDegrees(track.phi()),track.vz());
         }
     }
     
@@ -107,17 +113,22 @@ public class VertexModule extends Module {
         H2F h2         = this.getHistos().get(name).getH2F("hi_d0phi");
         GraphErrors gr = this.getHistos().get(name).getGraph("gr_d0phi");
         this.fitSlices(h2, gr);
-        F1D f1 = new F1D("f1","[a]*sin([b]*x+[c])", PHIMIN, PHIMAX);
+        F1D f1 = new F1D("f1","[p0]*sin([p1]*x+[p2])", PHIMIN, PHIMAX);
         f1.setParameter(0, (gr.getMax()-gr.getMin())/2.0);
         f1.setParameter(1, Math.PI/180);
         f1.setParLimits(1, Math.PI/180*0.99, Math.PI/180*1.01);
         DataFitter.fit(f1, gr, "Q");
         
-        System.out.printf("a sin(b x + c):\n");
+        System.out.printf("p0 sin(p1 x + p2):\n");
         for(int i=0; i<f1.getNPars(); i++)
-            System.out.printf("\t a = (%.4f +/- %.4f)\n", f1.getParameter(i), f1.parameter(i).error());
-        System.out.printf("x_beam: %2.3f mm, y_beam: %2.3f mm\n", -10*f1.getParameter(0)*Math.cos(f1.getParameter(2)),
-                                                                   10*f1.getParameter(0)*Math.sin(f1.getParameter(2))); // convert to mm        
+            System.out.printf("\t p%d = (%.4f +/- %.4f)\n", i, f1.getParameter(i), f1.parameter(i).error());
+        double xb = -10*f1.getParameter(0)*Math.cos(f1.getParameter(2));
+        double yb =  10*f1.getParameter(0)*Math.sin(f1.getParameter(2));
+        double exb = 10*Math.sqrt(Math.pow(f1.parameter(0).error()*Math.cos(f1.getParameter(2)),2)+
+                                  Math.pow(f1.getParameter(0)*Math.sin(f1.getParameter(2))*f1.parameter(2).error(),2));
+        double eyb = 10*Math.sqrt(Math.pow(f1.parameter(0).error()*Math.sin(f1.getParameter(2)),2)+
+                                  Math.pow(f1.getParameter(0)*Math.cos(f1.getParameter(2))*f1.parameter(2).error(),2));
+        System.out.printf("x_beam: (%2.3f +/- %2.3f) mm, y_beam: (%2.3f +/- %2.3f) mm\n", xb, exb, yb, eyb); // convert to mm        
     }
     
     public void fitSlices(H2F h2, GraphErrors gr) {
