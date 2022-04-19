@@ -22,9 +22,12 @@ public class Track extends Particle {
     private int seedType;
     private int NDF;
     private double chi2;
+    private double xb;
+    private double yb;
     private int index = -1;
     private int pindex = -1;
     private double solenoid = -1;
+    private double beta = -1;
     private double chi2pid = Double.POSITIVE_INFINITY;
     private int recStatus=0;
     private int sector=0;
@@ -87,6 +90,8 @@ public class Track extends Particle {
         this.seedType = type;
         this.NDF  = NDF;
         this.chi2 = chi2;
+        this.xb = x0;
+        this.yb = y0;
         this.status = status;
     }
 
@@ -154,12 +159,24 @@ public class Track extends Particle {
         this.status = status;
     }
 
+    public int getKFIterations() {
+        return (int) status/1000;
+    }
+
     public int getType() {
         return type;
     }
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public double getBeta() {
+        return beta;
+    }
+
+    public void setBeta(double beta) {
+        this.beta = beta;
     }
 
     public double getChi2pid() {
@@ -210,7 +227,7 @@ public class Track extends Particle {
         if (Math.signum(kappa) < 0) {
             phi0 = Math.atan2(-ycen, -xcen);
         }
-        double drh0 = xcen*Math.cos(phi0) + ycen*Math.sin(phi0) - Constants.ALPHA/ kappa;
+        double drh0 = (xcen-Constants.getXBeam()-xb)*Math.cos(phi0) + (ycen-Constants.getYBeam()-yb)*Math.sin(phi0) - Constants.ALPHA/ kappa;
         return -drh0;
 //        return Math.signum(this.vy()/Math.cos(this.phi()))*Math.sqrt(this.vx()*this.vx()+this.vy()*this.vy());
     }
@@ -324,9 +341,9 @@ public class Track extends Particle {
                             bank.getFloat("yb", row),
                             bank.getFloat("z0", row),
                             bank.getByte("fittingMethod", row),
-                            bank.getInt("ndf", row),
+                            bank.getShort("ndf", row),
                             bank.getFloat("chi2", row),
-                            bank.getInt("status", row));
+                            bank.getShort("status", row));
         t.setCovMatrix(bank.getFloat("cov_d02", row),
                        bank.getFloat("cov_d0phi0", row),
                        bank.getFloat("cov_d0rho", row),
@@ -406,9 +423,10 @@ public class Track extends Particle {
                     recPart.getFloat("px", row),
                     recPart.getFloat("py", row),
                     recPart.getFloat("pz", row),
-                    recPart.getFloat("vx", row)+Constants.getXBeam(),
-                    recPart.getFloat("vy", row)+Constants.getYBeam(),
+                    recPart.getFloat("vx", row)+0*Constants.getXBeam(),
+                    recPart.getFloat("vy", row)+0*Constants.getYBeam(),
                     recPart.getFloat("vz", row));
+        t.setBeta(recPart.getFloat("beta", row));
         t.setChi2pid(recPart.getFloat("chi2pid", row));
         t.setRECStatus(recPart.getShort("status", row));
         if(recTrack!=null) {

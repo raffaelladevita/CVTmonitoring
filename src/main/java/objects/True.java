@@ -103,15 +103,25 @@ public class True implements Comparable {
         hit.setPosition(new Point3D(mc.getFloat("avgX", row+offset),
                                     mc.getFloat("avgY", row+offset),
                                     mc.getFloat("avgZ", row+offset)));
-        return hit;
+        int tid = mc.getInt("tid", row+offset);
+        if(tid==1)
+            return hit;
+        else 
+            return null;
     }
 
     @Override
     public int compareTo(Object o) {
         True ot = (True) o;
-        if(this.getTime()<ot.getTime()) return 1;
+        if(this.getTime()<ot.getTime()) return -1;
         else if(this.getTime()==ot.getTime()) return 0;
-        else return -1;
+        else return 1;
+    }
+    
+    public String toString() {
+        String s = String.format("True: detector=%s id=%d sector=%d layer=%d time=%.3f ns E=%.3f GeV p=%.3f GeV", 
+                                  this.type.getName(), this.id, this.sector, this.layer, this.time, this.energy, this.momentum.mag());
+        return s;
     }
     
 }

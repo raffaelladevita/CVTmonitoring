@@ -17,8 +17,8 @@ import org.jlab.groot.math.F1D;
  */
 public class MCModule extends Module {
     
-    private final double PMIN = 0.0;
-    private final double PMAX = 2.0;
+    private final double PMIN = 0.3;
+    private final double PMAX = 1.7;
     private final double DP   = 0.2;
     private final double PHIMIN = -180.0;
     private final double PHIMAX = 180.0;
@@ -85,7 +85,7 @@ public class MCModule extends Module {
         return dg;
     }
 
-    private DataGroup trackResolution2DGroup() {
+    private DataGroup trackTrack2DGroup() {
         H2F hi_p_dp     = histo2D("hi_p_dp",     "p (GeV)", "#Deltap/p",          50, PMIN, PMAX, 50, -DP, DP);
         H2F hi_p_dtheta = histo2D("hi_p_dtheta", "p (GeV)", "#Delta#theta (deg)", 50, PMIN, PMAX, 50, -DTHETA, DTHETA);
         H2F hi_p_dphi   = histo2D("hi_p_dphi",   "p (GeV)", "#Delta#phi (deg)",   50, PMIN, PMAX, 50, -DPHI, DPHI);
@@ -133,7 +133,7 @@ public class MCModule extends Module {
         return dg;
     }
 
-    private DataGroup helixResolution2DGroup() {
+    private DataGroup helixTrack2DGroup() {
         DataGroup dg = new DataGroup(5,3);
         for(int i=0; i<3; i++) {
             String type = "";
@@ -188,7 +188,7 @@ public class MCModule extends Module {
         return dg;
     }
 
-    private DataGroup rayResolution2DGroup() {
+    private DataGroup rayTrack2DGroup() {
         DataGroup dg = new DataGroup(5,3);
         for(int i=0; i<3; i++) {
             String type = "";
@@ -230,11 +230,11 @@ public class MCModule extends Module {
             return this.rayResolutionGroup(icol);
     }
 
-    private DataGroup repResolution2DGroup() {
+    private DataGroup repTrack2DGroup() {
         if(!this.isCosmics())
-            return this.helixResolution2DGroup();
+            return this.helixTrack2DGroup();
         else 
-            return this.rayResolution2DGroup();
+            return this.rayTrack2DGroup();
     }
 
     private DataGroup helixPullsGroup(int icol) {
@@ -306,18 +306,26 @@ public class MCModule extends Module {
     public void createHistos() {
         this.getHistos().put("MC", this.trackGroup(45));
         this.getHistos().put("AllSeeds", this.trackGroup(44));
-        this.getHistos().put("Seed", this.trackGroup(44));
-        this.getHistos().put("SeedResolution1", this.trackResolutionGroup(44));
-        this.getHistos().put("SeedResolution2", this.repResolutionGroup(44));
-        this.getHistos().put("SeedResolution3", this.repResolution2DGroup());
+        this.getHistos().put("Seed",  this.trackGroup(44));
+        this.getHistos().put("Seed1", this.trackResolutionGroup(44));
+        this.getHistos().put("Seed2", this.repResolutionGroup(44));
+        this.getHistos().put("Seed3", this.repTrack2DGroup());
+        this.getHistos().put("Seed4", this.trackTrack2DGroup());
         this.getHistos().put("SeedPulls", this.pullsGroup(44));
+        this.getHistos().put("AllFPTracks", this.trackGroup(46));
+        this.getHistos().put("FPass",  this.trackGroup(47));
+        this.getHistos().put("FPass1", this.trackResolutionGroup(47));
+        this.getHistos().put("FPass2", this.repResolutionGroup(47));
+        this.getHistos().put("FPass3", this.repTrack2DGroup());
+        this.getHistos().put("FPass4", this.trackTrack2DGroup());
+        this.getHistos().put("FPPulls",  this.pullsGroup(47));
         this.getHistos().put("AllTracks", this.trackGroup(46));
-        this.getHistos().put("Track", this.trackGroup(46));
-        this.getHistos().put("Resolution1", this.trackResolutionGroup(46));
-        this.getHistos().put("Resolution2", this.repResolutionGroup(46));
-        this.getHistos().put("Resolution3", this.repResolution2DGroup());
-        this.getHistos().put("Resolution4", this.trackResolution2DGroup());
-        this.getHistos().put("Pulls", this.pullsGroup(46));
+        this.getHistos().put("Track",  this.trackGroup(46));
+        this.getHistos().put("Track1", this.trackResolutionGroup(46));
+        this.getHistos().put("Track2", this.repResolutionGroup(46));
+        this.getHistos().put("Track3", this.repTrack2DGroup());
+        this.getHistos().put("Track4", this.trackTrack2DGroup());
+        this.getHistos().put("Pulls",  this.pullsGroup(46));
         this.getHistos().put("Efficiency", this.efficiencyGroup());
         this.getHistos().put("Efficiency2", this.efficiencyGroup());
         this.getHistos().put("EfficiencyG", this.efficiencyGroup());
@@ -336,16 +344,24 @@ public class MCModule extends Module {
             }            
             this.fillTrackGroup(this.getHistos().get("MC"),mcTrack);
             for(Track seed : event.getSeeds()) this.fillTrackGroup(this.getHistos().get("AllSeeds"),seed);
+            for(Track track : event.getFPTracks()) this.fillTrackGroup(this.getHistos().get("AllFPTracks"),track);
             for(Track track : event.getTracks()) this.fillTrackGroup(this.getHistos().get("AllTracks"),track);
             this.fillEfficiencyGroup(this.getHistos().get("Efficiency"), mcTrack, "MC");
             if(matchedTrack!=null) {
+                int tid = matchedTrack.getId();
                 int sid = matchedTrack.getSeedId();
+                Track fpTrack   = matchedTrack;
                 Track seedTrack = matchedTrack;
                 if(event.getSeedMap().containsKey(sid)) {
                     int si  = event.getSeedMap().get(sid);
                     seedTrack = event.getSeeds().get(si);
-               }
+                }
+                if(event.getFPTrackMap().containsKey(tid)) {
+                    int fi = event.getFPTrackMap().get(tid);
+                    fpTrack = event.getFPTracks().get(fi);
+                }
                 this.fillTrackGroup(this.getHistos().get("Seed"),seedTrack);
+                this.fillTrackGroup(this.getHistos().get("FPass"),fpTrack);
                 this.fillTrackGroup(this.getHistos().get("Track"),matchedTrack);
                 this.fillEfficiencyGroup(this.getHistos().get("Efficiency"), seedTrack, "Seed");
                 this.fillEfficiencyGroup(this.getHistos().get("Efficiency"), matchedTrack, "Rec");
@@ -354,14 +370,20 @@ public class MCModule extends Module {
                     this.fillEfficiencyGroup(this.getHistos().get("Efficiency2"), seedTrack, "Seed");
                     this.fillEfficiencyGroup(this.getHistos().get("Efficiency2"), matchedTrack, "Rec");
                 }
-                this.fillTrackResolutionGroup(this.getHistos().get("SeedResolution1"), mcTrack, seedTrack);
-                this.fillRepResolutionGroup(this.getHistos().get("SeedResolution2"), mcTrack, seedTrack);
-                this.fillRepResolution2DGroup(this.getHistos().get("SeedResolution3"), mcTrack, seedTrack);
+                this.fillTrackResolutionGroup(this.getHistos().get("Seed1"), mcTrack, seedTrack);
+                this.fillRepResolutionGroup(this.getHistos().get("Seed2"), mcTrack, seedTrack);
+                this.fillRepTrack2DGroup(this.getHistos().get("Seed3"), mcTrack, seedTrack);
+                this.fillTrackTrack2DGroup(this.getHistos().get("Seed4"), mcTrack, seedTrack);
                 this.fillPullsGroup(this.getHistos().get("SeedPulls"), mcTrack, seedTrack);
-                this.fillTrackResolutionGroup(this.getHistos().get("Resolution1"), mcTrack, matchedTrack);
-                this.fillRepResolutionGroup(this.getHistos().get("Resolution2"), mcTrack, matchedTrack);
-                this.fillRepResolution2DGroup(this.getHistos().get("Resolution3"), mcTrack, matchedTrack);
-                this.fillTrackResolution2DGroup(this.getHistos().get("Resolution4"), mcTrack, matchedTrack);
+                this.fillTrackResolutionGroup(this.getHistos().get("FPass1"), mcTrack, fpTrack);
+                this.fillRepResolutionGroup(this.getHistos().get("FPass2"), mcTrack, fpTrack);
+                this.fillRepTrack2DGroup(this.getHistos().get("FPass3"), mcTrack, fpTrack);
+                this.fillTrackTrack2DGroup(this.getHistos().get("FPass4"), mcTrack, fpTrack);
+                this.fillPullsGroup(this.getHistos().get("FPPulls"), mcTrack, fpTrack);
+                this.fillTrackResolutionGroup(this.getHistos().get("Track1"), mcTrack, matchedTrack);
+                this.fillRepResolutionGroup(this.getHistos().get("Track2"), mcTrack, matchedTrack);
+                this.fillRepTrack2DGroup(this.getHistos().get("Track3"), mcTrack, matchedTrack);
+                this.fillTrackTrack2DGroup(this.getHistos().get("Track4"), mcTrack, matchedTrack);
                 this.fillPullsGroup(this.getHistos().get("Pulls"), mcTrack, matchedTrack);
             }
         }
@@ -396,7 +418,7 @@ public class MCModule extends Module {
         group.getH1F("hi_vz").fill(mc.vz()-track.vz());
     }
     
-    private void fillTrackResolution2DGroup(DataGroup group, Track mc, Track track) {
+    private void fillTrackTrack2DGroup(DataGroup group, Track mc, Track track) {
         group.getH2F("hi_p_dp").fill(mc.p(),(mc.p()-track.p())/mc.p());
         group.getH2F("hi_p_dtheta").fill(mc.p(),Math.toDegrees(mc.theta()-track.theta()));
         group.getH2F("hi_p_dphi").fill(mc.p(),Math.toDegrees(mc.deltaPhi(track)));
@@ -420,7 +442,7 @@ public class MCModule extends Module {
         group.getH1F("hi_tandip").fill(mc.tandip()-track.tandip());
     }
     
-    private void fillHelixResolution2DGroup(DataGroup group, Track mc, Track track) {
+    private void fillHelixTrack2DGroup(DataGroup group, Track mc, Track track) {
         group.getH2F("hi_d0").fill(mc.d0()-track.d0(), mc.d0());
         group.getH2F("hi_phi0").fill(Math.toDegrees(mc.deltaPhi(track)), Math.toDegrees(mc.phi()));
         group.getH2F("hi_rho").fill((mc.rho()-track.rho())/mc.rho(), mc.rho());
@@ -446,7 +468,7 @@ public class MCModule extends Module {
         group.getH1F("hi_tz").fill(mc.tz()-track.tz());
     }
     
-    private void fillRayResolution2DGroup(DataGroup group, Track mc, Track track) {
+    private void fillRayTrack2DGroup(DataGroup group, Track mc, Track track) {
         group.getH2F("hi_vx").fill(mc.vx()-track.vx(), mc.vx());
         group.getH2F("hi_vz").fill(mc.vz()-track.vz(), mc.vz());
         group.getH2F("hi_tx").fill(mc.tx()-track.tx(), mc.tx());
@@ -469,11 +491,11 @@ public class MCModule extends Module {
     }
 
     
-    private void fillRepResolution2DGroup(DataGroup group, Track mc, Track track) {
+    private void fillRepTrack2DGroup(DataGroup group, Track mc, Track track) {
         if(!this.isCosmics())
-            this.fillHelixResolution2DGroup(group, mc, track);
+            this.fillHelixTrack2DGroup(group, mc, track);
         else
-            this.fillRayResolution2DGroup(group, mc, track);
+            this.fillRayTrack2DGroup(group, mc, track);
     }
 
     private void fillPullsGroup(DataGroup group, Track mc, Track track) {
@@ -496,15 +518,20 @@ public class MCModule extends Module {
     
     @Override
     public void analyzeHistos() {
-        this.fitDataGroup(this.getHistos().get("SeedResolution1"));
-        this.fitDataGroup(this.getHistos().get("SeedResolution2"));
+        this.fitDataGroup(this.getHistos().get("Seed1"));
+        this.fitDataGroup(this.getHistos().get("Seed2"));
         this.fitDataGroup(this.getHistos().get("SeedPulls"));
-        this.fitDataGroup(this.getHistos().get("Resolution1"));
-        this.fitDataGroup(this.getHistos().get("Resolution2"));
+        this.fitDataGroup(this.getHistos().get("FPass1"));
+        this.fitDataGroup(this.getHistos().get("FPass2"));
+        this.fitDataGroup(this.getHistos().get("FPPulls"));
+        this.fitDataGroup(this.getHistos().get("Track1"));
+        this.fitDataGroup(this.getHistos().get("Track2"));
         this.fitDataGroup(this.getHistos().get("Pulls"));
-        this.getHistos().get("SeedResolution2").getH1F("hi_chi2").setFunction(null);
+        this.getHistos().get("Seed2").getH1F("hi_chi2").setFunction(null);
         this.getHistos().get("SeedPulls").getH1F("hi_chi2").setFunction(null);
-        this.getHistos().get("Resolution2").getH1F("hi_chi2").setFunction(null);
+        this.getHistos().get("FPass2").getH1F("hi_chi2").setFunction(null);
+        this.getHistos().get("FPPulls").getH1F("hi_chi2").setFunction(null);
+        this.getHistos().get("Track2").getH1F("hi_chi2").setFunction(null);
         this.getHistos().get("Pulls").getH1F("hi_chi2").setFunction(null);
         
         DataGroup efficiency  = this.getHistos().get("Efficiency");
@@ -528,35 +555,50 @@ public class MCModule extends Module {
     
     @Override
     public void drawHistos() {
-        this.addCanvas("MC", "Seed", "SeedResolution1", "SeedResolution2", "SeedResolution3", "SeedPulls", 
-                       "Track", "Resolution1", "Resolution2", "Resolution3", "Resolution4", "Pulls", "Efficiency");
+        this.addCanvas("MC", "Seed", "Seed1", "Seed2", "Seed3", "Seed4", "SeedPulls", 
+                       "FPass", "FPass1", "FPass2", "FPass3", "FPass4", "FPPulls",
+                       "Track", "Track1", "Track2", "Track3", "Track4", "Pulls", "Efficiency");
         this.getCanvas("MC").draw(this.getHistos().get("MC"));
         this.getCanvas("Seed").draw(this.getHistos().get("AllSeeds"));
         this.getCanvas("Seed").draw(this.getHistos().get("Seed"));
-        this.getCanvas("SeedResolution1").draw(this.getHistos().get("SeedResolution1"));
-        this.getCanvas("SeedResolution2").draw(this.getHistos().get("SeedResolution2"));
-        this.getCanvas("SeedResolution3").draw(this.getHistos().get("SeedResolution3"));
+        this.getCanvas("Seed1").draw(this.getHistos().get("Seed1"));
+        this.getCanvas("Seed2").draw(this.getHistos().get("Seed2"));
+        this.getCanvas("Seed3").draw(this.getHistos().get("Seed3"));
+        this.getCanvas("Seed4").draw(this.getHistos().get("Seed4"));
         this.getCanvas("SeedPulls").draw(this.getHistos().get("SeedPulls"));
+        this.getCanvas("FPass").draw(this.getHistos().get("AllFPTracks"));
+        this.getCanvas("FPass").draw(this.getHistos().get("FPass"));
+        this.getCanvas("FPass1").draw(this.getHistos().get("FPass1"));
+        this.getCanvas("FPass2").draw(this.getHistos().get("FPass2"));
+        this.getCanvas("FPass3").draw(this.getHistos().get("FPass3"));
+        this.getCanvas("FPass4").draw(this.getHistos().get("FPass4"));
+        this.getCanvas("FPPulls").draw(this.getHistos().get("FPPulls"));
         this.getCanvas("Track").draw(this.getHistos().get("AllTracks"));
         this.getCanvas("Track").draw(this.getHistos().get("Track"));
-        this.getCanvas("Resolution1").draw(this.getHistos().get("Resolution1"));
-        this.getCanvas("Resolution2").draw(this.getHistos().get("Resolution2"));
-        this.getCanvas("Resolution3").draw(this.getHistos().get("Resolution3"));
-        this.getCanvas("Resolution4").draw(this.getHistos().get("Resolution4"));
+        this.getCanvas("Track1").draw(this.getHistos().get("Track1"));
+        this.getCanvas("Track2").draw(this.getHistos().get("Track2"));
+        this.getCanvas("Track3").draw(this.getHistos().get("Track3"));
+        this.getCanvas("Track4").draw(this.getHistos().get("Track4"));
         this.getCanvas("Pulls").draw(this.getHistos().get("Pulls"));
         this.getCanvas("Efficiency").draw(this.getHistos().get("Efficiency"));
         this.getCanvas("Efficiency").draw(this.getHistos().get("Efficiency2"));
         this.setPlottingOptions("MC");
         this.setPlottingOptions("Seed");
-        this.setPlottingOptions("SeedResolution1");
-        this.setPlottingOptions("SeedResolution2");
-        this.setPlottingOptions("SeedResolution3");
+        this.setPlottingOptions("Seed1");
+        this.setPlottingOptions("Seed2");
+        this.setPlottingOptions("Seed3");
         this.setPlottingOptions("SeedPulls");
+        this.setPlottingOptions("FPass");
+        this.setPlottingOptions("FPass1");
+        this.setPlottingOptions("FPass2");
+        this.setPlottingOptions("FPass3");
+        this.setPlottingOptions("FPass4");
+        this.setPlottingOptions("FPPulls");
         this.setPlottingOptions("Track");
-        this.setPlottingOptions("Resolution1");
-        this.setPlottingOptions("Resolution2");
-        this.setPlottingOptions("Resolution3");
-        this.setPlottingOptions("Resolution4");
+        this.setPlottingOptions("Track1");
+        this.setPlottingOptions("Track2");
+        this.setPlottingOptions("Track3");
+        this.setPlottingOptions("Track4");
         this.setPlottingOptions("Pulls");
         this.setPlottingOptions("Efficiency");
     }

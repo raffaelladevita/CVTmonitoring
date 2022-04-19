@@ -74,7 +74,7 @@ public class VertexModule extends Module {
         List<Track> trackPos = new ArrayList<>();
         List<Track> trackNeg = new ArrayList<>();
         for(Track track : event.getTracks()) {
-            if(Math.abs(track.getChi2pid())<CHI2PIDCUT) {
+            if(Math.abs(track.getChi2pid())<CHI2PIDCUT || true) {
                 if(track.charge()>0) trackPos.add(track);
                 else                 trackNeg.add(track);
             }
@@ -85,7 +85,7 @@ public class VertexModule extends Module {
     
     public void fillGroup(DataGroup group, List<Track> tracks) {
         for(Track track : tracks) {
-        if(track.getNDF()<2 || track.getChi2()/track.getNDF()>3 || track.pt()<0.2) continue;
+        if(track.getNDF()<2 || track.getChi2()/track.getNDF()>30 || track.pt()<0.2) continue;
             group.getH1F("hi_d0").fill(track.d0());
             group.getH2F("hi_d0phi").fill(Math.toDegrees(track.phi()),track.d0());
             group.getH1F("hi_vz").fill(track.vz());

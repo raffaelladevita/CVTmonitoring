@@ -16,7 +16,7 @@ import org.jlab.groot.group.DataGroup;
 public class TrackModule extends Module {
     
     private final double PMIN = 0.0;
-    private final double PMAX = 2.0;
+    private final double PMAX = 1.5;
     private final double PHIMIN = -180.0;
     private final double PHIMAX = 180.0;
     private final double THETAMIN = 20.0;
@@ -38,7 +38,7 @@ public class TrackModule extends Module {
         H1F hi_mult  = histo1D("hi_mult", "Track multiplicity", "Counts", 10, 0, 10, 48);
         H1F hi_chi2  = histo1D("hi_chi2", "Normalized #chi^2", "Counts", 100, 0, 10, 48);
         H1F hi_ndf   = histo1D("hi_ndf", "NDF", "Counts", 15, 0, 15.0, 48);
-        H1F hi_q     = histo1D("hi_q", "Charge", "Counts", 3, -1.5, 1.5, 48);
+        H1F hi_iter  = histo1D("hi_iter", "KF Iterations", "Counts", 7, -0.5, 6.5, 48);
         H1F hi_p     = histo1D("hi_p", "p (GeV)", "Counts", 100, PMIN, PMAX, col);
         H1F hi_pt    = histo1D("hi_pt", "pt (GeV)", "Counts", 100, PMIN, PMAX, col);
         H1F hi_theta = histo1D("hi_theta", "#theta (deg)", "Counts", 100, THETAMIN, THETAMAX, col);
@@ -54,7 +54,7 @@ public class TrackModule extends Module {
         dgTrack.addDataSet(hi_mult, 0);
         dgTrack.addDataSet(hi_chi2, 1);
         dgTrack.addDataSet(hi_ndf,  2);
-        dgTrack.addDataSet(hi_q,    3);
+        dgTrack.addDataSet(hi_iter, 3);
         dgTrack.addDataSet(hi_p,    4);
         dgTrack.addDataSet(hi_pt,   5);
         dgTrack.addDataSet(hi_theta,6);
@@ -88,25 +88,35 @@ public class TrackModule extends Module {
     public void createHistos() {
         this.getHistos().put("Tracks", this.createGroup(46));
         this.getHistos().put("Tracks2D", this.createGroup2D(46));
-        this.getHistos().put("Seeds", this.createGroup(46));
-        this.getHistos().put("TrackSeeds", this.createGroup(46));
+        this.getHistos().put("FPTracks", this.createGroup(46));
+        this.getHistos().put("TrackFPTracks", this.createGroup(46));
+        this.getHistos().put("Seeds", this.createGroup(44));
+        this.getHistos().put("TrackSeeds", this.createGroup(44));
         this.getHistos().put("TrackChi2pid", this.createGroup(49));
     }
     
     @Override
     public void fillHistos(Event event) {
-        List<Track> trackSeeds = new ArrayList<>();
-        List<Track> trackC2pid = new ArrayList<>();
+        List<Track> trackSeeds    = new ArrayList<>();
+        List<Track> trackFPTracks = new ArrayList<>();
+        List<Track> trackC2pid    = new ArrayList<>();
         for(Track track : event.getTracks()) {
+            int tid = track.getId();
             int sid = track.getSeedId();
             if(event.getSeedMap().containsKey(sid)) {
                 int si = event.getSeedMap().get(sid);           
                 trackSeeds.add(event.getSeeds().get(si));
             }
+            if(event.getFPTrackMap().containsKey(tid)) {
+                int fi = event.getFPTrackMap().get(tid);
+                trackFPTracks.add(event.getFPTracks().get(fi));
+            }
             if(Math.abs(track.getChi2pid())<CHI2PIDCUT) trackC2pid.add(track);
         }
         this.fillGroup(this.getHistos().get("Tracks"),event.getTracks());
         this.fillGroup2D(this.getHistos().get("Tracks2D"),event.getTracks());
+        this.fillGroup(this.getHistos().get("FPTracks"),event.getFPTracks());
+        this.fillGroup(this.getHistos().get("TrackFPTracks"),trackFPTracks);
         this.fillGroup(this.getHistos().get("Seeds"),event.getSeeds());
         this.fillGroup(this.getHistos().get("TrackSeeds"),trackSeeds);
         this.fillGroup(this.getHistos().get("TrackChi2pid"),trackC2pid);
@@ -117,7 +127,7 @@ public class TrackModule extends Module {
         for(Track track : tracks) {
             group.getH1F("hi_chi2").fill(track.getChi2()/track.getNDF());
             group.getH1F("hi_ndf").fill(track.getNDF());
-            group.getH1F("hi_q").fill(track.charge());
+            group.getH1F("hi_iter").fill(track.getKFIterations());
             group.getH1F("hi_p").fill(track.p());
             group.getH1F("hi_pt").fill(track.pt());
             group.getH1F("hi_theta").fill(Math.toDegrees(track.theta()));
@@ -142,14 +152,17 @@ public class TrackModule extends Module {
     
     @Override
     public void drawHistos() {
-        this.addCanvas("Tracks", "Tracks2D", "Seeds", "EBTracks");
+        this.addCanvas("Tracks", "Tracks2D", "FPTracks", "Seeds", "EBTracks");
         this.getCanvas("Tracks").draw(this.getHistos().get("Tracks"));
         this.getCanvas("Tracks2D").draw(this.getHistos().get("Tracks2D"));
+        this.getCanvas("FPTracks").draw(this.getHistos().get("FPTracks"));
+        this.getCanvas("FPTracks").draw(this.getHistos().get("TrackFPTracks"));
         this.getCanvas("Seeds").draw(this.getHistos().get("Seeds"));
         this.getCanvas("Seeds").draw(this.getHistos().get("TrackSeeds"));
         this.getCanvas("EBTracks").draw(this.getHistos().get("Tracks"));
         this.getCanvas("EBTracks").draw(this.getHistos().get("TrackChi2pid"));
         this.setPlottingOptions("Tracks");
+        this.setPlottingOptions("FPTracks");
         this.setPlottingOptions("Seeds");
         this.setPlottingOptions("EBTracks");
     }

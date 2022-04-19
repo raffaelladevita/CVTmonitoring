@@ -29,7 +29,7 @@ public class TruthModule extends Module {
         for(int i=0; i<types.length; i++) {
             String name = types[i].getName();
             H1F hi_eloss   = histo1D("hi_eloss_"  + name, name + " ELoss (MeV)", "Counts"  , 100, 0, 5, col);
-            H2F hi_peloss  = histo2D("hi_peloss_" + name, "p (GeV)", name + " ELoss (MeV)", 100, 0.2, 2.0, 100, 0, 5);
+            H2F hi_peloss  = histo2D("hi_peloss_" + name, "p (GeV)", name + " ELoss (MeV)", 100, 0.2, 1.2, 100, 0, 20);
             dg.addDataSet(hi_eloss,  i + 0);
             dg.addDataSet(hi_peloss, i + 2);
         }
@@ -56,24 +56,30 @@ public class TruthModule extends Module {
         for(int i=0; i<2; i++) {
             int layer = 2*i+1;
             this.fillEloss(layer, layer+2, DetectorType.BST, trueMap);
-        }         
+        }
         for(int i=0; i<Constants.BMTREGIONS*2; i++) {
             int layer = Constants.SVTLAYERS + i +1;
             this.fillEloss(layer, layer+1, DetectorType.BMT, trueMap);
         }         
     }
     
-    private void fillEloss(int layer1, int layer2, DetectorType type, Map<Integer,True> trueMap) {
+    private boolean fillEloss(int layer1, int layer2, DetectorType type, Map<Integer,True> trueMap) {
+        boolean value = false;
         if(trueMap.containsKey(layer1) && trueMap.containsKey(layer2)) {
             double edep = (trueMap.get(layer1).getEnergy()-trueMap.get(layer2).getEnergy());
             double pmom = trueMap.get(layer1).getMomentum().mag();
-            if(trueMap.get(layer1).getTime()>trueMap.get(layer1).getTime()) {
+            if(trueMap.get(layer1).getTime()>trueMap.get(layer2).getTime()) {
                 edep = -edep;
                 pmom = trueMap.get(layer2).getMomentum().mag();
             }
+//            if(type==DetectorType.BST && Math.abs(pmom-0.4)<0.01 && edep<4) {
+//                System.out.println(trueMap.get(layer1).getEnergy() + " " + trueMap.get(layer2).getEnergy() + " " + edep);
+//                value=true;
+//            }
             this.getHistos().get("ELoss").getH1F("hi_eloss_"+type.getName()).fill(edep);
             this.getHistos().get("ELoss").getH2F("hi_peloss_"+type.getName()).fill(pmom, edep);                
         }
+        return value;
     }
 
        

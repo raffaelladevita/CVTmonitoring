@@ -27,7 +27,7 @@ public class Constants {
     public static int PID = 2212;
     public static double THMIN = 30;
     
-    public static final int NSIGMA = 5;
+    public static final int NSIGMA = 18;
     public static final double SIGMA_P = 5; // 3;
     public static final double SIGMA_PHI = 0.3;//0.57; //0.3; //0.12;
     public static final double SIGMA_THETA = 0.5;//0.57; //0.3; //0.2;

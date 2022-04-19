@@ -24,13 +24,14 @@ public class Event {
     private Track mcParticle;
     private final List<Track> particles  = new ArrayList<>();
     private final List<Track> tracks     = new ArrayList<>();
+    private final List<Track> fptracks   = new ArrayList<>();
     private final List<Track> seeds      = new ArrayList<>();
-    private final List<Track> mcTracks   = new ArrayList<>();
     private final List<Cluster> clusters = new ArrayList<>();
     private final List<Hit> hits         = new ArrayList<>();
     private final List<Trajectory> trajs = new ArrayList<>();
     private final List<True> trues       = new ArrayList<>();
     private final Map<Integer, Integer> trackMap = new HashMap<>();
+    private final Map<Integer, Integer> fptrackMap = new HashMap<>();
     private final Map<Integer, Integer> seedMap = new HashMap<>();
     private final Map<Integer, List<Integer>> clusterMap = new HashMap<>();
     private final Map<Integer, List<Integer>> hitMap = new HashMap<>();
@@ -80,11 +81,13 @@ public class Event {
                 }
             }
             else {
-                if(mc.getInt("pid", 0)!=0) 
+                if(mc.getInt("pid", 0)!=0) {
                     pid = mc.getInt("pid", 0);
+                }
                 else
                     pid = -13;
             }
+            if(pid==1000010020) pid=45;
             mcParticle = new Track(pid,
                             mc.getFloat("px", index),
                             mc.getFloat("py", index),
@@ -150,7 +153,9 @@ public class Event {
     }
         
     private void readSeeds(DataEvent event) {
-        DataBank trackBank = this.getBank(event, "CVTRec::Seeds");
+        DataBank trackBank = this.getBank(event, "CVTRecFP::Seeds");
+        if(trackBank==null)
+            trackBank = this.getBank(event, "CVTRec::Seeds");
         DataBank cosmiBank = this.getBank(event, "CVTRec::CosmicSeeds");
         if(trackBank!=null) {
             for(int i=0; i<trackBank.rows(); i++) {
@@ -165,6 +170,17 @@ public class Event {
                 seeds.add(track);
                 seedMap.put(track.getId(), i);
             }                
+        }
+    }
+        
+    private void readFPTracks(DataEvent event) {
+        DataBank trackBank = this.getBank(event, "CVTRecFP::Tracks");
+        if(trackBank!=null) {
+            for(int i=0; i<trackBank.rows(); i++) {
+                Track track = Track.readTrack(trackBank, i);
+                fptracks.add(track);
+                fptrackMap.put(track.getId(), i);
+            }
         }
     }
         
@@ -236,14 +252,14 @@ public class Event {
         if(bmt!=null) {
             for(int i=0; i<bmt.rows(); i++) {
                 True t = True.readTruth(bmt, mc, i, offset, DetectorType.BMT);
-                trues.add(t);
+                if(t!=null) trues.add(t);
             }
             offset += bmt.rows();
         }
         if(bst!=null) {
             for(int i=0; i<bst.rows(); i++) {
                 True t = True.readTruth(bst, mc, i, offset, DetectorType.BST);
-                trues.add(t);
+                if(t!=null) trues.add(t);
             }
         }
         Collections.sort(trues);
@@ -267,6 +283,7 @@ public class Event {
         this.readStartTime(de);
         this.readTracks(de);
         this.readTrajectory(de);
+        this.readFPTracks(de);
         this.readSeeds(de);
         this.readClusters(de);
         this.readHits(de);
@@ -280,6 +297,10 @@ public class Event {
     public List<Track> getSeeds() {
         return seeds;
     }
+
+    public List<Track> getFPTracks() {
+        return fptracks;
+    }
  
     public Map<Integer, Integer> getTrackMap() {
         return trackMap;
@@ -287,6 +308,10 @@ public class Event {
     
     public Map<Integer, Integer> getSeedMap() {
         return seedMap;
+    }
+
+    public Map<Integer, Integer> getFPTrackMap() {
+        return fptrackMap;
     }
 
     public List<Cluster> getClusters() {
