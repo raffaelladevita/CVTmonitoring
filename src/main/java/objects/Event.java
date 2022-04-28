@@ -153,7 +153,7 @@ public class Event {
     }
         
     private void readSeeds(DataEvent event) {
-        DataBank trackBank = this.getBank(event, "CVTRecFP::Seeds");
+        DataBank trackBank = this.getBank(event, "CVT::Seeds");
         if(trackBank==null)
             trackBank = this.getBank(event, "CVTRec::Seeds");
         DataBank cosmiBank = this.getBank(event, "CVTRec::CosmicSeeds");
@@ -174,7 +174,7 @@ public class Event {
     }
         
     private void readFPTracks(DataEvent event) {
-        DataBank trackBank = this.getBank(event, "CVTRecFP::Tracks");
+        DataBank trackBank = this.getBank(event, "CVT::Tracks");
         if(trackBank!=null) {
             for(int i=0; i<trackBank.rows(); i++) {
                 Track track = Track.readTrack(trackBank, i);

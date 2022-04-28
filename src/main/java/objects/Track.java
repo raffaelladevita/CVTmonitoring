@@ -369,7 +369,7 @@ public class Track extends Particle {
                             bank.getFloat("trkline_yz_slope", row),
                             bank.getInt("ndf", row),
                             bank.getFloat("chi2", row),
-                            0);
+                            bank.getShort("status", row));
         t.setCovMatrix(bank.getFloat("cov_x02",  row),
                        bank.getFloat("cov_x0z0", row),
                        bank.getFloat("cov_x0tx", row),
