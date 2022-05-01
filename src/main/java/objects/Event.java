@@ -24,6 +24,7 @@ public class Event {
     private Track mcParticle;
     private final List<Track> particles  = new ArrayList<>();
     private final List<Track> tracks     = new ArrayList<>();
+    private final List<Track> utrack    = new ArrayList<>();
     private final List<Track> fptracks   = new ArrayList<>();
     private final List<Track> seeds      = new ArrayList<>();
     private final List<Cluster> clusters = new ArrayList<>();
@@ -31,6 +32,7 @@ public class Event {
     private final List<Trajectory> trajs = new ArrayList<>();
     private final List<True> trues       = new ArrayList<>();
     private final Map<Integer, Integer> trackMap = new HashMap<>();
+    private final Map<Integer, Integer> utrackMap = new HashMap<>();
     private final Map<Integer, Integer> fptrackMap = new HashMap<>();
     private final Map<Integer, Integer> seedMap = new HashMap<>();
     private final Map<Integer, List<Integer>> clusterMap = new HashMap<>();
@@ -120,6 +122,7 @@ public class Event {
     
     private void readTracks(DataEvent event) {
         DataBank cvtBank   = this.getBank(event, "CVTRec::Tracks");
+        DataBank ucvtBank  = this.getBank(event, "CVTRec::UTracks");
         DataBank cosBank   = this.getBank(event, "CVTRec::Cosmics");
         DataBank recPart   = this.getBank(event, "REC::Particle");
         DataBank recTrack  = this.getBank(event, "REC::Track");
@@ -131,6 +134,15 @@ public class Event {
                 if(recPart!=null && recTrack!=null) track.addEBinfo(recPart, recTrack);
                 tracks.add(track);
                 trackMap.put(track.getId(), i);
+            }
+            if(ucvtBank!=null) {
+                for(int i=0; i<ucvtBank.rows(); i++) {
+                    Track track = Track.readTrack(ucvtBank, i);
+                    if(runConfig!=null) track.addScale(runConfig);
+                    if(recPart!=null && recTrack!=null) track.addEBinfo(recPart, recTrack);
+                    utrack.add(track);
+                    utrackMap.put(track.getId(), i);
+                }
             }
         }
         else if(cosBank!=null) {
@@ -294,6 +306,10 @@ public class Event {
         return tracks;
     }
  
+    public List<Track> getUTracks() {
+        return utrack;
+    }
+ 
     public List<Track> getSeeds() {
         return seeds;
     }
@@ -304,6 +320,10 @@ public class Event {
  
     public Map<Integer, Integer> getTrackMap() {
         return trackMap;
+    }
+    
+    public Map<Integer, Integer> getUTrackMap() {
+        return utrackMap;
     }
     
     public Map<Integer, Integer> getSeedMap() {

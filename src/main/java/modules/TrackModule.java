@@ -88,11 +88,12 @@ public class TrackModule extends Module {
     public void createHistos() {
         this.getHistos().put("Tracks", this.createGroup(46));
         this.getHistos().put("Tracks2D", this.createGroup2D(46));
-        this.getHistos().put("FPTracks", this.createGroup(46));
-        this.getHistos().put("TrackFPTracks", this.createGroup(46));
+        this.getHistos().put("UTracks", this.createGroup(47));
+        this.getHistos().put("FPTracks", this.createGroup(49));
+        this.getHistos().put("TrackFPTracks", this.createGroup(49));
         this.getHistos().put("Seeds", this.createGroup(44));
         this.getHistos().put("TrackSeeds", this.createGroup(44));
-        this.getHistos().put("TrackChi2pid", this.createGroup(49));
+        this.getHistos().put("TrackChi2pid", this.createGroup(34));
     }
     
     @Override
@@ -115,6 +116,7 @@ public class TrackModule extends Module {
         }
         this.fillGroup(this.getHistos().get("Tracks"),event.getTracks());
         this.fillGroup2D(this.getHistos().get("Tracks2D"),event.getTracks());
+        this.fillGroup(this.getHistos().get("UTracks"),event.getUTracks());
         this.fillGroup(this.getHistos().get("FPTracks"),event.getFPTracks());
         this.fillGroup(this.getHistos().get("TrackFPTracks"),trackFPTracks);
         this.fillGroup(this.getHistos().get("Seeds"),event.getSeeds());
@@ -152,9 +154,10 @@ public class TrackModule extends Module {
     
     @Override
     public void drawHistos() {
-        this.addCanvas("Tracks", "Tracks2D", "FPTracks", "Seeds", "EBTracks");
+        this.addCanvas("Tracks", "Tracks2D", "UTracks", "FPTracks", "Seeds", "EBTracks");
         this.getCanvas("Tracks").draw(this.getHistos().get("Tracks"));
         this.getCanvas("Tracks2D").draw(this.getHistos().get("Tracks2D"));
+        this.getCanvas("UTracks").draw(this.getHistos().get("UTracks"));
         this.getCanvas("FPTracks").draw(this.getHistos().get("FPTracks"));
         this.getCanvas("FPTracks").draw(this.getHistos().get("TrackFPTracks"));
         this.getCanvas("Seeds").draw(this.getHistos().get("Seeds"));
@@ -162,6 +165,7 @@ public class TrackModule extends Module {
         this.getCanvas("EBTracks").draw(this.getHistos().get("Tracks"));
         this.getCanvas("EBTracks").draw(this.getHistos().get("TrackChi2pid"));
         this.setPlottingOptions("Tracks");
+        this.setPlottingOptions("UTracks");
         this.setPlottingOptions("FPTracks");
         this.setPlottingOptions("Seeds");
         this.setPlottingOptions("EBTracks");
