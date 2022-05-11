@@ -118,6 +118,7 @@ public class True implements Comparable {
         else return 1;
     }
     
+    @Override
     public String toString() {
         String s = String.format("True: detector=%s id=%d sector=%d layer=%d time=%.3f ns E=%.3f GeV p=%.3f GeV", 
                                   this.type.getName(), this.id, this.sector, this.layer, this.time, this.energy, this.momentum.mag());

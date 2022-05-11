@@ -123,6 +123,7 @@ public class Event {
     private void readTracks(DataEvent event) {
         DataBank cvtBank   = this.getBank(event, "CVTRec::Tracks");
         DataBank ucvtBank  = this.getBank(event, "CVTRec::UTracks");
+        DataBank covBank   = this.getBank(event, "CVTRec::TrackCovMat");
         DataBank cosBank   = this.getBank(event, "CVTRec::Cosmics");
         DataBank recPart   = this.getBank(event, "REC::Particle");
         DataBank recTrack  = this.getBank(event, "REC::Track");
@@ -130,6 +131,7 @@ public class Event {
         if(cvtBank!=null) {
             for(int i=0; i<cvtBank.rows(); i++) {
                 Track track = Track.readTrack(cvtBank, i);
+                if(covBank!=null) track.addCovMat(covBank, i);
                 if(runConfig!=null) track.addScale(runConfig);
                 if(recPart!=null && recTrack!=null) track.addEBinfo(recPart, recTrack);
                 tracks.add(track);

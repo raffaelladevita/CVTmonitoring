@@ -255,6 +255,24 @@ public class MCModule extends Module {
         return dg;
     }
 
+    private DataGroup trackPullsGroup(int icol) {
+        H1F hi_x  = histo1D("hi_x", "x", "Counts", 100, -5, 5,  icol);
+        H1F hi_y  = histo1D("hi_y", "y", "Counts", 100, -5, 5, icol);
+        H1F hi_z  = histo1D("hi_z", "z", "Counts", 100, -5, 5, icol);
+        H1F hi_px = histo1D("hi_px", "px", "Counts", 100, -5, 5, icol);
+        H1F hi_py = histo1D("hi_py", "py", "Counts", 100, -5, 5, icol);
+        H1F hi_pz = histo1D("hi_pz", "pz", "Counts", 100, -5, 5, icol);
+
+        DataGroup dg = new DataGroup(3,2);
+        dg.addDataSet(hi_x,  0);
+        dg.addDataSet(hi_y,  1);
+        dg.addDataSet(hi_z,  2);
+        dg.addDataSet(hi_px, 3);
+        dg.addDataSet(hi_py, 4);
+        dg.addDataSet(hi_pz, 5);
+        return dg;
+    }
+
     private DataGroup rayPullsGroup(int icol) {
         H1F hi_chi2   = histo1D("hi_chi2", "#chi^2", "Counts", 100, 0, 5,  icol);
         H1F hi_vx     = histo1D("hi_vx", "vx", "Counts", 100, -5, 5, icol);
@@ -333,6 +351,7 @@ public class MCModule extends Module {
         this.getHistos().put("Track3", this.repTrack2DGroup(46));
         this.getHistos().put("Track4", this.trackTrack2DGroup());
         this.getHistos().put("Pulls",  this.pullsGroup(46));
+        this.getHistos().put("PullsXYZ",  this.trackPullsGroup(46));
         this.getHistos().put("Efficiency", this.efficiencyGroup());
         this.getHistos().put("Efficiency2", this.efficiencyGroup());
         this.getHistos().put("EfficiencyG", this.efficiencyGroup());
@@ -404,6 +423,7 @@ public class MCModule extends Module {
                 this.fillRepTrack2DGroup(this.getHistos().get("Track3"), mcTrack, matchedTrack);
                 this.fillTrackTrack2DGroup(this.getHistos().get("Track4"), mcTrack, matchedTrack);
                 this.fillPullsGroup(this.getHistos().get("Pulls"), mcTrack, matchedTrack);
+                this.fillPullsXYZGroup(this.getHistos().get("PullsXYZ"), mcTrack, matchedTrack);
             }
         }
     }
@@ -534,6 +554,17 @@ public class MCModule extends Module {
             group.getH1F("hi_tz").fill((mc.tz()-track.tz())/track.getTzErr());
         }
     }
+
+    private void fillPullsXYZGroup(DataGroup group, Track mc, Track track) {
+        if(!this.isCosmics()) {
+            group.getH1F("hi_x").fill((mc.vx()-track.vx())/track.getXErr());
+            group.getH1F("hi_y").fill((mc.vy()-track.vy())/track.getYErr());
+            group.getH1F("hi_z").fill((mc.vz()-track.vz())/track.getZErr());
+            group.getH1F("hi_px").fill((mc.px()-track.px())/track.getPxErr());
+            group.getH1F("hi_py").fill((mc.py()-track.py())/track.getPyErr());
+            group.getH1F("hi_pz").fill((mc.pz()-track.pz())/track.getPzErr());            
+        }
+    }
     
     @Override
     public void analyzeHistos() {
@@ -549,6 +580,7 @@ public class MCModule extends Module {
         this.fitDataGroup(this.getHistos().get("Track1"));
         this.fitDataGroup(this.getHistos().get("Track2"));
         this.fitDataGroup(this.getHistos().get("Pulls"));
+        this.fitDataGroup(this.getHistos().get("PullsXYZ"));
         this.getHistos().get("Seed2").getH1F("hi_chi2").setFunction(null);
         this.getHistos().get("SeedPulls").getH1F("hi_chi2").setFunction(null);
         this.getHistos().get("FPass2").getH1F("hi_chi2").setFunction(null);
@@ -582,7 +614,7 @@ public class MCModule extends Module {
         this.addCanvas("MC", "S", "S1", "S2", "S3", "S4", "SPulls", 
                        "FP", "FP1", "FP2", "FP3", "FP4", "FPPulls",
                        "UT", "UT1", "UT2", "UT3", "UT4", "UPulls",
-                       "T", "T1", "T2", "T3", "T4", "Pulls", "Efficiency");
+                       "T", "T1", "T2", "T3", "T4", "Pulls", "PullsXYZ", "Efficiency");
         this.getCanvas("MC").draw(this.getHistos().get("MC"));
         this.getCanvas("S").draw(this.getHistos().get("AllSeeds"));
         this.getCanvas("S").draw(this.getHistos().get("Seed"));
@@ -612,6 +644,7 @@ public class MCModule extends Module {
         this.getCanvas("T3").draw(this.getHistos().get("Track3"));
         this.getCanvas("T4").draw(this.getHistos().get("Track4"));
         this.getCanvas("Pulls").draw(this.getHistos().get("Pulls"));
+        this.getCanvas("PullsXYZ").draw(this.getHistos().get("PullsXYZ"));
         this.getCanvas("Efficiency").draw(this.getHistos().get("Efficiency"));
         this.getCanvas("Efficiency").draw(this.getHistos().get("Efficiency2"));
         this.setPlottingOptions("MC");
@@ -638,6 +671,7 @@ public class MCModule extends Module {
         this.setPlottingOptions("T3");
         this.setPlottingOptions("T4");
         this.setPlottingOptions("Pulls");
+        this.setPlottingOptions("PullsXYZ");
         this.setPlottingOptions("Efficiency");
     }
 

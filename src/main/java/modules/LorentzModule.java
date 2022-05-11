@@ -164,20 +164,20 @@ public class LorentzModule extends Module {
     }
         
     public void fillLangleGroup(DataGroup group, Cluster cluster, Trajectory traj) {
-        group.getH1F("hi_langle").fill(Math.toDegrees(traj.phi())); 
-        group.getH2F("hi_langlesize").fill(Math.toDegrees(traj.phi()), cluster.getSize());
-        group.getH2F("hi_langlenev").fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.phi()));
-        group.getH2F("hi_langlephi").fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.phi()), cluster.getSize());
+        group.getH1F("hi_langle").fill(Math.toDegrees(traj.localAngle()));
+        group.getH2F("hi_langlesize").fill(Math.toDegrees(traj.localAngle()), cluster.getSize());
+        group.getH2F("hi_langlenev").fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.localAngle()));
+        group.getH2F("hi_langlephi").fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.localAngle()), cluster.getSize());
     }
             
     public void fillLanglePhiGroup(DataGroup group, Cluster cluster, Trajectory traj) {
         group.getH1F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false))); 
-        group.getH1F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)), -Math.toDegrees(traj.phi()));
+        group.getH1F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.localAngle()));
     }
 
     public void fillLangle2DGroup(DataGroup group, Cluster cluster, Trajectory traj) {
-        group.getH2F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.phi())); 
-        group.getH2F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.phi()), cluster.getSize());
+        group.getH2F("hi_clust_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.localAngle())); 
+        group.getH2F("hi_value_"+cluster.getLayer()+cluster.getSector()).fill(Math.toDegrees(cluster.getCentroidPhi(false)), Math.toDegrees(traj.localAngle()), cluster.getSize());
     }
 
     public void drawHistos() {

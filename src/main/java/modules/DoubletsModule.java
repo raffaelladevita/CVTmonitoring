@@ -272,8 +272,12 @@ public class DoubletsModule extends Module {
         f1.setParameter(0, amp);
         f1.setParameter(1, mean);
         f1.setParameter(2, sigma);
-        double rmax = mean + 2.5 * Math.abs(sigma);
-        double rmin = mean - 2.5 * Math.abs(sigma);
+        double rmax = mean + 2.0 * Math.abs(sigma);
+        double rmin = mean - 2.0 * Math.abs(sigma);
+        f1.setRange(rmin, rmax);
+        DataFitter.fit(f1, hi, "Q"); //No options uses error for sigma 
+        rmax = f1.getParameter(1) + 2.0 * Math.abs(f1.getParameter(2));
+        rmin = f1.getParameter(1) - 2.0 * Math.abs(f1.getParameter(2));
         f1.setRange(rmin, rmax);
         DataFitter.fit(f1, hi, "Q"); //No options uses error for sigma 
     }

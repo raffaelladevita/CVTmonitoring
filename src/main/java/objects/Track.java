@@ -33,7 +33,10 @@ public class Track extends Particle {
     private int sector=0;
     private int status=0;
     private int type=0;
-    private final double[][] covMatrix = new double[5][5];
+    private final double[][] covMatrixHelix = new double[5][5];
+    private final double[][] covMatrixXYZ   = new double[6][6];
+    private final String[] covs = {"x", "y", "z", "px", "py", "pz"};
+    
     
     Track(int pid, double px, double py, double pz, double vx, double vy, double vz) {
         super(pid, px, py, pz, vx, vy, vz);
@@ -240,66 +243,90 @@ public class Track extends Particle {
         return this.pz()/this.py();
     }
     
-    public void setCovMatrix(double c00, double c01, double c02, double c03, double c04, 
-                             double c11, double c12, double c13, double c14, 
-                             double c22, double c23, double c24,
-                             double c33, double c34, 
-                             double c44) {
-        this.covMatrix[0][0] = c00;
-        this.covMatrix[0][1] = c01;
-        this.covMatrix[0][2] = c02;
-        this.covMatrix[0][3] = c03;
-        this.covMatrix[0][4] = c04;
-        this.covMatrix[1][1] = c11;
-        this.covMatrix[1][2] = c12;
-        this.covMatrix[1][3] = c13;
-        this.covMatrix[1][4] = c14;
-        this.covMatrix[2][2] = c22;
-        this.covMatrix[2][3] = c23;
-        this.covMatrix[2][4] = c24;
-        this.covMatrix[3][3] = c33;
-        this.covMatrix[3][4] = c34;
-        this.covMatrix[4][4] = c44;
+    public void setCovMatrixHelix(double c00, double c01, double c02, double c03, double c04, 
+                                  double c11, double c12, double c13, double c14, 
+                                  double c22, double c23, double c24,
+                                  double c33, double c34, 
+                                  double c44) {
+        this.covMatrixHelix[0][0] = c00;
+        this.covMatrixHelix[0][1] = c01;
+        this.covMatrixHelix[0][2] = c02;
+        this.covMatrixHelix[0][3] = c03;
+        this.covMatrixHelix[0][4] = c04;
+        this.covMatrixHelix[1][1] = c11;
+        this.covMatrixHelix[1][2] = c12;
+        this.covMatrixHelix[1][3] = c13;
+        this.covMatrixHelix[1][4] = c14;
+        this.covMatrixHelix[2][2] = c22;
+        this.covMatrixHelix[2][3] = c23;
+        this.covMatrixHelix[2][4] = c24;
+        this.covMatrixHelix[3][3] = c33;
+        this.covMatrixHelix[3][4] = c34;
+        this.covMatrixHelix[4][4] = c44;
     }
 
-    public double[][] getCovMatrix() {
-        return covMatrix;
+    public double[][] getCovMatrixHelix() {
+        return covMatrixHelix;
     }
     
     public double getD0Err() {
-        return Math.sqrt(this.covMatrix[0][0]);
+        return Math.sqrt(this.covMatrixHelix[0][0]);
     }
     
     public double getPhi0Err() {
-        return Math.sqrt(this.covMatrix[1][1]);
+        return Math.sqrt(this.covMatrixHelix[1][1]);
     }
     
     public double getRhoErr() {
-        return Math.sqrt(this.covMatrix[2][2]);
+        return Math.sqrt(this.covMatrixHelix[2][2]);
     }
     
     public double getZ0Err() {
-        return Math.sqrt(this.covMatrix[3][3]);
+        return Math.sqrt(this.covMatrixHelix[3][3]);
     }
     
     public double getTanDipErr() {
-        return Math.sqrt(this.covMatrix[4][4]);
+        return Math.sqrt(this.covMatrixHelix[4][4]);
     }
     
     public double getVxErr() {
-        return Math.sqrt(this.covMatrix[0][0]);
+        return Math.sqrt(this.covMatrixHelix[0][0]);
     }
     
     public double getVzErr() {
-        return Math.sqrt(this.covMatrix[1][1]);
+        return Math.sqrt(this.covMatrixHelix[1][1]);
     }
     
     public double getTxErr() {
-        return Math.sqrt(this.covMatrix[2][2]);
+        return Math.sqrt(this.covMatrixHelix[2][2]);
     }
     
     public double getTzErr() {
-        return Math.sqrt(this.covMatrix[3][3]);
+        return Math.sqrt(this.covMatrixHelix[3][3]);
+    }
+    
+    public double getXErr() {
+        return Math.sqrt(this.covMatrixXYZ[0][0]);
+    }
+    
+    public double getYErr() {
+        return Math.sqrt(this.covMatrixXYZ[1][1]);
+    }
+    
+    public double getZErr() {
+        return Math.sqrt(this.covMatrixXYZ[2][2]);
+    }
+    
+    public double getPxErr() {
+        return Math.sqrt(this.covMatrixXYZ[3][3]);
+    }
+    
+    public double getPyErr() {
+        return Math.sqrt(this.covMatrixXYZ[4][4]);
+    }
+    
+    public double getPzErr() {
+        return Math.sqrt(this.covMatrixXYZ[5][5]);
     }
     
     public double deltaPhi(Track o) {
@@ -344,18 +371,18 @@ public class Track extends Particle {
                             bank.getShort("ndf", row),
                             bank.getFloat("chi2", row),
                             bank.getShort("status", row));
-        t.setCovMatrix(bank.getFloat("cov_d02", row),
-                       bank.getFloat("cov_d0phi0", row),
-                       bank.getFloat("cov_d0rho", row),
-                       0, 0,
-                       bank.getFloat("cov_phi02", row),
-                       bank.getFloat("cov_phi0rho", row),
-                       0, 0,
-                       bank.getFloat("cov_rho2", row),
-                       0, 0,
-                       bank.getFloat("cov_z02", row),
-                       0,
-                       bank.getFloat("cov_tandip2", row));
+        t.setCovMatrixHelix(bank.getFloat("cov_d02", row),
+                            bank.getFloat("cov_d0phi0", row),
+                            bank.getFloat("cov_d0rho", row),
+                            0, 0,
+                            bank.getFloat("cov_phi02", row),
+                            bank.getFloat("cov_phi0rho", row),
+                            0, 0,
+                            bank.getFloat("cov_rho2", row),
+                            0, 0,
+                            bank.getFloat("cov_z02", row),
+                            0,
+                            bank.getFloat("cov_tandip2", row));
         t.setIndex(row);
         t.setSeedId(bank.getShort("seedID", row));
         return t;
@@ -370,20 +397,20 @@ public class Track extends Particle {
                             bank.getInt("ndf", row),
                             bank.getFloat("chi2", row),
                             bank.getShort("status", row));
-        t.setCovMatrix(bank.getFloat("cov_x02",  row),
-                       bank.getFloat("cov_x0z0", row),
-                       bank.getFloat("cov_x0tx", row),
-                       bank.getFloat("cov_x0tz", row),
-                       0,
-                       bank.getFloat("cov_z02",  row),
-                       bank.getFloat("cov_z0tx", row),
-                       bank.getFloat("cov_z0tz", row),
-                       0,
-                       bank.getFloat("cov_tx2",  row),
-                       bank.getFloat("cov_txtz", row),
-                       0,
-                       bank.getFloat("cov_tz2",  row),
-                       0, 0);
+        t.setCovMatrixHelix(bank.getFloat("cov_x02",  row),
+                            bank.getFloat("cov_x0z0", row),
+                            bank.getFloat("cov_x0tx", row),
+                            bank.getFloat("cov_x0tz", row),
+                            0,
+                            bank.getFloat("cov_z02",  row),
+                            bank.getFloat("cov_z0tx", row),
+                            bank.getFloat("cov_z0tz", row),
+                            0,
+                            bank.getFloat("cov_tx2",  row),
+                            bank.getFloat("cov_txtz", row),
+                            0,
+                            bank.getFloat("cov_tz2",  row),
+                            0, 0);
         t.setIndex(row);
         t.setSeedId(t.getId());
         return t;
@@ -403,6 +430,14 @@ public class Track extends Particle {
         }
         this.setChi2pid(part.getFloat("chi2pid", this.getPindex()));
         this.setRECStatus(part.getShort("status", this.getPindex()));
+    }
+    
+    public void addCovMat(DataBank bank, int row) {
+        for(int i=0; i<covs.length; i++) {
+            for(int j=0; j<covs.length; j++) {
+                this.covMatrixXYZ[i][j] = bank.getFloat("cov_"+covs[i]+covs[j], row);
+            }
+        }
     }
     
     public static List<Track> readTracks(DataBank bank) {
@@ -459,7 +494,7 @@ public class Track extends Particle {
                             bank.getInt("ndf", row),
                             bank.getFloat("chi2", row), 
                             0);
-        t.setCovMatrix(bank.getFloat("cov_d02", row),
+        t.setCovMatrixHelix(bank.getFloat("cov_d02", row),
                        bank.getFloat("cov_d0phi0", row),
                        bank.getFloat("cov_d0rho", row),
                        0, 0,
