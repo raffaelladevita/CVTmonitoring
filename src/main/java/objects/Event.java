@@ -24,9 +24,10 @@ public class Event {
     private Track mcParticle;
     private final List<Track> particles  = new ArrayList<>();
     private final List<Track> tracks     = new ArrayList<>();
-    private final List<Track> utrack    = new ArrayList<>();
+    private final List<Track> utrack     = new ArrayList<>();
     private final List<Track> fptracks   = new ArrayList<>();
     private final List<Track> seeds      = new ArrayList<>();
+    private final List<Cross> crosses    = new ArrayList<>();
     private final List<Cluster> clusters = new ArrayList<>();
     private final List<Hit> hits         = new ArrayList<>();
     private final List<Trajectory> trajs = new ArrayList<>();
@@ -35,6 +36,7 @@ public class Event {
     private final Map<Integer, Integer> utrackMap = new HashMap<>();
     private final Map<Integer, Integer> fptrackMap = new HashMap<>();
     private final Map<Integer, Integer> seedMap = new HashMap<>();
+    private final Map<Integer, List<Integer>> crossMap = new HashMap<>();
     private final Map<Integer, List<Integer>> clusterMap = new HashMap<>();
     private final Map<Integer, List<Integer>> hitMap = new HashMap<>();
     private final Map<Integer, List<Integer>> trajMap = new HashMap<>();
@@ -211,6 +213,29 @@ public class Event {
         }
     }
         
+    private void readCrosses(DataEvent event) {
+        DataBank bank = this.getBank(event, "BSTRec::Crosses");
+        if(bank==null) return;
+        for(int i=0; i<bank.rows(); i++) {
+            Cross cross = Cross.readCross(bank, i, DetectorType.BST);
+            crosses.add(cross);
+        }
+        bank = this.getBank(event, "BMTRec::Crosses");
+        if(bank==null) return;
+        for(int i=0; i<bank.rows(); i++) {
+            Cross cross = Cross.readCross(bank, i, DetectorType.BMT);
+            crosses.add(cross);
+        }
+        for(int i=0; i<crosses.size(); i++) {
+            Cross cross = crosses.get(i);
+            if(cross.getTrackId()>0) {
+                if(!this.crossMap.containsKey(cross.getTrackId()))
+                    this.crossMap.put(cross.getTrackId(), new ArrayList<>());
+                this.crossMap.get(cross.getTrackId()).add(i);
+            }
+        }
+    }
+        
     private void readClusters(DataEvent event) {
         DataBank bank = this.getBank(event, "BSTRec::Clusters");
         if(bank==null) return;
@@ -299,6 +324,7 @@ public class Event {
         this.readTrajectory(de);
         this.readFPTracks(de);
         this.readSeeds(de);
+        this.readCrosses(de);
         this.readClusters(de);
         this.readHits(de);
         this.readTrues(de);
@@ -334,6 +360,14 @@ public class Event {
 
     public Map<Integer, Integer> getFPTrackMap() {
         return fptrackMap;
+    }
+
+    public List<Cross> getCrosses() {
+        return crosses;
+    }
+
+    public Map<Integer, List<Integer>> getCrossMap() {
+        return crossMap;
     }
 
     public List<Cluster> getClusters() {

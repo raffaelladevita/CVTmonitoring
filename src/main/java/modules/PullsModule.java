@@ -4,7 +4,7 @@ import analysis.Constants;
 import objects.Cluster;
 import objects.Event;
 import analysis.Module;
-import objects.Cluster.CVTType;
+import objects.CVTType;
 import objects.Track;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;

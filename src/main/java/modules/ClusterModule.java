@@ -6,7 +6,7 @@ import java.util.List;
 import objects.Cluster;
 import objects.Event;
 import analysis.Module;
-import objects.Cluster.CVTType;
+import objects.CVTType;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.fitter.DataFitter;
 import org.jlab.groot.group.DataGroup;

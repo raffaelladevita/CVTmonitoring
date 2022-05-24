@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 import modules.ClusterModule;
+import modules.CrossModule;
 import modules.DoubletsModule;
 import modules.ElasticModule;
 import modules.HitModule;
@@ -75,6 +76,7 @@ public class CVTMonitoring {
         this.addModule(active, new TrackModule(cosmics));
         this.addModule(active, new VertexModule());
         this.addModule(active, new HitModule());
+        this.addModule(active, new CrossModule());
         this.addModule(active, new ClusterModule());
         this.addModule(active, new LorentzModule());
         this.addModule(active, new ResidualModule(residualScale));
