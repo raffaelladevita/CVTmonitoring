@@ -71,7 +71,7 @@ public class ResidualModule extends Module {
         return dg;
     }
 
-    public DataGroup bmt2DLayerGroup(CVTType detector, String parameter, double min, double max) {
+    public DataGroup bmt2DLayerGroup(CVTType detector, String parameter, int nbin, double min, double max) {
         DataGroup dg = new DataGroup(Constants.BMTREGIONS, Constants.BMTSECTORS);
         for (int ir = 0; ir < Constants.BMTREGIONS; ir++) {
             for (int is = 0; is < Constants.BMTSECTORS; is++) {
@@ -86,7 +86,7 @@ public class ResidualModule extends Module {
                     if(detector==CVTType.BMTZ) max = Constants.BMTZSTRIPS[ir];
                     else if(detector==CVTType.BMTC) max = Constants.BMTCSTRIPS[ir];
                 }
-                H2F hi_res = histo2D("hi_res_" + name, parameter, name + " Residual (um)", 100, min, max, 100, -BMAX, BMAX);
+                H2F hi_res = histo2D("hi_res_" + name, parameter, name + " Residual (um)", nbin, min, max, 100, -BMAX, BMAX);
                 dg.addDataSet(hi_res, ir * Constants.BMTSECTORS + is);
             }
         }
@@ -118,10 +118,11 @@ public class ResidualModule extends Module {
                 this.getHistos().put(types[i].getName()+"sum", this.sumGroup(SMAX));                                
             }
             else {
-                this.getHistos().put(types[i].getName()+"strip", this.bmt2DLayerGroup(types[i], "strip", 0, 800));                
-                this.getHistos().put(types[i].getName()+"phi",   this.bmt2DLayerGroup(types[i], "#phi (deg)", -180, 180));                
-                this.getHistos().put(types[i].getName()+"theta", this.bmt2DLayerGroup(types[i], "#theta (deg)", 20, 140));                
-                this.getHistos().put(types[i].getName()+"p",     this.bmt2DLayerGroup(types[i], "p (GeV)", 0.0, 2.0));                
+                this.getHistos().put(types[i].getName()+"strip", this.bmt2DLayerGroup(types[i], "strip", 100, 0, 800));                
+                this.getHistos().put(types[i].getName()+"phi",   this.bmt2DLayerGroup(types[i], "#phi (deg)",100, -180, 180));                
+                this.getHistos().put(types[i].getName()+"theta", this.bmt2DLayerGroup(types[i], "#theta (deg)", 100, 20, 140));                
+                this.getHistos().put(types[i].getName()+"p",     this.bmt2DLayerGroup(types[i], "p (GeV)", 100, 0.0, 2.0));                
+                this.getHistos().put(types[i].getName()+"size",  this.bmt2DLayerGroup(types[i], "size", 20, 0, 20));                
                 this.getHistos().put(types[i].getName(), this.bmtLayerGroup(types[i]));                
                 this.getHistos().put(types[i].getName()+"sum", this.sumGroup(BMAX));                
             }
@@ -154,6 +155,7 @@ public class ResidualModule extends Module {
                     this.getHistos().get(detector.getName()+"p").getH2F("hi_res_"+name).fill(track.p(),residual);
                     this.getHistos().get(detector.getName()+"phi").getH2F("hi_res_"+name).fill(phi,residual);
                     this.getHistos().get(detector.getName()+"theta").getH2F("hi_res_"+name).fill(Math.toDegrees(track.theta()),residual);
+                    this.getHistos().get(detector.getName()+"size").getH2F("hi_res_"+name).fill(cluster.getSize(),residual);
                 }
                 this.getHistos().get(detector.getName() + "sum").getH1F("hi_res").fill(residual);
                 this.getHistos().get(detector.getName() + "sum").getH2F("hi_res_p").fill(track.p(), residual);
