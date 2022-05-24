@@ -10,7 +10,6 @@ import objects.Cluster.CVTType;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.fitter.DataFitter;
 import org.jlab.groot.group.DataGroup;
-import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.graphics.EmbeddedPad;
 import org.jlab.groot.math.F1D;
 

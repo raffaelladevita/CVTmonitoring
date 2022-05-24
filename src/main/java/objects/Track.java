@@ -494,6 +494,12 @@ public class Track extends Particle {
                             bank.getInt("ndf", row),
                             bank.getFloat("chi2", row), 
                             0);
+        for(int i=0; i<9; i++) {
+            int crossId = bank.getShort("Cross"+(i+1)+"_ID", row);
+            if(crossId<0) continue;
+            else if(crossId<1000) t.setStatus(t.getStatus()+100);
+            else                  t.setStatus(t.getStatus()+1);
+        }
         t.setCovMatrixHelix(bank.getFloat("cov_d02", row),
                        bank.getFloat("cov_d0phi0", row),
                        bank.getFloat("cov_d0rho", row),
