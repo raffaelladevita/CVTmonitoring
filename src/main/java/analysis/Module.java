@@ -333,5 +333,22 @@ public class Module {
         f1.setLineWidth(7);
         f1.setOptStat(111110);
         DataFitter.fit(f1, histo, "Q");
-    }    
+    }  
+    
+    public void printHistogram(H2F h2) {
+        try {
+            BufferedWriter buffer = new BufferedWriter(new FileWriter(h2.getName() + "_histo.txt"));
+            buffer.write("xbin\tybin\tx\ty\tcounts");
+            for(int ix=0; ix<h2.getDataSize(0); ix++) {
+                for(int iy=0; iy<h2.getDataSize(1); iy++) {
+                    buffer.write(String.format("%d\t%d\t%.3f\t%.3f\t%.3f\n", ix , iy, h2.getDataX(ix),h2.getDataY(iy), h2.getData(ix, iy)));
+                }                
+            }
+            buffer.close();
+            
+        } 
+        catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
 } 

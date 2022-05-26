@@ -251,7 +251,8 @@ public class ElasticModule extends Module {
                 he3.setBinContent(i,e3);
                 he3.setBinError(i,e3*Math.sqrt(e3*(1-e3)/e1));
             }
-        }    
+        } 
+//        this.printHistogram(this.getHistos().get("General").getH2F("hi_pr"));
     }
     
     @Override
