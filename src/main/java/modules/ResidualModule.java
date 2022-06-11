@@ -214,7 +214,9 @@ public class ResidualModule extends Module {
     @Override
     public void setPlottingOptions(String name) {
         super.setPlottingOptions(name);
-        if(name.equals("BMTZsize")) {
+        if(name.equals("BMTZsize") || 
+           name.equals("BMTZstripPos") || 
+           name.equals("BMTZstripNeg")) {
             this.setLogZ(name);
         }
     }
