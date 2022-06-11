@@ -118,6 +118,10 @@ public class ResidualModule extends Module {
                 this.getHistos().put(types[i].getName()+"sum", this.sumGroup(SMAX));                                
             }
             else {
+                if(types[i]==CVTType.BMTZ) {
+                    this.getHistos().put(types[i].getName()+"strip" + "Pos", this.bmt2DLayerGroup(types[i], "strip", 100, 0, 800));                
+                    this.getHistos().put(types[i].getName()+"strip" + "Neg", this.bmt2DLayerGroup(types[i], "strip", 100, 0, 800));                                    
+                }
                 this.getHistos().put(types[i].getName()+"strip", this.bmt2DLayerGroup(types[i], "strip", 100, 0, 800));                
                 this.getHistos().put(types[i].getName()+"phi",   this.bmt2DLayerGroup(types[i], "#phi (deg)",100, -180, 180));                
                 this.getHistos().put(types[i].getName()+"theta", this.bmt2DLayerGroup(types[i], "#theta (deg)", 100, 20, 140));                
@@ -151,6 +155,12 @@ public class ResidualModule extends Module {
                     if(Math.abs(phi-Constants.BMTMEANPHI[cluster.getSector()-1])>180) 
                         phi -= Math.signum(Math.abs(phi-Constants.BMTMEANPHI[cluster.getSector()-1]))*360;
                     this.getHistos().get(detector.getName()).getH1F("hi_res_"+name).fill(residual);
+                    if(detector==CVTType.BMTZ) {
+                        if(track.charge()>0)
+                            this.getHistos().get(detector.getName()+"stripPos").getH2F("hi_res_"+name).fill(cluster.getCentroid(),residual);
+                        else
+                            this.getHistos().get(detector.getName()+"stripNeg").getH2F("hi_res_"+name).fill(cluster.getCentroid(),residual);
+                    }
                     this.getHistos().get(detector.getName()+"strip").getH2F("hi_res_"+name).fill(cluster.getCentroid(),residual);
                     this.getHistos().get(detector.getName()+"p").getH2F("hi_res_"+name).fill(track.p(),residual);
                     this.getHistos().get(detector.getName()+"phi").getH2F("hi_res_"+name).fill(phi,residual);
@@ -198,6 +208,14 @@ public class ResidualModule extends Module {
                 }
             }
             this.fitResiduals(this.getHistos().get(types[i].getName() + "sum").getH1F("hi_res"));
+        }
+    }
+
+    @Override
+    public void setPlottingOptions(String name) {
+        super.setPlottingOptions(name);
+        if(name.equals("BMTZsize")) {
+            this.setLogZ(name);
         }
     }
 
