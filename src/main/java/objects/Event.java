@@ -287,16 +287,23 @@ public class Event {
         DataBank bmt = this.getBank(event, "BMT::adc");
         DataBank bst = this.getBank(event, "BST::adc");
         if(mc==null || (bmt==null && bst==null)) return;
-        if(mc.rows() != bmt.rows() + bst.rows()) return;
+        int nrows =0;
+        if(bst!=null) nrows += bst.rows();
+        if(bmt!=null) nrows += bmt.rows();
+        if(mc.rows() != nrows) return;
         int offset = 0;
-        for(int i=0; i<bmt.rows(); i++) {
-            True t = True.readTruth(bmt, mc, i, offset, DetectorType.BMT);
-            if(t!=null) trues.add(t);
+        if(bmt!=null) {
+            for(int i=0; i<bmt.rows(); i++) {
+                True t = True.readTruth(bmt, mc, i, offset, DetectorType.BMT);
+                if(t!=null) trues.add(t);
+            }
+            offset += bmt.rows();
         }
-        offset += bmt.rows();
-        for(int i=0; i<bst.rows(); i++) {
-            True t = True.readTruth(bst, mc, i, offset, DetectorType.BST);
-            if(t!=null) trues.add(t);
+        if(bst!=null) {
+            for(int i=0; i<bst.rows(); i++) {
+                True t = True.readTruth(bst, mc, i, offset, DetectorType.BST);
+                if(t!=null) trues.add(t);
+            }
         }
         Collections.sort(trues);
     }
