@@ -182,7 +182,7 @@ public class CVTMonitoring {
         parser.addOption("-stats"      ,"",     "histogram stat option (e.g. \"10\" will display entries)");
         parser.addOption("-pid"        ,"0",    "MC particle PID (default: use first particle in the bank)");
         parser.addOption("-beam"       ,"10.6", "Beam energy (GeV)");
-        parser.addOption("-spot"       ,"0:0" , "Beam spot coordinates (cm)");
+//        parser.addOption("-spot"       ,"0:0" , "Beam spot coordinates (cm)");
         parser.addOption("-cosmics"    ,"0",    "analyze as cosmics (0=false, 1=true)");
         parser.addOption("-residual"   ,"1",    "residual scale (1=cm, 10=mm)");
         parser.addOption("-lund"       ,"0",    "save events to lund");
@@ -203,8 +203,8 @@ public class CVTMonitoring {
         int     pid           = parser.getOption("-pid").intValue();  
         double  ebeam         = parser.getOption("-beam").doubleValue();
         double[] beamSpot = {0, 0};
-        String[]  spot    = parser.getOption("-spot").stringValue().split(":");
-        if(spot.length==2) for(int i=0; i<2; i++) beamSpot[i] = Double.parseDouble(spot[i]);
+//        String[]  spot    = parser.getOption("-spot").stringValue().split(":");
+//        if(spot.length==2) for(int i=0; i<2; i++) beamSpot[i] = Double.parseDouble(spot[i]);
         boolean cosmics       = parser.getOption("-cosmics").intValue()!=0;
         int     residualScale = parser.getOption("-residual").intValue();  
         boolean lund          = (parser.getOption("-lund").intValue()!=0);
@@ -223,6 +223,8 @@ public class CVTMonitoring {
 
         if(readHistos) {
             cvtMon.readHistos(inputList.get(0));
+            cvtMon.analyzeHistos();
+            cvtMon.testHistos();
         }
         else{
 

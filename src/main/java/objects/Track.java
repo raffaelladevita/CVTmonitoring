@@ -230,11 +230,19 @@ public class Track extends Particle {
         if (Math.signum(kappa) < 0) {
             phi0 = Math.atan2(-ycen, -xcen);
         }
-        double drh0 = (xcen-Constants.getXBeam()-xb)*Math.cos(phi0) + (ycen-Constants.getYBeam()-yb)*Math.sin(phi0) - Constants.ALPHA/ kappa;
+        double drh0 = (xcen-xb)*Math.cos(phi0) + (ycen-yb)*Math.sin(phi0) - Constants.ALPHA/ kappa;
         return -drh0;
 //        return Math.signum(this.vy()/Math.cos(this.phi()))*Math.sqrt(this.vx()*this.vx()+this.vy()*this.vy());
     }
-    
+
+    public double xb() {
+        return xb;
+    }
+
+    public double yb() {
+        return yb;
+    }
+
     public double tx() {
         return this.px()/this.py();
     }
@@ -458,8 +466,8 @@ public class Track extends Particle {
                     recPart.getFloat("px", row),
                     recPart.getFloat("py", row),
                     recPart.getFloat("pz", row),
-                    recPart.getFloat("vx", row)+0*Constants.getXBeam(),
-                    recPart.getFloat("vy", row)+0*Constants.getYBeam(),
+                    recPart.getFloat("vx", row),
+                    recPart.getFloat("vy", row),
                     recPart.getFloat("vz", row));
         t.setBeta(recPart.getFloat("beta", row));
         t.setChi2pid(recPart.getFloat("chi2pid", row));

@@ -160,7 +160,6 @@ public class Module {
     }
 
     public final EmbeddedCanvasTabbed plotHistos() {
-        this.analyzeHistos();
         this.drawHistos();
         return this.moduleCanvas;
     }
@@ -248,7 +247,10 @@ public class Module {
                 List<IDataSet> dsList = group.getData(i);
                 for(IDataSet ds : dsList){
                     System.out.println("\t --> " + ds.getName());
-                    newGroup.addDataSet(dir.getObject(folder, ds.getName()),i);
+                    if(dir.getObject(folder, ds.getName())!=null)
+                        newGroup.addDataSet(dir.getObject(folder, ds.getName()),i);
+                    else
+                        newGroup.addDataSet(ds,i);
                 }
             }            
             this.moduleGroup.replace(key, newGroup);
