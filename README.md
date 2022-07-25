@@ -89,7 +89,7 @@ x_offset: (-0.469 +/- 0.260) mm, y_offset: (-1.065 +/- 0.268) mm
 Update the beam (x,y) position to: (-0.469, -1.065) mm
 or shift the detector position by: (0.469, 1.065) mm
 ```
-Results from positive and negative tracks are expected to be compatible within the errors. The results for negative tracks have typiccaly better accuracy because of the Lorentz angle having a smaller impact on the cluster size and therefore the resolution.
+Results from positive and negative tracks are expected to be compatible within the errors. The typical accuracy is of the order of 200-300 um. The results for negative tracks have typiccaly better accuracy because of the Lorentz angle having a smaller impact on the cluster size and therefore the resolution.
 #### Positives
 ![Plot_07-24-2022_10 25 25_PM](https://user-images.githubusercontent.com/7524926/180664539-4d34b854-1c59-4bb7-ac97-588a3b148cb6.png)
 
