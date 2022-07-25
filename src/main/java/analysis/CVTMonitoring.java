@@ -70,7 +70,7 @@ public class CVTMonitoring {
         GStyle.setGraphicsFrameLineWidth(2);
         GStyle.getH1FAttributes().setLineWidth(1);
 
-        Constants.setMODE(mode);        
+        Constants.setFASTMODE(mode);        
         Constants.setPID(pid);
         
         if(beamSpot.length==2) Constants.setBEAMSPOT(beamSpot);
@@ -179,7 +179,7 @@ public class CVTMonitoring {
         parser.addOption("-n"          ,"-1",   "maximum number of events to process");
         // histogram based analysis
         parser.addOption("-histo"      ,"0",    "read histogram file (0/1)");
-        parser.addOption("-light"      ,"0",    "run in light mode, i.e. only tracks (0/1)");
+        parser.addOption("-fast"       ,"0",    "run in fast mode, i.e. only tracks (0/1)");
         parser.addOption("-plot"       ,"1",    "display histograms (0/1)");
         parser.addOption("-print"      ,"0",    "print histograms (0/1)");
         parser.addOption("-stats"      ,"",     "histogram stat option (e.g. \"10\" will display entries)");
@@ -212,11 +212,11 @@ public class CVTMonitoring {
         int     residualScale = parser.getOption("-residual").intValue();  
         boolean lund          = parser.getOption("-lund").intValue()!=0;
         String  modules       = parser.getOption("-modules").stringValue();
-        boolean light         = parser.getOption("-light").intValue()!=0;
+        boolean fast          = parser.getOption("-fast").intValue()!=0;
         
         if(!openWindow) System.setProperty("java.awt.headless", "true");
 
-        CVTMonitoring cvtMon = new CVTMonitoring(modules, light, pid, ebeam, beamSpot, cosmics, residualScale, optStats, lund);
+        CVTMonitoring cvtMon = new CVTMonitoring(modules, fast, pid, ebeam, beamSpot, cosmics, residualScale, optStats, lund);
         
         List<String> inputList = parser.getInputList();
         if(inputList.isEmpty()==true){

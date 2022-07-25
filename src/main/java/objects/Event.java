@@ -325,7 +325,7 @@ public class Event {
         this.readParticles(de);
         this.readStartTime(de);
         this.readTracks(de);
-        if(!Constants.getMODE()) {
+        if(!Constants.getFASTMODE()) {
             this.readTrajectory(de);
             this.readFPTracks(de);
             this.readSeeds(de);

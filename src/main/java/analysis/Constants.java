@@ -36,11 +36,11 @@ public class Constants {
     public static double TARGETPOS = -3; // cm
     public static double[] BEAMSPOT = new double[2];
 
-    public static boolean getMODE() {
+    public static boolean getFASTMODE() {
         return MODE;
     }
 
-    public static void setMODE(boolean MODE) {
+    public static void setFASTMODE(boolean MODE) {
         Constants.MODE = MODE;
     }
     

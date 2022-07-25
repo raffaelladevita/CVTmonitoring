@@ -70,22 +70,34 @@ public class VertexModule extends Module {
 
     @Override
     public void createHistos() {
-        this.getHistos().put("Positives", this.createGroup(42));
+        this.getHistos().put("UNegatives", this.createGroup(43));
+        this.getHistos().put("UPositives", this.createGroup(47));
         this.getHistos().put("Negatives", this.createGroup(44));
+        this.getHistos().put("Positives", this.createGroup(42));
     }
     
     @Override
     public void fillHistos(Event event) {
         List<Track> trackPos = new ArrayList<>();
         List<Track> trackNeg = new ArrayList<>();
+        List<Track> utrackPos = new ArrayList<>();
+        List<Track> utrackNeg = new ArrayList<>();
         for(Track track : event.getTracks()) {
             if(Math.abs(track.getChi2pid())<CHI2PIDCUT || true) {
                 if(track.charge()>0) trackPos.add(track);
                 else                 trackNeg.add(track);
             }
         }
+        for(Track track : event.getUTracks()) {
+            if(Math.abs(track.getChi2pid())<CHI2PIDCUT || true) {
+                if(track.charge()>0) utrackPos.add(track);
+                else                 utrackNeg.add(track);
+            }
+        }
         this.fillGroup(this.getHistos().get("Positives"), trackPos);
         this.fillGroup(this.getHistos().get("Negatives"), trackNeg);
+        this.fillGroup(this.getHistos().get("UPositives"), utrackPos);
+        this.fillGroup(this.getHistos().get("UNegatives"), utrackNeg);
     }
     
     public void fillGroup(DataGroup group, List<Track> tracks) {
@@ -117,6 +129,8 @@ public class VertexModule extends Module {
     public void analyzeHistos() {
         this.analyzeGroup("Positives");
         this.analyzeGroup("Negatives");
+        this.analyzeGroup("UPositives");
+        this.analyzeGroup("UNegatives");
     }
     
     private void analyzeGroup(String name) {
