@@ -24,6 +24,7 @@ public class Constants {
     public static final double B = 5; //field in Tesla
     public static final double ALPHA = 1E6/PhysicsConstants.speedOfLight()/B;
 
+    public static boolean MODE = false;
     public static int PID = 2212;
     public static double THMIN = 30;
     
@@ -34,6 +35,14 @@ public class Constants {
 
     public static double TARGETPOS = -3; // cm
     public static double[] BEAMSPOT = new double[2];
+
+    public static boolean getMODE() {
+        return MODE;
+    }
+
+    public static void setMODE(boolean MODE) {
+        Constants.MODE = MODE;
+    }
     
     public static void setPID(int PID) {
         Constants.PID = PID;

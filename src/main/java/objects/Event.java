@@ -325,13 +325,15 @@ public class Event {
         this.readParticles(de);
         this.readStartTime(de);
         this.readTracks(de);
-        this.readTrajectory(de);
-        this.readFPTracks(de);
-        this.readSeeds(de);
-        this.readCrosses(de);
-        this.readClusters(de);
-        this.readHits(de);
-        this.readTrues(de);
+        if(!Constants.getMODE()) {
+            this.readTrajectory(de);
+            this.readFPTracks(de);
+            this.readSeeds(de);
+            this.readCrosses(de);
+            this.readClusters(de);
+            this.readHits(de);
+            this.readTrues(de);
+        }
     }
 
     public List<Track> getTracks() {

@@ -38,20 +38,21 @@ import org.jlab.utils.options.OptionParser;
 public class CVTMonitoring {
     
     private final boolean debug = false;
+    private boolean fastmode = false;
     ByteArrayOutputStream pipeOut = new ByteArrayOutputStream();
     private static PrintStream outStream = System.out;
     private static PrintStream errStream = System.err;
         
     ArrayList<Module>    modules = new ArrayList<>();
 
-    public CVTMonitoring(String active, int pid, double ebeam, double[] beamSpot, 
+    public CVTMonitoring(String active, boolean mode, int pid, double ebeam, double[] beamSpot, 
                          boolean cosmics, int residualScale, String opts, boolean lund) {
-        this.init(active, pid, ebeam, beamSpot, cosmics, residualScale, opts, lund);
+        this.init(active, mode, pid, ebeam, beamSpot, cosmics, residualScale, opts, lund);
     }
     
     
 
-    private void init(String active, int pid, double ebeam, double[] beamSpot, 
+    private void init(String active, boolean mode, int pid, double ebeam, double[] beamSpot, 
                       boolean cosmics, int residualScale, String opts, boolean lund) {
         
         GStyle.getH1FAttributes().setOptStat(opts);
@@ -69,6 +70,7 @@ public class CVTMonitoring {
         GStyle.setGraphicsFrameLineWidth(2);
         GStyle.getH1FAttributes().setLineWidth(1);
 
+        Constants.setMODE(mode);        
         Constants.setPID(pid);
         
         if(beamSpot.length==2) Constants.setBEAMSPOT(beamSpot);
@@ -177,6 +179,7 @@ public class CVTMonitoring {
         parser.addOption("-n"          ,"-1",   "maximum number of events to process");
         // histogram based analysis
         parser.addOption("-histo"      ,"0",    "read histogram file (0/1)");
+        parser.addOption("-light"      ,"0",    "run in light mode, i.e. only tracks (0/1)");
         parser.addOption("-plot"       ,"1",    "display histograms (0/1)");
         parser.addOption("-print"      ,"0",    "print histograms (0/1)");
         parser.addOption("-stats"      ,"",     "histogram stat option (e.g. \"10\" will display entries)");
@@ -207,12 +210,13 @@ public class CVTMonitoring {
 //        if(spot.length==2) for(int i=0; i<2; i++) beamSpot[i] = Double.parseDouble(spot[i]);
         boolean cosmics       = parser.getOption("-cosmics").intValue()!=0;
         int     residualScale = parser.getOption("-residual").intValue();  
-        boolean lund          = (parser.getOption("-lund").intValue()!=0);
+        boolean lund          = parser.getOption("-lund").intValue()!=0;
         String  modules       = parser.getOption("-modules").stringValue();
+        boolean light         = parser.getOption("-light").intValue()!=0;
         
         if(!openWindow) System.setProperty("java.awt.headless", "true");
 
-        CVTMonitoring cvtMon = new CVTMonitoring(modules, pid, ebeam, beamSpot, cosmics, residualScale, optStats, lund);
+        CVTMonitoring cvtMon = new CVTMonitoring(modules, light, pid, ebeam, beamSpot, cosmics, residualScale, optStats, lund);
         
         List<String> inputList = parser.getInputList();
         if(inputList.isEmpty()==true){
