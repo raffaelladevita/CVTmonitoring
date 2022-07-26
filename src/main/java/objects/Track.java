@@ -235,6 +235,19 @@ public class Track extends Particle {
 //        return Math.signum(this.vy()/Math.cos(this.phi()))*Math.sqrt(this.vx()*this.vx()+this.vy()*this.vy());
     }
 
+    public double d00() {
+        double kappa = -this.charge()/this.pt();
+        double xcen = this.vx() + Math.signum(kappa) * Constants.ALPHA * this.py();
+        double ycen = this.vy() - Math.signum(kappa) * Constants.ALPHA * this.px();
+        double phi0 = Math.atan2(ycen, xcen);
+        if (Math.signum(kappa) < 0) {
+            phi0 = Math.atan2(-ycen, -xcen);
+        }
+        double drh0 = (xcen)*Math.cos(phi0) + (ycen)*Math.sin(phi0) - Constants.ALPHA/ kappa;
+        return -drh0;
+//        return Math.signum(this.vy()/Math.cos(this.phi()))*Math.sqrt(this.vx()*this.vx()+this.vy()*this.vy());
+    }
+
     public double xb() {
         return xb;
     }

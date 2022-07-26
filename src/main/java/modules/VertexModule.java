@@ -8,6 +8,7 @@ import analysis.Module;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
+import org.jlab.groot.data.IDataSet;
 import org.jlab.groot.fitter.DataFitter;
 import org.jlab.groot.fitter.ParallelSliceFitter;
 import org.jlab.groot.graphics.EmbeddedPad;
@@ -54,26 +55,55 @@ public class VertexModule extends Module {
         H2F hi_vyphi    = histo2D("hi_vyphi", "#phi (deg)", "vy (cm)", 100, PHIMIN, PHIMAX, 100, VXYMIN, VXYMAX);
         H2F hi_vzphi    = histo2D("hi_vzphi", "#phi (deg)", "vz (cm)", 100, PHIMIN, PHIMAX, 100, VZMIN, VZMAX);
 
-        DataGroup dgTrack = new DataGroup(4,2);
-        dgTrack.addDataSet(hi_d0,       0);
-        dgTrack.addDataSet(hi_d0phi,    1);
-        dgTrack.addDataSet(gr,          2);
-        dgTrack.addDataSet(hi_vz,       3);
-        dgTrack.addDataSet(hi_xb,       4);
-        dgTrack.addDataSet(hi_yb,       4);
-        dgTrack.addDataSet(hi_vxy,      4);
-        dgTrack.addDataSet(hi_vxphi,    5);
-        dgTrack.addDataSet(hi_vyphi,    6);
-        dgTrack.addDataSet(hi_vzphi,    7);
-        return dgTrack;
+        DataGroup dgVertex = new DataGroup(4,2);
+        dgVertex.addDataSet(hi_d0,       0);
+        dgVertex.addDataSet(hi_d0phi,    1);
+        dgVertex.addDataSet(gr,          2);
+        dgVertex.addDataSet(hi_vz,       3);
+        dgVertex.addDataSet(hi_xb,       4);
+        dgVertex.addDataSet(hi_yb,       4);
+        dgVertex.addDataSet(hi_vxy,      4);
+        dgVertex.addDataSet(hi_vxphi,    5);
+        dgVertex.addDataSet(hi_vyphi,    6);
+        dgVertex.addDataSet(hi_vzphi,    7);
+        return dgVertex;
+    }
+
+    public DataGroup createMomentsGroup() {
+        H2F hip_d0phi    = histo2D("hip_d0phi", "#phi (deg)", "d0 (cm)", 30, PHIMIN, PHIMAX, 100, VXYMIN, VXYMAX);
+        GraphErrors grp  = new GraphErrors("grp_d0phi");
+        grp.setTitleX("#phi (deg)");
+        grp.setTitleY("d0 (cm)");
+        grp.setMarkerColor(2);
+        H1F hip_msinphi  = histo1D("hip_msinphi", "vx (cm)", "Counts", 100, VXYMIN, VXYMAX, 42);
+        H1F hip_mcosphi  = histo1D("hip_mcosphi", "vy (cm)", "Counts", 100, VXYMIN, VXYMAX, 42);
+        H2F hin_d0phi    = histo2D("hin_d0phi", "#phi (deg)", "d0 (cm)", 30, PHIMIN, PHIMAX, 100, VXYMIN, VXYMAX);
+        GraphErrors grn  = new GraphErrors("grn_d0phi");
+        grn.setTitleX("#phi (deg)");
+        grn.setTitleY("d0 (cm)");
+        grn.setMarkerColor(2);
+        H1F hin_msinphi  = histo1D("hin_msinphi", "vx (cm)", "Counts", 100, VXYMIN, VXYMAX, 44);
+        H1F hin_mcosphi  = histo1D("hin_mcosphi", "vy (cm)", "Counts", 100, VXYMIN, VXYMAX, 44);
+        
+        DataGroup dgMoments = new DataGroup(4,2);
+        dgMoments.addDataSet(hip_d0phi,    0);
+        dgMoments.addDataSet(grp,          1);
+        dgMoments.addDataSet(hip_msinphi,  2);
+        dgMoments.addDataSet(hip_mcosphi,  3);
+        dgMoments.addDataSet(hin_d0phi,    4);
+        dgMoments.addDataSet(grn,          5);
+        dgMoments.addDataSet(hin_msinphi,  6);
+        dgMoments.addDataSet(hin_mcosphi,  7);
+        return dgMoments;
     }
 
     @Override
     public void createHistos() {
         this.getHistos().put("UNegatives", this.createGroup(43));
         this.getHistos().put("UPositives", this.createGroup(47));
-        this.getHistos().put("Negatives", this.createGroup(44));
-        this.getHistos().put("Positives", this.createGroup(42));
+        this.getHistos().put("Negatives",  this.createGroup(44));
+        this.getHistos().put("Positives",  this.createGroup(42));
+        this.getHistos().put("Moments",    this.createMomentsGroup());
     }
     
     @Override
@@ -98,6 +128,7 @@ public class VertexModule extends Module {
         this.fillGroup(this.getHistos().get("Negatives"), trackNeg);
         this.fillGroup(this.getHistos().get("UPositives"), utrackPos);
         this.fillGroup(this.getHistos().get("UNegatives"), utrackNeg);
+        this.fillMomentsGroup(this.getHistos().get("Moments"), utrackPos, utrackNeg);
     }
     
     public void fillGroup(DataGroup group, List<Track> tracks) {
@@ -115,14 +146,31 @@ public class VertexModule extends Module {
         }
     }
     
+    public void fillMomentsGroup(DataGroup group, List<Track> ptracks, List<Track> ntracks) {
+        for(Track track : ptracks) {
+            if(track.getNDF()<2 || track.getChi2()/track.getNDF()>30 || track.pt()<0.2) continue;
+            group.getH2F("hip_d0phi").fill(Math.toDegrees(track.phi()),-track.d00()*Math.sin(track.phi())/Math.PI);
+            group.getH1F("hip_msinphi").fill(-track.d00()*Math.sin(track.phi())/Math.PI);
+            group.getH1F("hip_mcosphi").fill( track.d00()*Math.cos(track.phi())/Math.PI);
+        }
+        for(Track track : ntracks) {
+            if(track.getNDF()<2 || track.getChi2()/track.getNDF()>30 || track.pt()<0.2) continue;
+            group.getH2F("hin_d0phi").fill(Math.toDegrees(track.phi()),-track.d00()*Math.sin(track.phi())/Math.PI);
+            group.getH1F("hin_msinphi").fill(-track.d00()*Math.sin(track.phi())/Math.PI);
+            group.getH1F("hin_mcosphi").fill( track.d00()*Math.cos(track.phi())/Math.PI);
+        }
+    }
+    
     @Override
     public void setPlottingOptions(String name) {
         this.getCanvas(name).setGridX(false);
         this.getCanvas(name).setGridY(false);
         this.setLogZ(name);
-        EmbeddedPad pad = this.getCanvas(name).getCanvasPads().get(4);
-        pad.getAxisX().setRange(VXYMIN, VXYMAX);
-        pad.getAxisY().setRange(VXYMIN, VXYMAX);
+        if(name.endsWith("tives")) {
+            EmbeddedPad pad = this.getCanvas(name).getCanvasPads().get(4);
+            pad.getAxisX().setRange(VXYMIN, VXYMAX);
+            pad.getAxisY().setRange(VXYMIN, VXYMAX);
+        }
     }
 
     @Override
@@ -131,17 +179,13 @@ public class VertexModule extends Module {
         this.analyzeGroup("Negatives");
         this.analyzeGroup("UPositives");
         this.analyzeGroup("UNegatives");
+        this.analyzeMomentsGroup("Moments");
     }
     
     private void analyzeGroup(String name) {
         H2F h2         = this.getHistos().get(name).getH2F("hi_d0phi");
         GraphErrors gr = this.getHistos().get(name).getGraph("gr_d0phi");
-        this.fitSlices(h2, gr);
-        F1D f1 = new F1D("f1","[p0]*sin([p1]*x+[p2])", PHIMIN, PHIMAX);
-        f1.setParameter(0, (gr.getMax()-gr.getMin())/2.0);
-        f1.setParameter(1, Math.PI/180);
-        f1.setParLimits(1, Math.PI/180*0.99, Math.PI/180*1.01);
-        DataFitter.fit(f1, gr, "Q");
+        F1D f1 = this.fitD0Phi(h2, gr);
         
         System.out.printf("\nAnalyzing Vertex group: " + name +"\n");
         System.out.printf("d0(phi) = p0 sin(p1 x + p2):\n");
@@ -161,6 +205,25 @@ public class VertexModule extends Module {
         System.out.printf("or shift the detector position by: (%2.3f, %2.3f) mm\n", -dx, -dy); 
     }
     
+    private void analyzeMomentsGroup(String name) {
+        this.fitD0Phi(this.getHistos().get(name).getH2F("hip_d0phi"), this.getHistos().get(name).getGraph("grp_d0phi"));
+        this.fitD0Phi(this.getHistos().get(name).getH2F("hin_d0phi"), this.getHistos().get(name).getGraph("grn_d0phi"));
+        this.fitGauss(this.getHistos().get(name).getH1F("hip_msinphi"));
+        this.fitGauss(this.getHistos().get(name).getH1F("hip_mcosphi"));
+        this.fitGauss(this.getHistos().get(name).getH1F("hin_msinphi"));
+        this.fitGauss(this.getHistos().get(name).getH1F("hin_mcosphi"));
+    }
+    
+    private F1D fitD0Phi(H2F h2, GraphErrors gr) {
+        this.fitSlices(h2, gr);
+        F1D f1 = new F1D("f1","[p0]*sin([p1]*x+[p2])", PHIMIN, PHIMAX);
+        f1.setParameter(0, (gr.getMax()-gr.getMin())/2.0);
+        f1.setParameter(1, Math.PI/180);
+        f1.setParLimits(1, Math.PI/180*0.99, Math.PI/180*1.01);
+        DataFitter.fit(f1, gr, "Q");
+        return f1;
+    }
+    
     public void fitSlices(H2F h2, GraphErrors gr) {
         gr.reset();
         ParallelSliceFitter psf = new ParallelSliceFitter(h2);
@@ -174,6 +237,11 @@ public class VertexModule extends Module {
         for(int i=0; i<mean.getDataSize(0); i++) {
             if(Math.abs(sigma.getDataY(i))<h2.getSlicesX().get(i).getRMS())
                 gr.addPoint(mean.getDataX(i), mean.getDataY(i), 0, sigma.getDataY(i));
+        }
+        if(gr.getDataSize(0)<2) {
+            System.out.println(gr.getName());
+            gr.addPoint(PHIMIN, VXYMIN, 0, 0);
+            gr.addPoint(PHIMAX, VXYMAX, 0, 0);
         }
 //        gr = mean;
 //        ArrayList<H1F> hslice = h2.getSlicesX();

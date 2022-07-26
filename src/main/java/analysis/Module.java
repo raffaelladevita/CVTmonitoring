@@ -322,17 +322,18 @@ public class Module {
     }
     
     public void fitGauss(H1F histo) {
-        double tmp_Mean = histo.getMean();
-        int Max_Bin = histo.getMaximumBin();
-        double tmp_Amp = histo.getBinContent(Max_Bin);
-        double tmp_sigma = histo.getRMS();
+        double  mean = histo.getMean();
+        int   maxBin = histo.getMaximumBin();
+        double   amp = histo.getBinContent(maxBin);
+        double sigma = histo.getRMS();
         //System.out.println(tmp_Amp);
         F1D f1 = new F1D("f1", "[amp]*gaus(x,[mean],[sigma])", 0, 50.0);
-        f1.setParameter(0, tmp_Amp);
-        f1.setParameter(1, tmp_Mean);
-        f1.setParameter(2, tmp_sigma / 2);
-        f1.setLineColor(5);
-        f1.setLineWidth(7);
+        f1.setParameter(0, amp);
+        f1.setParameter(1, mean);
+        f1.setParameter(2, sigma / 2);
+        f1.setRange(mean-2.0*sigma, mean+2.0*sigma);
+        f1.setLineColor(1);
+        f1.setLineWidth(2);
         f1.setOptStat(111110);
         DataFitter.fit(f1, histo, "Q");
     }  
