@@ -70,28 +70,22 @@ public class VertexModule extends Module {
     }
 
     public DataGroup createMomentsGroup() {
-        H2F hip_d0phi    = histo2D("hip_d0phi", "#phi (deg)", "d0 (cm)", 30, PHIMIN, PHIMAX, 100, VXYMIN, VXYMAX);
-        GraphErrors grp  = new GraphErrors("grp_d0phi");
-        grp.setTitleX("#phi (deg)");
-        grp.setTitleY("d0 (cm)");
-        grp.setMarkerColor(2);
-        H1F hip_msinphi  = histo1D("hip_msinphi", "vx (cm)", "Counts", 100, VXYMIN, VXYMAX, 42);
-        H1F hip_mcosphi  = histo1D("hip_mcosphi", "vy (cm)", "Counts", 100, VXYMIN, VXYMAX, 42);
-        H2F hin_d0phi    = histo2D("hin_d0phi", "#phi (deg)", "d0 (cm)", 30, PHIMIN, PHIMAX, 100, VXYMIN, VXYMAX);
-        GraphErrors grn  = new GraphErrors("grn_d0phi");
-        grn.setTitleX("#phi (deg)");
-        grn.setTitleY("d0 (cm)");
-        grn.setMarkerColor(2);
-        H1F hin_msinphi  = histo1D("hin_msinphi", "vx (cm)", "Counts", 100, VXYMIN, VXYMAX, 44);
-        H1F hin_mcosphi  = histo1D("hin_mcosphi", "vy (cm)", "Counts", 100, VXYMIN, VXYMAX, 44);
+        H2F hip_d0sinphi = histo2D("hip_d0sinphi", "#phi (deg)", "d0 (cm)", 30, PHIMIN, PHIMAX, 100, 2*VXYMIN, 2*VXYMAX);
+        H2F hip_d0cosphi = histo2D("hip_d0cosphi", "#phi (deg)", "d0 (cm)", 30, PHIMIN, PHIMAX, 100, 2*VXYMIN, 2*VXYMAX);
+        H1F hip_msinphi  = histo1D("hip_msinphi", "vx (cm)", "Counts", 100, 2*VXYMIN, 2*VXYMAX, 42);
+        H1F hip_mcosphi  = histo1D("hip_mcosphi", "vy (cm)", "Counts", 100, 2*VXYMIN, 2*VXYMAX, 42);
+        H2F hin_d0sinphi = histo2D("hin_d0sinphi", "#phi (deg)", "d0 (cm)", 30, PHIMIN, PHIMAX, 100, 2*VXYMIN, 2*VXYMAX);
+        H2F hin_d0cosphi = histo2D("hin_d0cosphi", "#phi (deg)", "d0 (cm)", 30, PHIMIN, PHIMAX, 100, 2*VXYMIN, 2*VXYMAX);
+        H1F hin_msinphi  = histo1D("hin_msinphi", "vx (cm)", "Counts", 100, 2*VXYMIN, 2*VXYMAX, 44);
+        H1F hin_mcosphi  = histo1D("hin_mcosphi", "vy (cm)", "Counts", 100, 2*VXYMIN, 2*VXYMAX, 44);
         
         DataGroup dgMoments = new DataGroup(4,2);
-        dgMoments.addDataSet(hip_d0phi,    0);
-        dgMoments.addDataSet(grp,          1);
+        dgMoments.addDataSet(hip_d0sinphi, 0);
+        dgMoments.addDataSet(hip_d0cosphi, 1);
         dgMoments.addDataSet(hip_msinphi,  2);
         dgMoments.addDataSet(hip_mcosphi,  3);
-        dgMoments.addDataSet(hin_d0phi,    4);
-        dgMoments.addDataSet(grn,          5);
+        dgMoments.addDataSet(hin_d0sinphi, 4);
+        dgMoments.addDataSet(hin_d0cosphi, 5);
         dgMoments.addDataSet(hin_msinphi,  6);
         dgMoments.addDataSet(hin_mcosphi,  7);
         return dgMoments;
@@ -149,15 +143,17 @@ public class VertexModule extends Module {
     public void fillMomentsGroup(DataGroup group, List<Track> ptracks, List<Track> ntracks) {
         for(Track track : ptracks) {
             if(track.getNDF()<2 || track.getChi2()/track.getNDF()>30 || track.pt()<0.2) continue;
-            group.getH2F("hip_d0phi").fill(Math.toDegrees(track.phi()),-track.d00()*Math.sin(track.phi())/Math.PI);
-            group.getH1F("hip_msinphi").fill(-track.d00()*Math.sin(track.phi())/Math.PI);
-            group.getH1F("hip_mcosphi").fill( track.d00()*Math.cos(track.phi())/Math.PI);
+            group.getH2F("hip_d0sinphi").fill(Math.toDegrees(track.phi()),-2*track.d00()*Math.sin(track.phi()));
+            group.getH2F("hip_d0cosphi").fill(Math.toDegrees(track.phi()), 2*track.d00()*Math.cos(track.phi()));
+            group.getH1F("hip_msinphi").fill(-2*track.d00()*Math.sin(track.phi()));
+            group.getH1F("hip_mcosphi").fill( 2*track.d00()*Math.cos(track.phi()));
         }
         for(Track track : ntracks) {
             if(track.getNDF()<2 || track.getChi2()/track.getNDF()>30 || track.pt()<0.2) continue;
-            group.getH2F("hin_d0phi").fill(Math.toDegrees(track.phi()),-track.d00()*Math.sin(track.phi())/Math.PI);
-            group.getH1F("hin_msinphi").fill(-track.d00()*Math.sin(track.phi())/Math.PI);
-            group.getH1F("hin_mcosphi").fill( track.d00()*Math.cos(track.phi())/Math.PI);
+            group.getH2F("hin_d0sinphi").fill(Math.toDegrees(track.phi()),-2*track.d00()*Math.sin(track.phi()));
+            group.getH2F("hin_d0cosphi").fill(Math.toDegrees(track.phi()), 2*track.d00()*Math.cos(track.phi()));
+            group.getH1F("hin_msinphi").fill(-2*track.d00()*Math.sin(track.phi()));
+            group.getH1F("hin_mcosphi").fill( 2*track.d00()*Math.cos(track.phi()));
         }
     }
     
@@ -206,12 +202,10 @@ public class VertexModule extends Module {
     }
     
     private void analyzeMomentsGroup(String name) {
-        this.fitD0Phi(this.getHistos().get(name).getH2F("hip_d0phi"), this.getHistos().get(name).getGraph("grp_d0phi"));
-        this.fitD0Phi(this.getHistos().get(name).getH2F("hin_d0phi"), this.getHistos().get(name).getGraph("grn_d0phi"));
-        this.fitGauss(this.getHistos().get(name).getH1F("hip_msinphi"));
-        this.fitGauss(this.getHistos().get(name).getH1F("hip_mcosphi"));
-        this.fitGauss(this.getHistos().get(name).getH1F("hin_msinphi"));
-        this.fitGauss(this.getHistos().get(name).getH1F("hin_mcosphi"));
+        this.getHistos().get(name).getH1F("hip_msinphi").setOptStat("1100");
+        this.getHistos().get(name).getH1F("hip_mcosphi").setOptStat("1100");
+        this.getHistos().get(name).getH1F("hin_msinphi").setOptStat("1100");
+        this.getHistos().get(name).getH1F("hin_mcosphi").setOptStat("1100");
     }
     
     private F1D fitD0Phi(H2F h2, GraphErrors gr) {
