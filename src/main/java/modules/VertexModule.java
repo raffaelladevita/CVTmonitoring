@@ -24,8 +24,8 @@ public class VertexModule extends Module {
     private final double PMAX = 2.0;
     private final double PHIMIN = -180.0;
     private final double PHIMAX = 180.0;
-    private final double THETAMIN = 20.0;
-    private final double THETAMAX = 140.0;
+    private final double THETAMIN = 40.0;
+    private final double THETAMAX = 100.0;
     private final double VXYMIN = -0.5;//-10;
     private final double VXYMAX = 0.5;//10;
     private final double VZMIN = -8; //-26;
@@ -74,15 +74,24 @@ public class VertexModule extends Module {
         H1F hi_mcosphi  = histo1D("hi_mcosphi", "vy (cm)", "Counts", 100, 2*VXYMIN, 2*VXYMAX, icol);
         H2F hi_tsinphi  = histo2D("hi_tsinphi", "#theta (deg)", "Counts", 30, THETAMIN, THETAMAX, 100, 2*VXYMIN, 2*VXYMAX);
         H2F hi_tcosphi  = histo2D("hi_tcosphi", "#theta (deg)", "Counts", 30, THETAMIN, THETAMAX, 100, 2*VXYMIN, 2*VXYMAX);
-        
+        GraphErrors gr_tsinphi  = new GraphErrors("gr_tsinphi");
+        gr_tsinphi.setTitleX("#theta (deg)");
+        gr_tsinphi.setTitleY("x0 (cm)");
+        gr_tsinphi.setMarkerColor(2);        
+        GraphErrors gr_tcosphi  = new GraphErrors("gr_tcosphi");
+        gr_tcosphi.setTitleX("#theta (deg)");
+        gr_tcosphi.setTitleY("y0 (cm)");
+        gr_tcosphi.setMarkerColor(2);        
         
         DataGroup dgMoments = new DataGroup(4,2);
         dgMoments.addDataSet(hi_d0sinphi, 0);
         dgMoments.addDataSet(hi_msinphi,  1);
         dgMoments.addDataSet(hi_tsinphi,  2);
+        dgMoments.addDataSet(gr_tsinphi,  3);
         dgMoments.addDataSet(hi_d0cosphi, 4);
         dgMoments.addDataSet(hi_mcosphi,  5);
         dgMoments.addDataSet(hi_tcosphi,  6);
+        dgMoments.addDataSet(gr_tcosphi,  7);
         return dgMoments;
     }
 
@@ -159,6 +168,10 @@ public class VertexModule extends Module {
             pad.getAxisX().setRange(VXYMIN, VXYMAX);
             pad.getAxisY().setRange(VXYMIN, VXYMAX);
         }
+        else if(name.endsWith("ments")) {
+            this.getCanvas(name).getCanvasPads().get(3).getAxisY().setRange(VXYMIN/2, VXYMAX/2);
+            this.getCanvas(name).getCanvasPads().get(7).getAxisY().setRange(VXYMIN/2, VXYMAX/2);
+        }
     }
 
     @Override
@@ -197,6 +210,8 @@ public class VertexModule extends Module {
     private void analyzeMomentsGroup(String name) {
         this.getHistos().get(name).getH1F("hi_msinphi").setOptStat("1100");
         this.getHistos().get(name).getH1F("hi_mcosphi").setOptStat("1100");
+        this.fitMTheta(this.getHistos().get(name).getH2F("hi_tsinphi"), this.getHistos().get(name).getGraph("gr_tsinphi"));
+        this.fitMTheta(this.getHistos().get(name).getH2F("hi_tcosphi"), this.getHistos().get(name).getGraph("gr_tcosphi"));
     }
     
     private F1D fitD0Phi(H2F h2, GraphErrors gr) {
@@ -207,6 +222,17 @@ public class VertexModule extends Module {
         f1.setParLimits(1, Math.PI/180*0.99, Math.PI/180*1.01);
         DataFitter.fit(f1, gr, "Q");
         return f1;
+    }
+    
+    private void fitMTheta(H2F h2, GraphErrors gr) {
+        ArrayList<H1F> hslice = h2.getSlicesX();
+        for(int i=0; i<hslice.size(); i++) {
+            double  x = h2.getXAxis().getBinCenter(i);
+            double ex = 0;
+            double  y = hslice.get(i).getMean();
+            double ey = 0;
+            if(hslice.get(i).getIntegral()>200) gr.addPoint(x, y, ex, ey);
+        }
     }
     
     public void fitSlices(H2F h2, GraphErrors gr) {
