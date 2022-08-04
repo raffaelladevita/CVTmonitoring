@@ -112,13 +112,13 @@ public class VertexModule extends Module {
         List<Track> utrackPos = new ArrayList<>();
         List<Track> utrackNeg = new ArrayList<>();
         for(Track track : event.getTracks()) {
-            if(Math.abs(track.getChi2pid())<CHI2PIDCUT) {
+            if(Math.abs(track.getChi2pid())<CHI2PIDCUT || true) {
                 if(track.charge()>0) trackPos.add(track);
                 else                 trackNeg.add(track);
             }
         }
         for(Track track : event.getUTracks()) {
-            if(Math.abs(track.getChi2pid())<CHI2PIDCUT) {
+            if(Math.abs(track.getChi2pid())<CHI2PIDCUT || true) {
                 if(track.charge()>0) utrackPos.add(track);
                 else                 utrackNeg.add(track);
             }

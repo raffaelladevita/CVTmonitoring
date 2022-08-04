@@ -129,6 +129,7 @@ public class Event {
         DataBank cosBank   = this.getBank(event, "CVTRec::Cosmics");
         DataBank recPart   = this.getBank(event, "REC::Particle");
         DataBank recTrack  = this.getBank(event, "REC::Track");
+        DataBank urecTrack = this.getBank(event, "REC::UTrack");
         DataBank runConfig = this.getBank(event, "RUN::config");
         if(cvtBank!=null) {
             for(int i=0; i<cvtBank.rows(); i++) {

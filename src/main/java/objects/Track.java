@@ -2,6 +2,7 @@ package objects;
 
 import analysis.Constants;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.jlab.clas.pdg.PhysicsConstants;
 import org.jlab.clas.physics.Particle;
@@ -417,21 +418,25 @@ public class Track extends Particle {
                             bank.getFloat("trkline_yz_slope", row),
                             bank.getInt("ndf", row),
                             bank.getFloat("chi2", row),
-                            bank.getShort("status", row));
-        t.setCovMatrixHelix(bank.getFloat("cov_x02",  row),
-                            bank.getFloat("cov_x0z0", row),
-                            bank.getFloat("cov_x0tx", row),
-                            bank.getFloat("cov_x0tz", row),
-                            0,
-                            bank.getFloat("cov_z02",  row),
-                            bank.getFloat("cov_z0tx", row),
-                            bank.getFloat("cov_z0tz", row),
-                            0,
-                            bank.getFloat("cov_tx2",  row),
-                            bank.getFloat("cov_txtz", row),
-                            0,
-                            bank.getFloat("cov_tz2",  row),
-                            0, 0);
+                            0);
+        if(Arrays.asList(bank.getColumnList()).contains("status")) 
+            t.setStatus(bank.getShort("status", row));
+        if(Arrays.asList(bank.getColumnList()).contains("cov_x02")) {
+            t.setCovMatrixHelix(bank.getFloat("cov_x02",  row),
+                                bank.getFloat("cov_x0z0", row),
+                                bank.getFloat("cov_x0tx", row),
+                                bank.getFloat("cov_x0tz", row),
+                                0,
+                                bank.getFloat("cov_z02",  row),
+                                bank.getFloat("cov_z0tx", row),
+                                bank.getFloat("cov_z0tz", row),
+                                0,
+                                bank.getFloat("cov_tx2",  row),
+                                bank.getFloat("cov_txtz", row),
+                                0,
+                                bank.getFloat("cov_tz2",  row),
+                                0, 0);
+        }
         t.setIndex(row);
         t.setSeedId(t.getId());
         return t;

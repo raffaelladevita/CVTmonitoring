@@ -1,6 +1,7 @@
 package objects;
 
 import analysis.Constants;
+import java.util.Arrays;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.geom.prim.Point3D;
 import org.jlab.io.base.DataBank;
@@ -83,7 +84,9 @@ public class Cross {
                                 0,
                                 type);
         cross.setPoint(bank.getFloat("x", row), bank.getFloat("y", row), bank.getFloat("z", row));
-        cross.setPoint0(bank.getFloat("x0", row), bank.getFloat("y0", row), bank.getFloat("z0", row));
+        cross.setPoint0(0,0,0);
+        if(Arrays.asList(bank.getColumnList()).contains("x0"))
+            cross.setPoint0(bank.getFloat("x0", row), bank.getFloat("y0", row), bank.getFloat("z0", row));
         
         cross.setTrackId(bank.getShort("trkID", row));
         return cross;
