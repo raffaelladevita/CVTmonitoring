@@ -43,7 +43,9 @@ Plots are organized by tabs and subtabs.
   - Seeds: parameter distributions for all seeds and for track seeds (darker histograms) 
   - EBtracks: parameter distributions for all tracks and for tracks matched to CTOF (purple histograms)
 - Vertex tab:
-  - Vertex analysis for positives and negative tracks. For straight tracks, only the positive subtab will be populated. The top row plots show the distance of closest approach to the beamline, d0, defined by the beam offset read during reconstruction from the CCDB table /geometry/beam/position, d0 vs. phi and vz. The bottom row show the vertex x vs. y, x vs. phi, y vs. phi and vz vs. phi. If no ```CVTRec::Tracks``` bank is present, but ```REC::Particle``` is, d0 will be defined as the distance of closets approach to the ideal beamline wth x=y=0.
+  - Vertex analysis for positives and negative tracks. For straight tracks, only the positive subtab will be populated. The top row plots show the distance of closest approach to the beamline, d0, defined by the beam offset read during reconstruction from the CCDB table /geometry/beam/position, d0 vs. phi and vz. The bottom row show the vertex x vs. y, x vs. phi, y vs. phi and vz vs. phi. 
+    - Results from ```CVTRec:UTracks``` (beam-spot unconstrained track) are shown in the UPositives and UNegatives tabs. 
+    - Results from ```CVTRec::Tracks``` (with beam-spot constraint when default reconstruction settings are used) are shown in the Positives and Negatives tabs. If no ```CVTRec::Tracks``` bank is present in the input file but ```REC::Particle``` is, d0 will be defined as the distance of closets approach to the ideal beamline wth x=y=0.
 - Cluster tab:
   - Size, energy and time distribution for all clusters (light blue), on-track clusters (green) and off-track clusters (darker blue)
 - Hits tab:
@@ -61,10 +63,14 @@ Plots are organized by tabs and subtabs.
 
 ## Beam Spot analysis
 
-The plots in the Vertex tab and corresponding log can be used to check the global alignment of CVT with respect to the beam spot used in reconstruction. For this purpose, the CVT reconstruction services, both first and second pass, should be run turning off the beam spot constraint with the yaml setting:
+The plots in the Vertex tab and corresponding log can be used to check the global alignment of CVT with respect to the beam spot used in reconstruction. Ideally for this purpose, the CVT reconstruction services, both first and second pass, should be run turning off the beam spot constraint with the yaml setting:
 
      beamSpotConst: "0"
      
+This removes the bias induced by using the beam spot information in the track reconstruction. 
+
+Alternatively, if reconstruction was run with default setting, the analysis is still possible using the REC::Utrack or CVTRec::UTrack banks, that contain the Kalman Filter track parameters obtained *without* using the beam spot information. Note that in this case the beam spot is still being used in the track finding algorithm and, if wrong by several mm, may still indirectly bias the result.
+
 The presence of a phi modulation in the d0 vs. phi plots indicates an offset of the detector with respect to the beam spot read from the reconstructed banks. This modulation is fitted and analyzed to determine the offset and calculate the corresponding correction to be applied to the beam offset or, alternatively, to the detector position. 
 
 The plot below shows examples of the results from a Spring 2019 run after internal CVT alignment was completed. The corresponfing code output from the log is:
@@ -89,7 +95,7 @@ x_offset: (-0.469 +/- 0.260) mm, y_offset: (-1.065 +/- 0.268) mm
 Update the beam (x,y) position to: (-0.469, -1.065) mm
 or shift the detector position by: (0.469, 1.065) mm
 ```
-Results from positive and negative tracks are expected to be compatible within the errors. The typical accuracy is of the order of 200-300 um. The results for negative tracks have typiccaly better accuracy because of the Lorentz angle having a smaller impact on the cluster size and therefore the resolution.
+Results from positive and negative tracks are expected to be compatible within the errors. The typical accuracy is of the order of 200-300 um. The results for negative tracks have typically better accuracy because of the Lorentz angle having a smaller impact on the cluster size and therefore the resolution.
 #### Positives
 ![Plot_07-24-2022_10 25 25_PM](https://user-images.githubusercontent.com/7524926/180664539-4d34b854-1c59-4bb7-ac97-588a3b148cb6.png)
 
