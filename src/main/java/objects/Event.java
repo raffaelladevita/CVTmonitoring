@@ -58,6 +58,17 @@ public class Event {
         return bank;
     }
 
+    private DataBank getBank(DataEvent de, String bankName1, String bankName2) {
+        DataBank bank = null;
+        if (de.hasBank(bankName1)) {
+            bank = de.getBank(bankName1);
+        }
+        else if (de.hasBank(bankName2)) {
+            bank = de.getBank(bankName2);
+        }
+        return bank;
+    }
+
     private void readHeader(DataEvent event) {
         DataBank head = this.getBank(event, "RUN::config");
         if(head!=null) {
@@ -123,13 +134,13 @@ public class Event {
     }
     
     private void readTracks(DataEvent event) {
-        DataBank cvtBank   = this.getBank(event, "CVTRec::Tracks");
-        DataBank ucvtBank  = this.getBank(event, "CVTRec::UTracks");
-        DataBank covBank   = this.getBank(event, "CVTRec::TrackCovMat");
+        DataBank cvtBank   = this.getBank(event, "CVTRec::Tracks", "CVT::Tracks");
+        DataBank ucvtBank  = this.getBank(event, "CVTRec::UTracks", "CVT::Utracks");
+        DataBank covBank   = this.getBank(event, "CVTRec::TrackCovMat", "CVT::TrackCovMat");
         DataBank cosBank   = this.getBank(event, "CVTRec::Cosmics");
-        DataBank recPart   = this.getBank(event, "REC::Particle");
-        DataBank recTrack  = this.getBank(event, "REC::Track");
-        DataBank urecTrack = this.getBank(event, "REC::UTrack");
+        DataBank recPart   = this.getBank(event, "REC::Particle", "RECHB::Particle");
+        DataBank recTrack  = this.getBank(event, "REC::Track", "RECHB::Track");
+        DataBank urecTrack = this.getBank(event, "REC::UTrack", "RECHB::UTrack");
         DataBank runConfig = this.getBank(event, "RUN::config");
         if(cvtBank!=null) {
             for(int i=0; i<cvtBank.rows(); i++) {
@@ -170,9 +181,7 @@ public class Event {
     }
         
     private void readSeeds(DataEvent event) {
-        DataBank trackBank = this.getBank(event, "CVT::Seeds");
-        if(trackBank==null)
-            trackBank = this.getBank(event, "CVTRec::Seeds");
+        DataBank trackBank = this.getBank(event, "CVT::Seeds", "CVTRec::Seeds");
         DataBank cosmiBank = this.getBank(event, "CVTRec::CosmicSeeds");
         if(trackBank!=null) {
             for(int i=0; i<trackBank.rows(); i++) {
@@ -215,13 +224,13 @@ public class Event {
     }
         
     private void readCrosses(DataEvent event) {
-        DataBank bank = this.getBank(event, "BSTRec::Crosses");
+        DataBank bank = this.getBank(event, "BSTRec::Crosses", "BST::Crosses");
         if(bank==null) return;
         for(int i=0; i<bank.rows(); i++) {
             Cross cross = Cross.readCross(bank, i, DetectorType.BST);
             crosses.add(cross);
         }
-        bank = this.getBank(event, "BMTRec::Crosses");
+        bank = this.getBank(event, "BMTRec::Crosses", "BMT::Crosses");
         if(bank==null) return;
         for(int i=0; i<bank.rows(); i++) {
             Cross cross = Cross.readCross(bank, i, DetectorType.BMT);
@@ -238,13 +247,13 @@ public class Event {
     }
         
     private void readClusters(DataEvent event) {
-        DataBank bank = this.getBank(event, "BSTRec::Clusters");
+        DataBank bank = this.getBank(event, "BSTRec::Clusters", "BST::Clusters");
         if(bank==null) return;
         for(int i=0; i<bank.rows(); i++) {
             Cluster cluster = Cluster.readCluster(bank, i, DetectorType.BST);
             clusters.add(cluster);
         }
-        bank = this.getBank(event, "BMTRec::Clusters");
+        bank = this.getBank(event, "BMTRec::Clusters", "BMT::Clusters");
         if(bank==null) return;
         for(int i=0; i<bank.rows(); i++) {
             Cluster cluster = Cluster.readCluster(bank, i, DetectorType.BMT);
@@ -261,13 +270,13 @@ public class Event {
     }
                 
     private void readHits(DataEvent event) {
-        DataBank bank = this.getBank(event, "BSTRec::Hits");
+        DataBank bank = this.getBank(event, "BSTRec::Hits", "BST::Hits");
         if(bank==null) return;
         for(int i=0; i<bank.rows(); i++) {
             Hit hit = Hit.readHit(bank, i, DetectorType.BST);
             hits.add(hit);
         }
-        bank = this.getBank(event, "BMTRec::Hits");
+        bank = this.getBank(event, "BMTRec::Hits", "BMT::Hits");
         if(bank==null) return;
         for(int i=0; i<bank.rows(); i++) {
             Hit hit = Hit.readHit(bank, i, DetectorType.BMT);
