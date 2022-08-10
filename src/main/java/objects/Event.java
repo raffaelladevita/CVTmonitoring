@@ -24,7 +24,7 @@ public class Event {
     private Track mcParticle;
     private final List<Track> particles  = new ArrayList<>();
     private final List<Track> tracks     = new ArrayList<>();
-    private final List<Track> utrack     = new ArrayList<>();
+    private final List<Track> utracks     = new ArrayList<>();
     private final List<Track> fptracks   = new ArrayList<>();
     private final List<Track> seeds      = new ArrayList<>();
     private final List<Cross> crosses    = new ArrayList<>();
@@ -156,9 +156,18 @@ public class Event {
                     Track track = Track.readTrack(ucvtBank, i);
                     if(runConfig!=null) track.addScale(runConfig);
                     if(recPart!=null && recTrack!=null) track.addEBinfo(recPart, recTrack);
-                    utrack.add(track);
+                    utracks.add(track);
                     utrackMap.put(track.getId(), i);
                 }
+            }
+            else if(recPart!=null && urecTrack!=null) {
+                for (int i = 0; i < recPart.rows(); i++) {    
+                    Track track = Track.readParticle(recPart, urecTrack, i);
+                    if(track.getDetector()!=4 || track.charge()==0) continue;
+                    if(runConfig!=null) track.addScale(runConfig);
+                    utracks.add(track);
+                    utrackMap.put(track.getId(), i);
+                }            
             }
         }
         else if(cosBank!=null) {
@@ -353,7 +362,7 @@ public class Event {
     }
  
     public List<Track> getUTracks() {
-        return utrack;
+        return utracks;
     }
  
     public List<Track> getSeeds() {
