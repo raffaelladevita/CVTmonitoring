@@ -25,6 +25,8 @@ public class Track extends Particle {
     private double chi2;
     private double xb;
     private double yb;
+    private int elossPid = 0;
+    private int ebPid = 0;
     private int index = -1;
     private int pindex = -1;
     private double solenoid = -1;
@@ -82,7 +84,7 @@ public class Track extends Particle {
     }
 
     Track(int id, int charge, double pt, double tandip, double phi0, double d0, 
-          double x0, double y0, double z0, int type, int NDF, double chi2, int status) {
+          double x0, double y0, double z0, int type, int pid, int NDF, double chi2, int status) {
         super(211*charge, 
               pt*Math.cos(phi0),
               pt*Math.sin(phi0),
@@ -92,6 +94,7 @@ public class Track extends Particle {
               z0);
         this.id = id;
         this.seedType = type;
+        this.elossPid = pid;
         this.NDF  = NDF;
         this.chi2 = chi2;
         this.xb = x0;
@@ -109,6 +112,10 @@ public class Track extends Particle {
 
     public int getIndex() {
         return index;
+    }
+
+    public void setEBPid(int pid) {
+        this.ebPid = pid;
     }
 
     public void setIndex(int index) {
@@ -155,6 +162,10 @@ public class Track extends Particle {
         this.chi2 = chi2;
     }
 
+    public int getElossPid() {
+        return elossPid;
+    }
+
     public int getStatus() {
         return status;
     }
@@ -189,6 +200,10 @@ public class Track extends Particle {
 
     public void setChi2pid(double chi2pid) {
         this.chi2pid = chi2pid;
+    }
+
+    public int getEBPid() {
+        return ebPid;
     }
 
     public int getDetector() {
@@ -390,6 +405,7 @@ public class Track extends Particle {
                             bank.getFloat("yb", row),
                             bank.getFloat("z0", row),
                             bank.getByte("fittingMethod", row),
+                            bank.getInt("pid", row),
                             bank.getShort("ndf", row),
                             bank.getFloat("chi2", row),
                             bank.getShort("status", row));
@@ -454,6 +470,8 @@ public class Track extends Particle {
                 break;
             }
         }
+        this.setEBPid(part.getInt("pid", this.getPindex()));
+        this.setBeta(part.getFloat("beta", this.getPindex()));
         this.setChi2pid(part.getFloat("chi2pid", this.getPindex()));
         this.setRECStatus(part.getShort("status", this.getPindex()));
     }
@@ -517,6 +535,7 @@ public class Track extends Particle {
                             bank.getFloat("yb", row),
                             bank.getFloat("z0", row),
                             bank.getByte("fittingMethod", row),
+                            0,
                             bank.getInt("ndf", row),
                             bank.getFloat("chi2", row), 
                             0);

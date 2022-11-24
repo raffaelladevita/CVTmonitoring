@@ -18,15 +18,17 @@ import org.jlab.groot.math.F1D;
  */
 public class HitModule extends Module {
     
+    private int scale = 1;
     
-    public HitModule() {
+    public HitModule(int residualScale) {
         super("Hits", false);
+        this.scale = residualScale;
     }
     
     public DataGroup hitGroup(int col) {
         String[] names = new String[]{"SVT", "BMTC", "BMTZ"};
         double[] EMAX = { 1000, 5000, 5000};
-        double[] TMAX = {  600, 440, 440};
+        double[] TMAX = {  1200, 1200, 1200};
         double[] RMAX = { 1500, 3000, 3000};
         DataGroup dg = new DataGroup(3,3);
         for(int i=0; i<names.length; i++) {
@@ -111,7 +113,7 @@ public class HitModule extends Module {
             group.getH1F("hi_energy_" + hit.getName()).fill(hit.getEnergy());
             group.getH1F("hi_time_" + hit.getName()).fill(hit.getTime());    
             if(hit.getTrackId()>0)
-                group.getH1F("hi_resi_" + hit.getName()).fill(hit.getResidual()*1e4);    
+                group.getH1F("hi_resi_" + hit.getName()).fill(hit.getResidual()*1e4/this.scale);    
         }
     }
 

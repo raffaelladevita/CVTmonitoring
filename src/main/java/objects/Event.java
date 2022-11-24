@@ -155,7 +155,7 @@ public class Event {
                 for(int i=0; i<ucvtBank.rows(); i++) {
                     Track track = Track.readTrack(ucvtBank, i);
                     if(runConfig!=null) track.addScale(runConfig);
-                    if(recPart!=null && recTrack!=null) track.addEBinfo(recPart, recTrack);
+//                    if(recPart!=null && recTrack!=null) track.addEBinfo(recPart, recTrack);
                     utracks.add(track);
                     utrackMap.put(track.getId(), i);
                 }
@@ -212,9 +212,12 @@ public class Event {
         
     private void readFPTracks(DataEvent event) {
         DataBank trackBank = this.getBank(event, "CVT::Tracks");
+        DataBank recPart   = this.getBank(event, "REC::Particle");
+        DataBank recTrack  = this.getBank(event, "REC::Track");
         if(trackBank!=null) {
             for(int i=0; i<trackBank.rows(); i++) {
                 Track track = Track.readTrack(trackBank, i);
+                if(recPart!=null && recTrack!=null) track.addEBinfo(recPart, recTrack);
                 fptracks.add(track);
                 fptrackMap.put(track.getId(), i);
             }

@@ -77,7 +77,7 @@ public class CVTMonitoring {
         
         this.addModule(active, new TrackModule(cosmics));
         this.addModule(active, new VertexModule());
-        this.addModule(active, new HitModule());
+        this.addModule(active, new HitModule(residualScale));
         this.addModule(active, new CrossModule());
         this.addModule(active, new ClusterModule());
         this.addModule(active, new LorentzModule());

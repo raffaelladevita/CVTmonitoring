@@ -26,10 +26,10 @@ public class VertexModule extends Module {
     private final double PHIMAX = 180.0;
     private final double THETAMIN = 40.0;
     private final double THETAMAX = 100.0;
-    private final double VXYMIN = -0.5;//-10;
-    private final double VXYMAX = 0.5;//10;
-    private final double VZMIN = -8; //-26;
-    private final double VZMAX =  8;//26;
+    private final double VXYMIN = -1.0;
+    private final double VXYMAX =  1.0;
+    private final double VZMIN = -12; //-26;
+    private final double VZMAX =  15;//26;
     
     private final double CHI2PIDCUT = 10;
     
@@ -205,6 +205,7 @@ public class VertexModule extends Module {
         System.out.printf("  with respect to beam spot read from banks: (%2.3f, %2.3f) mm\n", xb, yb);      
         System.out.printf("Update the beam (x,y) position to: (%2.3f, %2.3f) mm\n", xb+dx, yb+dy);       
         System.out.printf("or shift the detector position by: (%2.3f, %2.3f) mm\n", -dx, -dy); 
+        this.fitCVertex(this.getHistos().get(name).getH1F("hi_vz"));
     }
     
     private void analyzeMomentsGroup(String name) {
@@ -272,4 +273,85 @@ public class VertexModule extends Module {
 //            if(amp>10) gr.addPoint(x, f1.getParameter(1), ex, f1.getParameter(2));
 //        }
     }
+    
+    public void fitCVertex(H1F histo) {
+            
+        double TARGETPOS    = -1.5;
+        double TARGETLENGTH =  5.3;    //target length
+        double WINDOWDIST   =  8.5;  //6.8;//2.8; //distance between the mylar foil and the downstream window
+        double SCEXIT       = 14.3;  //scattering chamber exit window, old value from PDF - 2 mm for the window bow
+        
+        int nbin = histo.getData().length;
+        double dx = histo.getDataX(1)-histo.getDataX(0);
+    
+        // find heat shield and scattering chamber exit window
+        // assume the maximum is the scattering chamber exit window
+        int ibinsc  = 170;
+        int deltasc = (int) ((SCEXIT-TARGETLENGTH/2-WINDOWDIST)/dx);
+        // look for the heat shield
+	int ibinhs1 = ibinsc - deltasc;
+	int ibinhs2 = ibinsc + deltasc;
+        int ibinhs = ibinhs1;
+//	if(histo.getBinContent(ibinhs1)<histo.getBinContent(ibinhs2)) {
+//            ibinhs = ibinsc;
+//            ibinsc = ibinhs2;
+//        }
+
+        //find downstream window relying on distance from the scattering chamber exit window
+        double center = histo.getDataX(ibinsc) - SCEXIT;
+	int ibin0 = getMaximumBinBetween(histo, center, center + TARGETLENGTH);
+	int ibin1 = getMaximumBinBetween(histo, center - TARGETLENGTH, center);
+        
+        double mean  = histo.getDataX(ibin0);
+        double amp   = histo.getBinContent(ibin0);
+        double sc    = histo.getBinContent(ibinsc);
+        double sigma = 0.8;
+        double bg    = histo.getBinContent((ibin1+ibin0)/2)/2;
+	double air = 0;
+        String function = "[amp]*gaus(x,[exw]-[tl],[sigma])+"
+                        + "[amp]*1.2*gaus(x,[exw],[sigma]*0.8)+"
+                        + "[bg]*gaus(x,[exw]-[tl]/2,[tl]*0.6)+"
+                        + "gaus(x,[exw]+[wd],[sigma]*0.8)*[sc]*2.5+"
+                        + "[sc]*gaus(x,[exw]+[scw]-[tl]/2,[sigma]*0.8)/1.1+"
+                        + "[air]*landau(x,[exw]+[scw]-[tl]/2,[sigma]*4)";
+        F1D f1_vtx   = new F1D("f4vertex", function, mean - TARGETLENGTH*2, mean + TARGETLENGTH/2 + SCEXIT);
+        f1_vtx.setLineColor(2);
+        f1_vtx.setLineWidth(2);
+        f1_vtx.setOptStat("11111111111");
+	f1_vtx.setParameter(0, amp/2);
+        f1_vtx.setParameter(1, mean);
+        f1_vtx.setParameter(2, TARGETLENGTH);
+	f1_vtx.setParLimits(2, TARGETLENGTH*0.99, TARGETLENGTH*1.01); 
+        f1_vtx.setParameter(3, sigma);
+        f1_vtx.setParameter(4, bg);
+        f1_vtx.setParameter(5, WINDOWDIST);
+        f1_vtx.setParLimits(5, WINDOWDIST*0.8, WINDOWDIST*1.2);
+        f1_vtx.setParameter(6, sc);
+        f1_vtx.setParameter(7, SCEXIT);
+	f1_vtx.setParLimits(7, SCEXIT*0.9, SCEXIT*1.1);
+        f1_vtx.setParameter(8, air);
+//        histo.setFunction(f1_vtx);
+        DataFitter.fit(f1_vtx, histo, "Q"); //No options uses error for sigma
+//        if(f1_vtx.getParameter(6)<f1_vtx.getParameter(0)/4) f1_vtx.setParameter(6, 0);
+    }
+    public static int getMaximumBinBetween(H1F histo, double min, double max) { 
+        int nbin = histo.getData().length;
+        double x_val_temp;
+        double x_val;
+        double y_max_temp;
+        double y_max = 0;
+        int max_bin_num = histo.getMaximumBin();
+        for (int i = 0; i < nbin; i++) { 
+            x_val_temp = histo.getAxis().getBinCenter(i);
+            if (x_val_temp >= min && x_val_temp <= max) {
+                y_max_temp = histo.getBinContent(i);
+                if (y_max_temp > y_max) {
+                    y_max = y_max_temp;
+                    max_bin_num = i;
+                }
+            }
+        }
+        return max_bin_num;
+    }
+
 }

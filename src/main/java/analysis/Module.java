@@ -39,6 +39,7 @@ public class Module {
     private boolean cosmics;
     private double beamenergy;
 
+    private int nlund = 0;
     private BufferedWriter lundFile = null;
     private PhysicsEvent physicsEvent = null;
     
@@ -150,8 +151,13 @@ public class Module {
     }
 
     private void writeToLund(){
+        if(nlund%10000 == 0) {
+            this.closeLund();
+            this.openLund();
+        }
         if(lundFile!=null && physicsEvent!=null) {
             try {
+                nlund++;
                 lundFile.write(physicsEvent.toLundString());
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());
@@ -258,7 +264,7 @@ public class Module {
     }
     public void openLund() {
         try {
-            this.lundFile = new BufferedWriter(new FileWriter(this.getName() + ".lund"));
+            this.lundFile = new BufferedWriter(new FileWriter(this.getName() + "_" + String.format("%04d", nlund/10000) + ".lund"));
             }
             catch(IOException e) {
                 System.out.println(e.getMessage());

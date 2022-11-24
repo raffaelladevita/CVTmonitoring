@@ -325,20 +325,34 @@ public class ElasticModule extends Module {
     PhysicsEvent writeToLund(Particle electron) {
         PhysicsEvent ev = new PhysicsEvent();
         double m = PhysicsConstants.massProton();
+        // calculate momentum from the polar angle
+        electron.setP(m*this.getBeamEnergy()/(m+2*this.getBeamEnergy()*Math.pow(Math.sin(electron.theta()/2), 2)));
+        // reset the vertex to 0
+        electron.setVector(11, electron.px(), electron.py(), electron.pz(), 0, 0, 0);
+        // calculate proton variables
         double e = this.getBeamEnergy()+m-electron.e();
         double p = Math.sqrt(e*e-m*m);
         double theta = Math.acos((this.getBeamEnergy()*this.getBeamEnergy()+p*p-Math.pow(this.getBeamEnergy()+m-e,2))/2/this.getBeamEnergy()/p);
         double phi = Math.PI+electron.phi();
         if(Double.isNaN(p) || Double.isNaN(theta)) return null;
-        Particle part = new Particle(2212, 
+        Particle proton = new Particle(2212, 
                                      p*Math.sin(theta)*Math.cos(phi), 
                                      p*Math.sin(theta)*Math.sin(phi), 
                                      p*Math.cos(theta), 
                                      electron.vx(), 
                                      electron.vy(), 
                                      electron.vz());
+//        LorentzVector be = new LorentzVector(0, 0, this.getBeamEnergy(), this.getBeamEnergy());
+//        LorentzVector tg = new LorentzVector(0, 0, 0, m);
+//        be.add(tg);
+//        be.sub(electron.vector());
+//        be.sub(proton.vector());
+//        System.out.println("\n" + be.e() + " " + be.px() + " " + be.py() + " " + be.pz() + " " + be.mass());
+//        System.out.println(tg.toString());
+//        System.out.println(electron.toString());
+//        System.out.println(proton.toString());
         ev.addParticle(electron);	    
-        ev.addParticle(part);	    
+        ev.addParticle(proton);	    
         ev.setBeam("e-", this.getBeamEnergy());    
         return ev;
     }
