@@ -190,7 +190,7 @@ public class CVTMonitoring {
         parser.addOption("-cosmics"    ,"0",    "analyze as cosmics (0=false, 1=true)");
         parser.addOption("-residual"   ,"1",    "residual scale (1=cm, 10=mm)");
         parser.addOption("-lund"       ,"0",    "save events to lund (0=false, 1=true");
-        parser.addOption("-modules"    ,"",     "comma-separated list of modules to be activated");
+        parser.addOption("-modules"    ,"",     "colon-separated list of modules to be activated");
         
         parser.parse(args);
         
