@@ -151,12 +151,12 @@ public class Module {
     }
 
     private void writeToLund(){
-        if(nlund%10000 == 0) {
-            this.closeLund();
-            this.openLund();
-        }
         if(lundFile!=null && physicsEvent!=null) {
             try {
+                if(nlund%10000 == 0) {
+                    this.closeLund();
+                    this.openLund();
+                }
                 nlund++;
                 lundFile.write(physicsEvent.toLundString());
             } catch (IOException ex) {

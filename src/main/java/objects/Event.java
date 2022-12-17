@@ -83,13 +83,13 @@ public class Event {
             int index = 0;
             int pid = 0;
             if(Constants.PID!=0) {
-                pid = Constants.PID;
                 for (int loop = 0; loop < mc.rows(); loop++) {
                     double px = mc.getFloat("px", loop);
                     double py = mc.getFloat("py", loop);
                     double pz = mc.getFloat("pz", loop);
                     double theta = Math.toDegrees(Math.acos(pz/Math.sqrt(px*px+py*py+pz*pz)));
                     if(mc.getInt("pid", loop)==Constants.PID  && theta>Constants.THMIN) {
+                        pid = Constants.PID;
                         index = loop;
                         break;
                     }
@@ -103,7 +103,7 @@ public class Event {
                     pid = -13;
             }
             if(pid==1000010020) pid=45;
-            mcParticle = new Track(pid,
+            if(pid!=0)  mcParticle = new Track(pid,
                             mc.getFloat("px", index),
                             mc.getFloat("py", index),
                             mc.getFloat("pz", index),

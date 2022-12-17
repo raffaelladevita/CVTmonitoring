@@ -26,6 +26,7 @@ public class Constants {
 
     public static boolean MODE = false;
     public static int PID = 2212;
+    public static int CHARGE = 1;
     public static double THMIN = 30;
     
     public static final int NSIGMA = 5;
@@ -46,6 +47,10 @@ public class Constants {
     
     public static void setPID(int PID) {
         Constants.PID = PID;
+    }
+
+    public static void setCharge(int PID) {
+        Constants.CHARGE = (int) Math.signum(PID);
     }
 
     public static void setBEAMSPOT(double[] BEAMSPOT) {

@@ -72,6 +72,7 @@ public class CVTMonitoring {
 
         Constants.setFASTMODE(mode);        
         Constants.setPID(pid);
+        Constants.setCharge(pid);
         
         if(beamSpot.length==2) Constants.setBEAMSPOT(beamSpot);
         
@@ -188,7 +189,7 @@ public class CVTMonitoring {
 //        parser.addOption("-spot"       ,"0:0" , "Beam spot coordinates (cm)");
         parser.addOption("-cosmics"    ,"0",    "analyze as cosmics (0=false, 1=true)");
         parser.addOption("-residual"   ,"1",    "residual scale (1=cm, 10=mm)");
-        parser.addOption("-lund"       ,"0",    "save events to lund");
+        parser.addOption("-lund"       ,"0",    "save events to lund (0=false, 1=true");
         parser.addOption("-modules"    ,"",     "comma-separated list of modules to be activated");
         
         parser.parse(args);

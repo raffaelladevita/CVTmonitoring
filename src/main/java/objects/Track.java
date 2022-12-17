@@ -385,6 +385,13 @@ public class Track extends Particle {
         else return true;
     }
     
+    public boolean hasCharge(int charge) {
+        if(charge!=0) 
+            return this.charge()==charge;
+        else
+            return true;
+    }
+    
     public void toCosmic() {
         Vector3D dir = new Vector3D(this.px(), this.py(), this.pz()).asUnit();
         Point3D  vtx = new Point3D(this.vx(), this.vy(), this.vz());

@@ -1,5 +1,6 @@
 package modules;
 
+import analysis.Constants;
 import java.util.ArrayList;
 import java.util.List;
 import objects.Track;
@@ -114,19 +115,20 @@ public class TrackModule extends Module {
             }
             if(Math.abs(track.getChi2pid())<CHI2PIDCUT) trackC2pid.add(track);
         }
-        this.fillGroup(this.getHistos().get("Tracks"),event.getTracks());
-        this.fillGroup2D(this.getHistos().get("Tracks2D"),event.getTracks());
-        this.fillGroup(this.getHistos().get("UTracks"),event.getUTracks());
-        this.fillGroup(this.getHistos().get("FPTracks"),event.getFPTracks());
-        this.fillGroup(this.getHistos().get("TrackFPTracks"),trackFPTracks);
-        this.fillGroup(this.getHistos().get("Seeds"),event.getSeeds());
-        this.fillGroup(this.getHistos().get("TrackSeeds"),trackSeeds);
-        this.fillGroup(this.getHistos().get("TrackChi2pid"),trackC2pid);
+        this.fillGroup(this.getHistos().get("Tracks"),event.getTracks(), Constants.CHARGE);
+        this.fillGroup2D(this.getHistos().get("Tracks2D"),event.getTracks(), Constants.CHARGE);
+        this.fillGroup(this.getHistos().get("UTracks"),event.getUTracks(), Constants.CHARGE);
+        this.fillGroup(this.getHistos().get("FPTracks"),event.getFPTracks(), Constants.CHARGE);
+        this.fillGroup(this.getHistos().get("TrackFPTracks"),trackFPTracks, Constants.CHARGE);
+        this.fillGroup(this.getHistos().get("Seeds"),event.getSeeds(), Constants.CHARGE);
+        this.fillGroup(this.getHistos().get("TrackSeeds"),trackSeeds, Constants.CHARGE);
+        this.fillGroup(this.getHistos().get("TrackChi2pid"),trackC2pid, Constants.CHARGE);
     }
     
-    public void fillGroup(DataGroup group, List<Track> tracks) {
+    public void fillGroup(DataGroup group, List<Track> tracks, int charge) {
         group.getH1F("hi_mult").fill(tracks.size());
         for(Track track : tracks) {
+            if(!track.hasCharge(charge)) continue;
             group.getH1F("hi_chi2").fill(track.getChi2()/track.getNDF());
             group.getH1F("hi_ndf").fill(track.getNDF());
             group.getH1F("hi_iter").fill(track.getKFIterations());
@@ -141,8 +143,9 @@ public class TrackModule extends Module {
         }
     }
     
-    public void fillGroup2D(DataGroup group, List<Track> tracks) {
+    public void fillGroup2D(DataGroup group, List<Track> tracks, int charge) {
         for(Track track : tracks) {
+            if(!track.hasCharge(charge)) continue;
             group.getH2F("hi_ptheta").fill(Math.toDegrees(track.theta()),track.p());
             group.getH2F("hi_pphi").fill(Math.toDegrees(track.phi()),track.p());
             group.getH2F("hi_thetaphi").fill(Math.toDegrees(track.phi()),Math.toDegrees(track.theta()));
