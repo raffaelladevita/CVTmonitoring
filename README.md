@@ -75,7 +75,7 @@ The presence of a phi modulation in the d0 vs. phi plots indicates an offset of 
 
 The plot below shows examples of the results from a Spring 2019 run after internal CVT alignment was completed. The corresponfing code output from the log is:
 ```
-Analyzing Vertex group: Positives
+Analyzing Vertex group: UPositives
 d0(phi) = p0 sin(p1 x + p2):
 	 p0 = (-0.0948 +/- 0.0325)
 	 p1 = (0.0174 +/- 0.0003)
@@ -85,7 +85,7 @@ x_offset: (-0.316 +/- 0.295) mm, y_offset: (-0.893 +/- 0.321) mm
 Update the beam (x,y) position to: (-0.316, -0.893) mm
 or shift the detector position by: (0.316, 0.893) mm
 
-Analyzing Vertex group: Negatives
+Analyzing Vertex group: UNegatives
 d0(phi) = p0 sin(p1 x + p2):
 	 p0 = (0.1163 +/- 0.0270)
 	 p1 = (0.0175 +/- 0.0002)
@@ -96,6 +96,7 @@ Update the beam (x,y) position to: (-0.469, -1.065) mm
 or shift the detector position by: (0.469, 1.065) mm
 ```
 Results from positive and negative tracks are expected to be compatible within the errors. The typical accuracy is of the order of 200-300 um. The results for negative tracks have typically better accuracy because of the Lorentz angle having a smaller impact on the cluster size and therefore the resolution.
+
 #### Positives
 ![Plot_07-24-2022_10 25 25_PM](https://user-images.githubusercontent.com/7524926/180664539-4d34b854-1c59-4bb7-ac97-588a3b148cb6.png)
 
