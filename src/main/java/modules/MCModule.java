@@ -403,7 +403,6 @@ public class MCModule extends Module {
             this.fillTrackGroup2D(this.getHistos().get("FPass2D"),event.getFPTracks(),Constants.CHARGE);
             this.fillTrackGroup2D(this.getHistos().get("UTrack2D"),event.getUTracks(),Constants.CHARGE);
             this.fillTrackGroup2D(this.getHistos().get("Track2D"),event.getTracks(),Constants.CHARGE);
-            this.fillEfficiencyGroup(this.getHistos().get("Efficiency"), mcTrack, "MC");
             if(matchedTrack!=null) {
                 int tid = matchedTrack.getId();
                 int sid = matchedTrack.getSeedId();

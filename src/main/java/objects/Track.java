@@ -175,7 +175,10 @@ public class Track extends Particle {
     }
 
     public int getKFIterations() {
-        return (int) status/1000;
+        if(status<0) 
+            return 0;
+        else
+            return (int) status/1000;
     }
 
     public int getType() {

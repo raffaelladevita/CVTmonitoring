@@ -206,7 +206,7 @@ public class Module {
             p.getAxisZ().setLog(true);
         }
     }
-    
+
     public void setH1LineWidth(String name) {
         for(EmbeddedPad p : this.getCanvas().getCanvas(name).getCanvasPads()) {
             for(IDataSetPlotter dsp: p.getDatasetPlotters()) {

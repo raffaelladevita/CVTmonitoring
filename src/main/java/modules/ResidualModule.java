@@ -136,7 +136,7 @@ public class ResidualModule extends Module {
     @Override
     public void fillHistos(Event event) {
         for(Cluster cluster : event.getClusters()) {
-            if(cluster.getTrackId()>0) {
+            if(cluster.getTrackId()>0 && event.getTrackMap().containsKey(cluster.getTrackId())) {
                 CVTType detector = cluster.getType();
                 
                 int layer  = cluster.getLayer();

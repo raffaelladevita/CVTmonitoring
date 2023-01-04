@@ -21,12 +21,17 @@ import modules.ResidualModule;
 import modules.TrackModule;
 import modules.VertexModule;
 import org.jlab.groot.base.GStyle;
+import org.jlab.groot.data.H1F;
+import org.jlab.groot.data.IDataSet;
 
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.hipo.HipoDataSource;
 
 
 import org.jlab.groot.data.TDirectory;
+import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
+import org.jlab.groot.graphics.EmbeddedPad;
+import org.jlab.groot.graphics.IDataSetPlotter;
 import org.jlab.jnp.utils.benchmark.ProgressPrintout;
 import org.jlab.utils.options.OptionParser;
 
@@ -42,9 +47,11 @@ public class CVTMonitoring {
     ByteArrayOutputStream pipeOut = new ByteArrayOutputStream();
     private static PrintStream outStream = System.out;
     private static PrintStream errStream = System.err;
-        
+     
     ArrayList<Module>    modules = new ArrayList<>();
 
+    private static String OPTSTAT = "";
+    
     public CVTMonitoring(String active, boolean mode, int pid, double ebeam, double[] beamSpot, 
                          boolean cosmics, int residualScale, String opts, boolean lund) {
         this.init(active, mode, pid, ebeam, beamSpot, cosmics, residualScale, opts, lund);
@@ -54,7 +61,7 @@ public class CVTMonitoring {
 
     private void init(String active, boolean mode, int pid, double ebeam, double[] beamSpot, 
                       boolean cosmics, int residualScale, String opts, boolean lund) {
-        
+        OPTSTAT = opts;
         GStyle.getH1FAttributes().setOptStat(opts);
         GStyle.getAxisAttributesX().setTitleFontSize(24);
         GStyle.getAxisAttributesX().setLabelFontSize(18);
@@ -122,7 +129,19 @@ public class CVTMonitoring {
     public JTabbedPane plotHistos() {
         JTabbedPane panel = new JTabbedPane();
         for(Module m : modules) {
-            panel.add(m.getName(), m.plotHistos());
+            EmbeddedCanvasTabbed canvas = m.plotHistos();
+            for(String name : m.getCanvasNames()) {
+                for(EmbeddedPad p : canvas.getCanvas(name).getCanvasPads()) {
+                    for(IDataSetPlotter dsp: p.getDatasetPlotters()) {
+                        IDataSet ds = dsp.getDataSet();
+                        if(ds instanceof H1F) {
+                            H1F h1 = (H1F) ds;
+                            h1.setOptStat(OPTSTAT);
+                        }
+                    }
+                }            
+            }
+            panel.add(m.getName(), canvas);
         }
         return panel;
     }

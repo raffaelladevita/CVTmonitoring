@@ -160,15 +160,6 @@ public class Event {
                     utrackMap.put(track.getId(), i);
                 }
             }
-            else if(recPart!=null && urecTrack!=null) {
-                for (int i = 0; i < recPart.rows(); i++) {    
-                    Track track = Track.readParticle(recPart, urecTrack, i);
-                    if(track.getDetector()!=4 || track.charge()==0) continue;
-                    if(runConfig!=null) track.addScale(runConfig);
-                    utracks.add(track);
-                    utrackMap.put(track.getId(), i);
-                }            
-            }
         }
         else if(cosBank!=null) {
             for(int i=0; i<cosBank.rows(); i++) {
@@ -186,6 +177,15 @@ public class Event {
                 tracks.add(track);
                 trackMap.put(track.getId(), i);
             }            
+            if(urecTrack!=null) {
+                for (int i = 0; i < recPart.rows(); i++) {    
+                    Track track = Track.readParticle(recPart, urecTrack, i);
+                    if(track.getDetector()!=4 || track.charge()==0) continue;
+                    if(runConfig!=null) track.addScale(runConfig);
+                    utracks.add(track);
+                    utrackMap.put(track.getId(), i);
+                }            
+            }
         }
     }
         
@@ -279,6 +279,13 @@ public class Event {
                 if(!this.clusterMap.containsKey(cluster.getTrackId()))
                     this.clusterMap.put(cluster.getTrackId(), new ArrayList<>());
                 this.clusterMap.get(cluster.getTrackId()).add(i);
+//                if(!this.trackMap.containsKey(cluster.getTrackId())) {
+//                    event.getBank("CVTRec::Tracks").show();
+//                    event.getBank("CVT::Tracks").show();
+//                    event.getBank("CVT::Seeds").show();
+//                    event.getBank("BSTRec::Clusters").show();
+//                    event.getBank("BMTRec::Clusters").show();
+//                }
             }
         }
     }

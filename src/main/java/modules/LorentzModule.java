@@ -113,7 +113,7 @@ public class LorentzModule extends Module {
     @Override
     public void fillHistos(Event event) {
         for(Cluster cluster : event.getClusters()) {
-            if(cluster.getTrackId()>0) {
+            if(cluster.getTrackId()>0 && event.getTrackMap().containsKey(cluster.getTrackId())) {
                 CVTType detector = cluster.getType();                               
                 Track track = event.getTracks().get(event.getTrackMap().get(cluster.getTrackId()));
                 if(event.getTrajectoryMap()==null || !event.getTrajectoryMap().containsKey(cluster.getTrackId())) {
