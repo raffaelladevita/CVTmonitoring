@@ -176,36 +176,38 @@ public class VertexModule extends Module {
 
     @Override
     public void analyzeHistos() {
-        this.analyzeGroup("Positives");
-        this.analyzeGroup("Negatives");
-        this.analyzeGroup("UPositives");
-        this.analyzeGroup("UNegatives");
+        this.analyzeGroup("Positives", false);
+        this.analyzeGroup("Negatives", false);
+        this.analyzeGroup("UPositives", true);
+        this.analyzeGroup("UNegatives", true);
         this.analyzeMomentsGroup("NMoments");
         this.analyzeMomentsGroup("PMoments");
     }
     
-    private void analyzeGroup(String name) {
+    private void analyzeGroup(String name, boolean verbose) {
         H2F h2         = this.getHistos().get(name).getH2F("hi_d0phi");
         GraphErrors gr = this.getHistos().get(name).getGraph("gr_d0phi");
         F1D f1 = this.fitD0Phi(h2, gr);
         
-        System.out.printf("\nAnalyzing Vertex group: " + name +"\n");
-        System.out.printf("d0(phi) = p0 sin(p1 x + p2):\n");
-        for(int i=0; i<f1.getNPars(); i++)
-            System.out.printf("\t p%d = (%.4f +/- %.4f)\n", i, f1.getParameter(i), f1.parameter(i).error());
-        double xb =  10*this.getHistos().get(name).getH1F("hi_xb").getMean();
-        double yb =  10*this.getHistos().get(name).getH1F("hi_yb").getMean();
-        double dx = -10*f1.getParameter(0)*Math.cos(f1.getParameter(2));
-        double dy =  10*f1.getParameter(0)*Math.sin(f1.getParameter(2));
-        double edx = 10*Math.sqrt(Math.pow(f1.parameter(0).error()*Math.cos(f1.getParameter(2)),2)+
-                                  Math.pow(f1.getParameter(0)*Math.sin(f1.getParameter(2))*f1.parameter(2).error(),2));
-        double edy = 10*Math.sqrt(Math.pow(f1.parameter(0).error()*Math.sin(f1.getParameter(2)),2)+
-                                  Math.pow(f1.getParameter(0)*Math.cos(f1.getParameter(2))*f1.parameter(2).error(),2));
-        System.out.printf("x_offset: (%2.3f +/- %2.3f) mm, y_offset: (%2.3f +/- %2.3f) mm\n", dx, edx, dy, edy); // convert to mm        
-        System.out.printf("  with respect to beam spot read from banks: (%2.3f, %2.3f) mm\n", xb, yb);      
-        System.out.printf("Update the beam (x,y) position to: (%2.3f, %2.3f) mm\n", xb+dx, yb+dy);       
-        System.out.printf("or shift the detector position by: (%2.3f, %2.3f) mm\n", -dx, -dy); 
-        this.fitCVertex(this.getHistos().get(name).getH1F("hi_vz"));
+        if(verbose) {
+            System.out.printf("\nAnalyzing Vertex group: " + name +"\n");
+            System.out.printf("d0(phi) = p0 sin(p1 x + p2):\n");
+            for(int i=0; i<f1.getNPars(); i++)
+                System.out.printf("\t p%d = (%.4f +/- %.4f)\n", i, f1.getParameter(i), f1.parameter(i).error());
+            double xb =  10*this.getHistos().get(name).getH1F("hi_xb").getMean();
+            double yb =  10*this.getHistos().get(name).getH1F("hi_yb").getMean();
+            double dx = -10*f1.getParameter(0)*Math.cos(f1.getParameter(2));
+            double dy =  10*f1.getParameter(0)*Math.sin(f1.getParameter(2));
+            double edx = 10*Math.sqrt(Math.pow(f1.parameter(0).error()*Math.cos(f1.getParameter(2)),2)+
+                                      Math.pow(f1.getParameter(0)*Math.sin(f1.getParameter(2))*f1.parameter(2).error(),2));
+            double edy = 10*Math.sqrt(Math.pow(f1.parameter(0).error()*Math.sin(f1.getParameter(2)),2)+
+                                      Math.pow(f1.getParameter(0)*Math.cos(f1.getParameter(2))*f1.parameter(2).error(),2));
+            System.out.printf("x_offset: (%2.3f +/- %2.3f) mm, y_offset: (%2.3f +/- %2.3f) mm\n", dx, edx, dy, edy); // convert to mm        
+            System.out.printf("  with respect to beam spot read from banks: (%2.3f, %2.3f) mm\n", xb, yb);      
+            System.out.printf("Update the beam (x,y) position to: (%2.3f, %2.3f) mm\n", xb+dx, yb+dy);       
+            System.out.printf("or shift the detector position by: (%2.3f, %2.3f) mm\n", -dx, -dy); 
+            this.fitCVertex(this.getHistos().get(name).getH1F("hi_vz"));
+        }
     }
     
     private void analyzeMomentsGroup(String name) {
