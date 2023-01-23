@@ -15,7 +15,7 @@ It requires the following banks to be present:
   - BMTRec::Clusters, BSTRec::Clusters
   - BMTRec::Crosses, BSTRec::Crosses
   - CVT::Seeds, CVTRec::Seeds, CVT::Tracks, CVTRec::UTracks, CVTRec::Tracks, CVTRec::Trajectory
-  - (for matching with CTOF, elastic and doublets analysis) REC::Particle, REC::Track
+  - REC::Particle, REC::Track, REC::UTrack for PID information, matching with CTOF, elastic analysis, doublets analysis and for track parameter distributions if CVT banks are not available 
   - (for MC only) MC::Particle
   
 ## Usage:
