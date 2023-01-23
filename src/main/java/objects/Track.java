@@ -533,6 +533,25 @@ public class Track extends Particle {
         return t;
     }
     
+    public static Track readParticle(DataBank recPart, DataBank recTrack, DataBank recUTrack, int row) {
+        Track t = readParticle(recPart, recTrack, row);
+        if(recUTrack!=null) {
+            for(int j=0; j<recUTrack.rows(); j++) {
+                if(recUTrack.getShort("index", j)==t.getIndex()) {
+                    t.setVector(t.pid(),
+                                recUTrack.getFloat("px", j),
+                                recUTrack.getFloat("py", j),
+                                recUTrack.getFloat("pz", j),
+                                recUTrack.getFloat("vx", j),
+                                recUTrack.getFloat("vy", j),
+                                recUTrack.getFloat("vz", j));
+                                break;
+                }
+            }
+        }       
+        return t;
+    }
+    
     public static Track readSeed(DataBank bank, int row) {
         if(bank.getByte("q", row)==0) bank.show();
         Track t = new Track(bank.getShort("ID", row),

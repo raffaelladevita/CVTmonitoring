@@ -179,7 +179,7 @@ public class Event {
             }            
             if(urecTrack!=null) {
                 for (int i = 0; i < recPart.rows(); i++) {    
-                    Track track = Track.readParticle(recPart, urecTrack, i);
+                    Track track = Track.readParticle(recPart, recTrack, urecTrack, i);
                     if(track.getDetector()!=4 || track.charge()==0) continue;
                     if(runConfig!=null) track.addScale(runConfig);
                     utracks.add(track);
