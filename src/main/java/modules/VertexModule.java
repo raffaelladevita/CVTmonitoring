@@ -133,7 +133,7 @@ public class VertexModule extends Module {
     
     public void fillGroup(DataGroup group, List<Track> tracks) {
         for(Track track : tracks) {
-            if(track.getNDF()<2 || track.getChi2()/track.getNDF()>30 || track.pt()<0.2) continue;
+            if(track.getNDF()<1 || track.getChi2()/track.getNDF()>30 || track.pt()<0.2) continue;
             group.getH1F("hi_d0").fill(track.d0());
             group.getH2F("hi_d0phi").fill(Math.toDegrees(track.phi()),track.d0());
             group.getH1F("hi_vz").fill(track.vz());
@@ -148,7 +148,7 @@ public class VertexModule extends Module {
     
     public void fillMomentsGroup(DataGroup group, List<Track> tracks) {
         for(Track track : tracks) {
-            if(track.getNDF()<2 || track.getChi2()/track.getNDF()>30 || track.pt()<0.2) continue;
+            if(track.getNDF()<1 || track.getChi2()/track.getNDF()>30 || track.pt()<0.2) continue;
             group.getH2F("hi_d0sinphi").fill(Math.toDegrees(track.phi()),-2*track.d00()*Math.sin(track.phi()));
             group.getH2F("hi_d0cosphi").fill(Math.toDegrees(track.phi()), 2*track.d00()*Math.cos(track.phi()));
             group.getH1F("hi_msinphi").fill(-2*track.d00()*Math.sin(track.phi()));
