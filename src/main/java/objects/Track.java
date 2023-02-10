@@ -34,8 +34,8 @@ public class Track extends Particle {
     private double chi2pid = Double.POSITIVE_INFINITY;
     private int recStatus=0;
     private int sector=0;
+    private int nKFiter=0;
     private int status=0;
-    private int type=0;
     private final double[][] covMatrixHelix = new double[5][5];
     private final double[][] covMatrixXYZ   = new double[6][6];
     private final String[] covs = {"x", "y", "z", "px", "py", "pz"};
@@ -46,16 +46,17 @@ public class Track extends Particle {
     }
 
     Track(int id, int pid, double px, double py, double pz,  double vx, double vy, double vz, 
-          int type, int NDF, double chi2, int status) {
+          int type, int NDF, double chi2, int niter, int status) {
         super(pid, px, py, pz, vx, vy, vz);
         this.id = id;
         this.seedType = type;
         this.NDF  = NDF;
         this.chi2 = chi2;
+        this.nKFiter = niter;
         this.status = status;
     }
 
-    Track(int id, double theta, double phi, int NDF, double chi2, int status) {
+    Track(int id, double theta, double phi, int NDF, double chi2, int niter, int status) {
         super(13, 
               Math.cos(phi)*Math.sin(theta),
               Math.sin(phi)*Math.sin(theta),
@@ -65,11 +66,11 @@ public class Track extends Particle {
         this.seedType = 1;
         this.NDF  = NDF;
         this.chi2 = chi2;
+        this.nKFiter = niter;
         this.status = status;
-        this.type = 1;
     }
 
-    Track(int id, double x0, double z0, double tx, double tz, int NDF, double chi2, int status) {
+    Track(int id, double x0, double z0, double tx, double tz, int NDF, double chi2, int niter, int status) {
         super(13, 
              -tx/Math.sqrt(1+tx*tx+tz*tz),
               -1/Math.sqrt(1+tx*tx+tz*tz),
@@ -79,12 +80,12 @@ public class Track extends Particle {
         this.seedType = 1;
         this.NDF  = NDF;
         this.chi2 = chi2;
+        this.nKFiter = niter;
         this.status = status;
-        this.type = 1;
     }
 
     Track(int id, int charge, double pt, double tandip, double phi0, double d0, 
-          double x0, double y0, double z0, int type, int pid, int NDF, double chi2, int status) {
+          double x0, double y0, double z0, int type, int pid, int NDF, double chi2, int niter, int status) {
         super(211*charge, 
               pt*Math.cos(phi0),
               pt*Math.sin(phi0),
@@ -99,6 +100,7 @@ public class Track extends Particle {
         this.chi2 = chi2;
         this.xb = x0;
         this.yb = y0;
+        this.nKFiter = niter;
         this.status = status;
     }
 
@@ -175,18 +177,11 @@ public class Track extends Particle {
     }
 
     public int getKFIterations() {
-        if(status<0) 
-            return 0;
-        else
-            return (int) status/1000;
+        return nKFiter;
     }
 
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
+    public void setKFIterations(int niter) {
+        this.nKFiter = niter;
     }
 
     public double getBeta() {
@@ -401,10 +396,19 @@ public class Track extends Particle {
         Line3D  line = new Line3D(vtx, dir);
         Point3D vtxn = line.lerpPoint(-vtx.y()/dir.y());
         this.setVector(this.pid(), this.px(), this.py(), this.pz(), vtxn.x(), vtxn.y(), vtxn.z()); 
-        this.setType(1);
     }
     
     public static Track readTrack(DataBank bank, int row) {
+        int seedType = 0;
+        int niter = 0;
+        if(hasColumn(bank, "fittingMethod")) { 
+            seedType = bank.getByte("fittingMethod", row);
+            niter = (int) bank.getShort("status", row)/1000;
+        }
+        else if(hasColumn(bank, "nKFIters")) {
+            seedType = Math.abs(bank.getShort("status", row))%10;
+            niter = bank.getByte("nKFIters", row);
+        }
         Track t = new Track(bank.getShort("ID", row),
                             bank.getByte("q", row),
                             bank.getFloat("pt", row),
@@ -414,10 +418,11 @@ public class Track extends Particle {
                             bank.getFloat("xb", row),
                             bank.getFloat("yb", row),
                             bank.getFloat("z0", row),
-                            bank.getByte("fittingMethod", row),
+                            seedType,
                             bank.getInt("pid", row),
                             bank.getShort("ndf", row),
                             bank.getFloat("chi2", row),
+                            niter,
                             bank.getShort("status", row));
         t.setCovMatrixHelix(bank.getFloat("cov_d02", row),
                             bank.getFloat("cov_d0phi0", row),
@@ -444,9 +449,11 @@ public class Track extends Particle {
                             bank.getFloat("trkline_yz_slope", row),
                             bank.getInt("ndf", row),
                             bank.getFloat("chi2", row),
-                            0);
-        if(Arrays.asList(bank.getColumnList()).contains("status")) 
+                            0, 0);
+        if(Arrays.asList(bank.getColumnList()).contains("status")) {
+            t.setKFIterations(bank.getShort("status", row)/1000);
             t.setStatus(bank.getShort("status", row));
+        }
         if(Arrays.asList(bank.getColumnList()).contains("cov_x02")) {
             t.setCovMatrixHelix(bank.getFloat("cov_x02",  row),
                                 bank.getFloat("cov_x0z0", row),
@@ -567,6 +574,7 @@ public class Track extends Particle {
                             0,
                             bank.getInt("ndf", row),
                             bank.getFloat("chi2", row), 
+                            0,
                             0);
         for(int i=0; i<9; i++) {
             int crossId = bank.getShort("Cross"+(i+1)+"_ID", row);
@@ -587,5 +595,13 @@ public class Track extends Particle {
                        0,
                        bank.getFloat("cov_tandip2", row));
         return t;
+    }
+    
+    private static boolean hasColumn(DataBank bank, String name) {
+        for(int i=0; i<bank.columns(); i++) {
+            if(bank.getColumnList()[i].equals(name))
+                return true;
+        }
+        return false;
     }
 }
