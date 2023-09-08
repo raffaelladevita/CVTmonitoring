@@ -53,14 +53,14 @@ public class CVTMonitoring {
     private static String OPTSTAT = "";
     
     public CVTMonitoring(String active, boolean mode, int pid, double ebeam, double[] beamSpot, 
-                         boolean cosmics, int residualScale, String opts, boolean lund) {
-        this.init(active, mode, pid, ebeam, beamSpot, cosmics, residualScale, opts, lund);
+                         int vertexFit, boolean cosmics, int residualScale, String opts, boolean lund) {
+        this.init(active, mode, pid, ebeam, beamSpot, vertexFit, cosmics, residualScale, opts, lund);
     }
     
     
 
     private void init(String active, boolean mode, int pid, double ebeam, double[] beamSpot, 
-                      boolean cosmics, int residualScale, String opts, boolean lund) {
+                      int vertexFit, boolean cosmics, int residualScale, String opts, boolean lund) {
         OPTSTAT = opts;
         GStyle.getH1FAttributes().setOptStat(opts);
         GStyle.getAxisAttributesX().setTitleFontSize(24);
@@ -84,7 +84,7 @@ public class CVTMonitoring {
         if(beamSpot.length==2) Constants.setBEAMSPOT(beamSpot);
         
         this.addModule(active, new TrackModule(cosmics));
-        this.addModule(active, new VertexModule());
+        this.addModule(active, new VertexModule(vertexFit));
         this.addModule(active, new HitModule(residualScale));
         this.addModule(active, new CrossModule());
         this.addModule(active, new ClusterModule());
@@ -210,6 +210,7 @@ public class CVTMonitoring {
         parser.addOption("-residual"   ,"1",    "residual scale (1=cm, 10=mm)");
         parser.addOption("-lund"       ,"0",    "save events to lund (0=false, 1=true");
         parser.addOption("-modules"    ,"",     "colon-separated list of modules to be activated");
+        parser.addOption("-vzfit"      ,"0",    "fit the vz target distribution (0/1)");
         
         parser.parse(args);
         
@@ -233,10 +234,11 @@ public class CVTMonitoring {
         boolean lund          = parser.getOption("-lund").intValue()!=0;
         String  modules       = parser.getOption("-modules").stringValue();
         boolean fast          = parser.getOption("-fast").intValue()!=0;
-        
+        int     vzfit         = parser.getOption("-vzfit").intValue();
+
         if(!openWindow) System.setProperty("java.awt.headless", "true");
 
-        CVTMonitoring cvtMon = new CVTMonitoring(modules, fast, pid, ebeam, beamSpot, cosmics, residualScale, optStats, lund);
+        CVTMonitoring cvtMon = new CVTMonitoring(modules, fast, pid, ebeam, beamSpot, vzfit, cosmics, residualScale, optStats, lund);
         
         List<String> inputList = parser.getInputList();
         if(inputList.isEmpty()==true){
