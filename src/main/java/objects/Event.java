@@ -21,6 +21,7 @@ public class Event {
     private int run;
     private int event;
     private double startTime;
+    private double[] raster = new double[2];
     private Track mcParticle;
     private final List<Track> particles  = new ArrayList<>();
     private final List<Track> tracks     = new ArrayList<>();
@@ -130,6 +131,15 @@ public class Event {
         DataBank recEvent = this.getBank(event, "REC::Event");
         if(recEvent!=null) {
             startTime = recEvent.getFloat("startTime",0);
+        }
+    }
+    
+    
+    private void readRaster(DataEvent event) {
+        DataBank rasterPos = this.getBank(event, "RASTER::position");
+        if(rasterPos!=null) {
+            raster[0] = rasterPos.getFloat("x",0);
+            raster[1] = rasterPos.getFloat("y",0);
         }
     }
     
@@ -355,6 +365,7 @@ public class Event {
         this.readMCParticle(de);
         this.readParticles(de);
         this.readStartTime(de);
+        this.readRaster(de);
         this.readTracks(de);
         if(!Constants.getFASTMODE()) {
             this.readTrajectory(de);
@@ -458,6 +469,10 @@ public class Event {
     
     public double getStartTime() {
         return startTime;
+    }
+
+    public double[] getRaster() {
+        return raster;
     }
 
     public DataEvent getHipoEvent() {
