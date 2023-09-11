@@ -109,6 +109,7 @@ public class VertexModule extends Module {
     
     @Override
     public void fillHistos(Event event) {
+        double[] raster = event.getRaster();
         List<Track> trackPos = new ArrayList<>();
         List<Track> trackNeg = new ArrayList<>();
         List<Track> utrackPos = new ArrayList<>();
@@ -125,23 +126,23 @@ public class VertexModule extends Module {
                 else                 utrackNeg.add(track);
             }
         }
-        this.fillGroup(this.getHistos().get("Positives"), trackPos);
-        this.fillGroup(this.getHistos().get("Negatives"), trackNeg);
-        this.fillGroup(this.getHistos().get("UPositives"), utrackPos);
-        this.fillGroup(this.getHistos().get("UNegatives"), utrackNeg);
+        this.fillGroup(this.getHistos().get("Positives"), trackPos, raster);
+        this.fillGroup(this.getHistos().get("Negatives"), trackNeg, raster);
+        this.fillGroup(this.getHistos().get("UPositives"), utrackPos, raster);
+        this.fillGroup(this.getHistos().get("UNegatives"), utrackNeg, raster);
         this.fillMomentsGroup(this.getHistos().get("NMoments"), utrackNeg);
         this.fillMomentsGroup(this.getHistos().get("PMoments"), utrackPos);
     }
     
-    public void fillGroup(DataGroup group, List<Track> tracks) {
+    public void fillGroup(DataGroup group, List<Track> tracks, double[] raster) {
         for(Track track : tracks) {
             if(track.getNDF()<2 || track.getChi2()/track.getNDF()>30 || track.pt()<0.2 || track.getStatus()<0) continue;
             group.getH1F("hi_d0").fill(track.d0());
             group.getH2F("hi_d0phi").fill(Math.toDegrees(track.phi()),track.d0());
             group.getH1F("hi_vz").fill(track.vz());
             group.getH2F("hi_vxy").fill(track.vx(),track.vy());
-            group.getH1F("hi_xb").fill(track.xb());
-            group.getH1F("hi_yb").fill(track.yb());
+            group.getH1F("hi_xb").fill(track.xb()-raster[0]);
+            group.getH1F("hi_yb").fill(track.yb()-raster[1]);
             group.getH2F("hi_vxphi").fill(Math.toDegrees(track.phi()),track.vx());
             group.getH2F("hi_vyphi").fill(Math.toDegrees(track.phi()),track.vy());
             group.getH2F("hi_vzphi").fill(Math.toDegrees(track.phi()),track.vz());
