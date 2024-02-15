@@ -117,8 +117,12 @@ public class MCModule extends Module {
         H2F hi_phi_dtheta = histo2D("hi_phi_dtheta", "#phi (deg)", "#Delta#theta (deg)", 50, PHIMIN, PHIMAX, 50, -DTHETA, DTHETA);
         H2F hi_phi_dphi   = histo2D("hi_phi_dphi",   "#phi (deg)", "#Delta#phi (deg)",   50, PHIMIN, PHIMAX, 50, -DPHI, DPHI);
         H2F hi_phi_dvz    = histo2D("hi_phi_dvz",    "#phi (deg)", "#Deltavz (cm)",      50, PHIMIN, PHIMAX, 50, -DVZ,  DVZ);
+        H2F hi_vz_dp     = histo2D("hi_vz_dp",     "vz (cm)", "#Deltap/p",          50, VZMIN, VZMAX, 50, -DP, DP);
+        H2F hi_vz_dtheta = histo2D("hi_vz_dtheta", "vz (cm)", "#Delta#theta (deg)", 50, VZMIN, VZMAX, 50, -DTHETA, DTHETA);
+        H2F hi_vz_dphi   = histo2D("hi_vz_dphi",   "vz (cm)", "#Delta#phi (deg)",   50, VZMIN, VZMAX, 50, -DPHI, DPHI);
+        H2F hi_vz_dvz    = histo2D("hi_vz_dvz",    "vz (cm)", "#Deltavz (cm)",      50, VZMIN, VZMAX, 50, -DVZ,  DVZ);
 
-        DataGroup dg = new DataGroup(4,3);
+        DataGroup dg = new DataGroup(4,4);
         dg.addDataSet(hi_p_dp,        0);
         dg.addDataSet(hi_p_dtheta,    1);
         dg.addDataSet(hi_p_dphi,      2);
@@ -131,6 +135,10 @@ public class MCModule extends Module {
         dg.addDataSet(hi_phi_dtheta,  9);
         dg.addDataSet(hi_phi_dphi,    10);
         dg.addDataSet(hi_phi_dvz,     11);
+        dg.addDataSet(hi_vz_dp,       12);
+        dg.addDataSet(hi_vz_dtheta,   13);
+        dg.addDataSet(hi_vz_dphi,     14);
+        dg.addDataSet(hi_vz_dvz,      15);
         return dg;
     }
 
@@ -535,6 +543,10 @@ public class MCModule extends Module {
         group.getH2F("hi_phi_dtheta").fill(Math.toDegrees(mc.phi()),Math.toDegrees(mc.theta()-track.theta()));
         group.getH2F("hi_phi_dphi").fill(Math.toDegrees(mc.phi()),Math.toDegrees(mc.deltaPhi(track)));
         group.getH2F("hi_phi_dvz").fill(Math.toDegrees(mc.phi()),mc.vz()-track.vz());
+        group.getH2F("hi_vz_dp").fill(mc.vz(),(mc.p()-track.p())/mc.p());
+        group.getH2F("hi_vz_dtheta").fill(mc.vz(),Math.toDegrees(mc.theta()-track.theta()));
+        group.getH2F("hi_vz_dphi").fill(mc.vz(),Math.toDegrees(mc.deltaPhi(track)));
+        group.getH2F("hi_vz_dvz").fill(mc.vz(),mc.vz()-track.vz());
     }
     
     private void fillHelixResolutionGroup(DataGroup group, Track mc, Track track) {
